@@ -41,14 +41,14 @@ export const HeroSection = () => {
         </Link>
 
         {/* Main Heading */}
-        <h1 className="text-[32px] leading-8 md:text-[56px] md:leading-14 xl:text-[72px] xl:leading-18 2xl:text-[96px] 2xl:leading-24 font-semibold">
+        <h1 className="text-white text-[32px] leading-8 md:text-[56px] md:leading-14 xl:text-[72px] xl:leading-18 2xl:text-[96px] 2xl:leading-24 font-semibold">
           Secure Your&nbsp;
           <span ref={typedEl} />
         </h1>
         <h1 className="text-[32px] leading-8 md:text-[56px] md:leading-14 xl:text-[72px] xl:leading-18 2xl:text-[96px] 2xl:leading-24 font-semibold bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
           World with AI Defense
         </h1>
-        <p className="max-w-4xl text-lg md:text-xl text-center">
+        <p className="text-white max-w-4xl text-lg md:text-xl text-center">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
         </p>
 
@@ -107,10 +107,10 @@ export const HeroSection = () => {
                 Accelerate threat detection cyber attacks in real time.
               </p>
               <div className="flex gap-2 justify-center">
-                <span className="px-4 text-xs md:text-sm md:px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
+                <span className="text-white px-4 text-xs md:text-sm md:px-5 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
                   Detection Accuracy
                 </span>
-                <span className="px-4 text-xs md:text-sm md:px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
+                <span className="text-white px-4 text-xs md:text-sm md:px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
                   Response Boost
                 </span>
               </div>

@@ -35,7 +35,7 @@ const Pricing = () => {
                                 <span className="text-white/60 text-base mb-1">/Month</span>
                             </div>
                             <h4 className="text-lg font-semibold text-white mb-2">Perfect Beginners</h4>
-                            <button className="w-full cursor-pointer bg-gradient-to-t from-[#392BD8] to-[#0054CA] font-semibold py-2.5 rounded-full mt-3 mb-5 transition hover:from-[#6BCBFF] hover:to-[#3A8DFF]">
+                            <button className="text-white w-full cursor-pointer bg-gradient-to-t from-[#392BD8] to-[#0054CA] font-semibold py-2.5 rounded-full mt-3 mb-5 transition hover:from-[#6BCBFF] hover:to-[#3A8DFF]">
                                 Start Securing
                             </button>
                             <p className="text-white/60 text-sm mb-5 text-center">
@@ -106,7 +106,7 @@ const Pricing = () => {
                                 <span className="text-white/60 text-base mb-1">/Month</span>
                             </div>
                             <h4 className="text-lg font-semibold text-white mb-2">Perfect Beginners</h4>
-                            <button className="cursor-pointer w-full bg-gradient-to-t from-[#392BD8] to-[#0054CA] font-semibold py-2.5 rounded-full mt-3 mb-5 transition hover:from-[#6BCBFF] hover:to-[#3A8DFF]">
+                            <button className="text-white cursor-pointer w-full bg-gradient-to-t from-[#392BD8] to-[#0054CA] font-semibold py-2.5 rounded-full mt-3 mb-5 transition hover:from-[#6BCBFF] hover:to-[#3A8DFF]">
                                 Start Securing
                             </button>
                             <p className="text-white/60 text-sm mb-5 text-center">

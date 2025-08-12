@@ -2,17 +2,19 @@
 import { cn } from "@/lib/utils";
 import { Eye, EyeClosed } from "lucide-react";
 import { ComponentProps, forwardRef, ReactNode, useState } from "react";
+import { FieldError } from "react-hook-form";
 
 interface InputProps extends ComponentProps<"input"> {
   icon?: ReactNode;
   iconPosition?: "left" | "right";
   label?: ReactNode;
   labelClassName?: string;
+  error?: FieldError;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (
-    { className, type, icon, iconPosition = "left", label, labelClassName, id, ...props },
+    { className, type, icon, iconPosition = "left", label, labelClassName, id, error, ...props },
     ref
   ) => {
     const [showPassword, setShowPassword] = useState(false);
@@ -73,6 +75,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               "placeholder:text-[#9CA3AF] placeholder:text-base outline-none focus:border-[#C7C9D9] transition-colors",
               "shadow-none",
               "disabled:bg-[#F3F4F6] disabled:cursor-not-allowed disabled:opacity-60",
+              error && "border-red-500 focus:border-red-500 focus:ring-red-500",
               className
             )}
             {...props}
