@@ -53,7 +53,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             "relative flex items-center w-full",
           )}
         >
-          {/* Show left icon if provided, even for password */}
           {icon && iconPosition === "left" && (
             <span
               className={cn(
