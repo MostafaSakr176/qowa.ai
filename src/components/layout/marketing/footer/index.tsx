@@ -35,9 +35,9 @@ const Footer = () => {
                             <Image
                                 src="/media/images/logos/Logo.webp"
                                 alt="Logo"
-                                width={120}
+                                width={130}
                                 height={80}
-                                className="w-[90px] h-auto md:w-[120px] md:h-auto lg:w-[140px] lg:h-auto"
+                                className="h-auto w-[130px] md:h-auto lg:w-[140px] lg:h-auto"
                             // Responsive logo size
                             />
                         </div>

@@ -29,11 +29,11 @@ export const HeroSection = () => {
   }, []);
   return (
     <>
-      <section className="min-h-[70vh] lg:min-h-screen flex flex-col items-center justify-center gap-6">
+      <section className="min-h-[80vh] lg:min-h-screen flex flex-col items-center justify-center gap-6">
         {/* Tagline Link */}
         <Link
           href="/dashboard"
-          className="text-white text-[14px] flex items-center px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200"
+          className="text-white text-[12px] md:text-[14px]  flex items-center px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200"
           aria-label="Go to dashboard"
         >
           <span className="w-1 h-1 rounded-full bg-white mr-3 inline-block" />
@@ -48,14 +48,14 @@ export const HeroSection = () => {
         <h1 className="text-[32px] leading-8 md:text-[56px] md:leading-14 xl:text-[72px] xl:leading-18 2xl:text-[96px] 2xl:leading-24 font-semibold bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
           World with AI Defense
         </h1>
-        <p className="text-white max-w-4xl text-lg md:text-xl text-center">
+        <p className="text-white max-w-4xl text-[14px] md:text-xl text-center">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
         </p>
 
         {/* CTA Button */}
         <Link
           href="/dashboard"
-          className="mt-4 text-[#012C79] text-[16px] font-medium flex items-center gap-6 px-8 py-3 rounded-full transition-all duration-200 hover:bg-white/20"
+          className="mt-4 text-[#012C79] text-[16px] font-medium flex items-center gap-3 md:gap-6 px-8 py-3 rounded-full transition-all duration-200 hover:bg-white/20"
           style={{
             background: "linear-gradient(180deg, #B5CFFF 0%, #FFFFFF 90%)",
             border: "0.98px solid #5353533B",
@@ -71,7 +71,7 @@ export const HeroSection = () => {
       <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center md:pt-[10vh]">
         {/* Cyber Shield Card */}
         <Card>
-          <div className="text-center min-h-[30vh] md:min-h-[35vh] flex flex-col justify-around h-full">
+          <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-around h-full">
             <div className="flex justify-center">
               <button
                 type="button"
@@ -99,18 +99,18 @@ export const HeroSection = () => {
 
         {/* Threat Intelligence Card */}
         <Card className="lg:-translate-y-1/3">
-          <div className="text-center min-h-[30vh] md:min-h-[35vh] w-full flex flex-col justify-between relative h-full">
+          <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] w-full flex flex-col justify-between relative h-full">
             <div className="flex flex-col items-start text-start gap-2.5">
               <h3 className="text-xl font-bold text-white mb-3">Cyber Shield AI-Powered</h3>
               <AnimatedCounter value={154.8} duration={2} />
               <p className="text-white/80 text-sm leading-relaxed mb-6 max-w-[60%]">
                 Accelerate threat detection cyber attacks in real time.
               </p>
-              <div className="flex gap-2 justify-center">
-                <span className="text-white px-4 text-xs md:text-sm md:px-5 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 w-full">
+                <span className="text-white text-center px-4 text-xs md:text-sm md:px-3 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
                   Detection Accuracy
                 </span>
-                <span className="text-white px-4 text-xs md:text-sm md:px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
+                <span className="text-white text-center px-4 text-xs md:text-sm md:px-3 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200">
                   Response Boost
                 </span>
               </div>
@@ -123,7 +123,7 @@ export const HeroSection = () => {
 
         {/* Threat Detection Card */}
         <Card>
-          <div className="text-center min-h-[30vh] md:min-h-[35vh] flex flex-col justify-between h-full">
+          <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-between h-full">
             <div className="flex justify-center">
               <Image src={LOCK_IMG_SRC} alt="Lock illustration" width={120} height={120} className="w-[40%]" />
             </div>

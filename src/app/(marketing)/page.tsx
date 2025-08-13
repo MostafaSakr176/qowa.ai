@@ -29,7 +29,7 @@ export default function Home() {
         <main className="relative">
           {/* Hero Background */}
           <div
-            className="w-full overflow-hidden opacity-0 md:opacity-100 absolute top-0 left-0 right-0 z-1"
+            className="w-full overflow-hidden absolute top-0 left-0 right-0 z-1"
             style={{ height: "calc(100% - 30px)" }}
           >
             <Image

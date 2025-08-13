@@ -17,7 +17,7 @@ const Pricing = () => {
                 Our platform offers top-tier AI-driven cybersecurity and threat detection to help you stay ahead of cyber threats.
             </p>
 
-            <div className="w-full flex flex-col md:flex-row justify-center items-center gap-4 lg:gap-12 mt-4">
+            <div className="w-full flex flex-col md:flex-row justify-center items-center gap-8 lg:gap-12 mt-4">
                 {/* Starter Plan */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}

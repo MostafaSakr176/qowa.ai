@@ -9,10 +9,10 @@ const ReadyForExperience = () => {
             <Card
                 className="relative w-full overflow-hidden !p-0 rounded-2xl bg-gradient-to-br from-[#0A1A3A] to-[#1A4DFF] shadow-xl border border-white/10"
             >
-                <div className='relative z-[2] w-full h-full grid grid-cols-1 md:grid-cols-2 items-center'>
+                <div className='relative z-[2] w-full h-full p-6 md:p-10  grid grid-cols-1 md:grid-cols-2 gap-6 items-center'>
                     {/* Left: Text and CTA */}
-                    <div className="p-10 flex-1 flex flex-col items-start justify-center space-y-6">
-                        <h2 className="text-2xl md:text-5xl font-semibold leading-tight  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
+                    <div className="flex-1 flex flex-col items-start justify-center space-y-6">
+                        <h2 className="text-4xl md:text-5xl font-semibold leading-tight  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
                             Ready For<br />Experience
                         </h2>
                         <p className="text-white/70 text-sm">

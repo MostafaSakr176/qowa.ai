@@ -52,21 +52,21 @@ const ServiceSection = () => {
               <div className="absolute left-0 top-8 w-full h-28">
                 {/* Bar 1 */}
                 <div
-                  className="absolute left-[8%] top-2 h-8 bg-[#2B5CB8] rounded-lg flex items-center px-4 text-white text-xs font-medium shadow-md"
+                  className="absolute left-[8%] top-2 h-8 bg-[#2B5CB8] rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
                   style={{ width: '38%' }}
                 >
                   Jan-Feb
                 </div>
                 {/* Bar 2 */}
                 <div
-                  className="absolute left-[30%] top-12 h-8 bg-[#3A7BFF] rounded-lg flex items-center px-4 text-white text-xs font-medium shadow-md"
-                  style={{ width: '45%' }}
+                  className="absolute left-[30%] top-12 h-8 bg-[#3A7BFF] rounded-lg flex items-center px-2 text-white text-[10px] font-medium shadow-md"
+                  style={{ width: '55%' }}
                 >
                   Design / Development Apps
                 </div>
                 {/* Bar 3 */}
                 <div
-                  className="absolute left-[60%] top-24 h-8 bg-[#2B5CB8] rounded-lg flex items-center px-4 text-white text-xs font-medium shadow-md"
+                  className="absolute left-[60%] top-24 h-8 bg-[#2B5CB8] rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
                   style={{ width: '30%' }}
                 >
                   Mar-Jun
@@ -138,7 +138,7 @@ const ServiceSection = () => {
           className="col-span-4 md:col-span-2 row-span-1"
         >
           <Card>
-            <h4 className="text-white font-semibold text-base mb-1 flex flex-col items-start gap-2">
+            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
               File Sharing</h4>
@@ -152,7 +152,7 @@ const ServiceSection = () => {
           className="col-span-4 md:col-span-2 row-span-1"
         >
           <Card>
-            <h4 className="text-white font-semibold text-base mb-1 flex flex-col items-start gap-2">
+            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
               File Sharing</h4>
@@ -166,7 +166,7 @@ const ServiceSection = () => {
           className="col-span-4 md:col-span-2 row-span-1"
         >
           <Card>
-            <h4 className="text-white font-semibold text-base mb-1 flex flex-col items-start gap-2">
+            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
               File Sharing</h4>
@@ -180,7 +180,7 @@ const ServiceSection = () => {
           className="col-span-4 md:col-span-2 row-span-1"
         >
           <Card>
-            <h4 className="text-white font-semibold text-base mb-1 flex flex-col items-start gap-2">
+            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
               File Sharing</h4>

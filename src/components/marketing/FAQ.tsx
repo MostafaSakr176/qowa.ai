@@ -46,7 +46,7 @@ const FAQsection = () => {
                     className="col-span-4 md:col-span-2 row-span-2 h-full"
                 >
                     <div
-                        className={`transition-all duration-300 space-y-1`}
+                        className={`transition-all duration-300 space-y-2`}
                     >
                         <button
                             className="w-full flex items-center justify-between p-5 text-left focus:outline-none cursor-pointer rounded-lg border border-white/20 bg-[#183A6A]/60 hover:bg-[#20457e]/80 transition-colors duration-200"

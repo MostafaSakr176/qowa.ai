@@ -38,7 +38,7 @@ export default function AboutUs() {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* 
                                       To add a shadow on hover and translate up by 10px instead of scaling,
                                       use `hover:-translate-y-2.5` (which is roughly 10px), `transform`, and `hover:shadow-2xl` (or similar).
