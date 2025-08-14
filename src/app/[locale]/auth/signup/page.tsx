@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Building, Link, Loader2Icon, Lock, User, Mail, QrCode, Phone, Smartphone, Copy, ArrowLeft, ArrowRight } from 'lucide-react'
+import { Building, Link, Loader2Icon, Lock, User, Mail, QrCode, Smartphone, Copy, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -14,7 +14,6 @@ import Image from "next/image"
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 // Validation schema for signup with suitable validation
@@ -76,8 +75,7 @@ const SignUp = () => {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Remove confirmPassword before sending to backend
-    const { confirmPassword, ...signupData } = values
-    console.log(signupData)
+    console.log(values)
     setLsLogin(true)
   }
 
