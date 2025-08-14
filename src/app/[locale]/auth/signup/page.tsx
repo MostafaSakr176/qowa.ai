@@ -315,7 +315,7 @@ const SignUp = () => {
         </div>
 
         <InputOTP maxLength={6} onChange={(e) => console.log(e)} onComplete={() => setIsSendOTP(true)} className="w-full">
-          <InputOTPGroup className="flex items-center justify-center gap-4 w-full">
+          <InputOTPGroup className="flex items-center justify-center gap-1 md:gap-4 w-full">
             <InputOTPSlot index={0} />
             <InputOTPSlot index={1} />
             <InputOTPSlot index={2} />
@@ -346,7 +346,7 @@ const SignUp = () => {
         <div className="w-full md:w-4/5 lg:w-3/5 space-y-8 flex flex-col justify-center items-center" onSubmit={form.handleSubmit(onSubmit)}>
 
           <InputOTP maxLength={6} className="w-full">
-            <InputOTPGroup className="flex items-center justify-center gap-4 w-full">
+            <InputOTPGroup className="flex items-center justify-center gap-1 md:gap-4 w-full">
               <InputOTPSlot index={0} className="bg-white" />
               <InputOTPSlot index={1} className="bg-white" />
               <InputOTPSlot index={2} className="bg-white" />
