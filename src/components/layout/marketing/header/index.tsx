@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import SideNav from './mobile-menu'
+import LanguageSwitcher from './langSwitcher'
 
 const navItems = [
   {
@@ -129,6 +130,8 @@ export default function Header() {
             >
               Try Demo
             </Link>
+
+            <LanguageSwitcher />
           </div>
 
           <div className='flex justify-end lg:hidden w-[90px] h-auto md:w-[120px] md:h-auto lg:w-[140px] lg:h-auto'>

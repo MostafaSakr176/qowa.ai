@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Building, Link, Loader2Icon, Lock, User, Mail, QrCode, Phone, Smartphone, Copy } from 'lucide-react'
+import { Building, Link, Loader2Icon, Lock, User, Mail, QrCode, Phone, Smartphone, Copy, ArrowLeft, ArrowRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -56,6 +56,7 @@ const formSchema = z.object({
 
 const SignUp = () => {
   const [isLogin, setLsLogin] = useState<boolean>(false)
+  const [isSendOTP, setIsSendOTP] = useState<boolean>(false)
   const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -82,8 +83,7 @@ const SignUp = () => {
 
   return (
     <>
-      {!isLogin && <div
-        className='flex flex-col h-full py-10 overflow-y-auto justify-start items-center'
+      {!isLogin && <div className='flex flex-col h-full py-10 overflow-y-auto justify-start items-center'
         style={{
           scrollbarWidth: 'none',
           scrollbarColor: '#0D0D12 #fff',
@@ -291,14 +291,16 @@ const SignUp = () => {
         </div>
       </div>}
 
-      {isLogin && <div className="w-full md:w-4/5 h-full py-6 overflow-y-auto bg-white mx-auto rounded-lg p-6 space-y-4"
-      style={{
-        scrollbarWidth: 'none',
-        scrollbarColor: '#0D0D12 #fff',
-      }}>
+      {isLogin && !isSendOTP && <div className="w-full md:w-4/5 h-full py-6 overflow-y-auto bg-white mx-auto rounded-lg p-6 space-y-6"
+        style={{
+          scrollbarWidth: 'none',
+          scrollbarColor: '#0D0D12 #fff',
+        }}>
 
-        <h2 className="text-3xl font-medium">Tow Factor Authentication</h2>
-        <p className="text-lg font-normal">Follow the instructions from below.</p>
+        <div className="space-y-3">
+          <h2 className="text-3xl font-medium">Tow Factor Authentication</h2>
+          <p className="text-lg font-normal">Follow the instructions from below.</p>
+        </div>
 
         <div className="bg-[#F6F8FA] rounded-lg p-4 space-y-4">
           <div className="flex items-center gap-3">
@@ -314,25 +316,49 @@ const SignUp = () => {
           <Image src={'/media/images/auth/qr-code.svg'} alt='logo' width={200} height={200} />
         </div>
 
-          <InputOTP maxLength={6} onChange={(e)=>console.log(e)} className="w-full">
+        <InputOTP maxLength={6} onChange={(e) => console.log(e)} onComplete={() => setIsSendOTP(true)} className="w-full">
+          <InputOTPGroup className="flex items-center justify-center gap-4 w-full">
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
+
+        <div className="text-[#36394A]">
+          <p>Code for Adding  Manually</p>
+          <div className="flex items-center gap-6">
+            <span>MNIA27882ML33899MJ743</span>
+            <Copy size={25} />
+          </div>
+        </div>
+
+        <Button variant="link" className="p-0 h-auto flex mx-auto" size="lg" onClick={() => { setIsSendOTP(true) }}> Skip for now <ArrowRight size={10} /></Button>
+
+      </div>}
+
+      {isSendOTP && <div className='flex flex-col h-full py-10 space-y-8 overflow-y-auto justify-center items-center'
+      >
+        <div className="w-full md:w-4/5 lg:w-3/5 space-y-4">
+          <h2 className="text-5xl font-medium">OTP</h2>
+          <p className="text-[16px] font-normal text-[#6F6F6F]">We sent a code to <strong className="text-neutral-900"> fajar@gmail.com</strong></p>
+        </div>
+        <div className="w-full md:w-4/5 lg:w-3/5 space-y-8 flex flex-col justify-center items-center" onSubmit={form.handleSubmit(onSubmit)}>
+
+          <InputOTP maxLength={6} className="w-full">
             <InputOTPGroup className="flex items-center justify-center gap-4 w-full">
-              <InputOTPSlot index={0} />
-              <InputOTPSlot index={1} />
-              <InputOTPSlot index={2} />
-              <InputOTPSlot index={3} />
-              <InputOTPSlot index={4} />
-              <InputOTPSlot index={5} />
+              <InputOTPSlot index={0} className="bg-white" />
+              <InputOTPSlot index={1} className="bg-white" />
+              <InputOTPSlot index={2} className="bg-white" />
+              <InputOTPSlot index={3} className="bg-white" />
+              <InputOTPSlot index={4} className="bg-white" />
+              <InputOTPSlot index={5} className="bg-white" />
             </InputOTPGroup>
           </InputOTP>
-
-          <div className="text-[#36394A]">
-            <p>Code for Adding  Manually</p>
-            <div className="flex items-center gap-6">
-              <span>MNIA27882ML33899MJ743</span>
-              <Copy size={25} />
-            </div>
-          </div>
-
+          <Button variant="link" className="p-0 h-auto" size="lg" onClick={() => { setLsLogin(true); setIsSendOTP(false) }}><ArrowLeft size={15} /> Back</Button>
+        </div>
       </div>}
     </>
   )

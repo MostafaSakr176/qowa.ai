@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Loader2Icon, Lock, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import {useTranslations} from 'next-intl';
 
 // Improved validation schema for login
 const formSchema = z.object({
@@ -28,6 +29,7 @@ const formSchema = z.object({
 
 const Login = () => {
     const router = useRouter()
+    const t = useTranslations();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -47,7 +49,7 @@ const Login = () => {
     return (
             <div className='flex flex-col justify-center items-center'>
                 <div className="w-full md:w-4/5 lg:w-3/5 space-y-2 mb-6">
-                    <h2 className="text-3xl font-medium">Hi, Welcome</h2>
+                    <h2 className="text-3xl font-medium">{t("welcome")}</h2>
                     <p className="text-[16px] font-normal text-[#6F6F6F]">Please login to your account</p>
                 </div>
                 <Form {...form}>
