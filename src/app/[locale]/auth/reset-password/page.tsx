@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Loader2Icon, Lock, Mail } from 'lucide-react'
+import { ArrowLeft, Loader2Icon, Lock } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useTranslations } from 'next-intl';

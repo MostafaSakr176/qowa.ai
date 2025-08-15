@@ -4,7 +4,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import SideNav from './mobile-menu'
-import LanguageSwitcher from './langSwitcher'
 
 const navItems = [
   {

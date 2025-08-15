@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input'
 import { ArrowLeft, Loader2Icon, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import { useTranslations } from 'next-intl';
 
 // Improved validation schema for login
 const formSchema = z.object({
@@ -18,7 +17,6 @@ const formSchema = z.object({
 })
 const ForgetPassword = () => {
     const router = useRouter()
-    const t = useTranslations();
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
