@@ -131,7 +131,7 @@ export default function Header() {
               Try Demo
             </Link>
 
-            <LanguageSwitcher />
+            {/* <LanguageSwitcher /> */}
           </div>
 
           <div className='flex justify-end lg:hidden w-[90px] h-auto md:w-[120px] md:h-auto lg:w-[140px] lg:h-auto'>
