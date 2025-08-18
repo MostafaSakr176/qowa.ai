@@ -52,7 +52,7 @@ function CustomTable<T extends { [key: string]: any }>({
                 {caption && <TableCaption>{caption}</TableCaption>}
                 <TableHeader className="bg-[#ECEFF3] py-1">
                     <TableRow>
-                        {columns.map((col, idx) => (
+                        {columns.map((col) => (
                             <TableHead key={col.key as string} className={col.className}>
                                 {col.header}
                             </TableHead>
@@ -69,7 +69,7 @@ function CustomTable<T extends { [key: string]: any }>({
                     ) : (
                         pageData.map((row, i) => (
                             <TableRow key={row.id ?? i}>
-                                {columns.map((col, j) => (
+                                {columns.map((col) => (
                                     <TableCell key={col.key as string} className={col.className}>
                                         {col.render
                                             ? col.render(row)
