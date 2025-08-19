@@ -244,3 +244,7 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.apexcharts-datalabels-group{
+  transform: translateY(-20px);
+}

@@ -2,8 +2,7 @@
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ChartNoAxesColumn, RefreshCcwDot, Volleyball } from "lucide-react";
-import React from "react";
-import Chart from "react-apexcharts";
+import React, { useEffect, useState } from "react";
 
 interface RevenueChartProps {
   dataSet: number[][][];
@@ -11,11 +10,20 @@ interface RevenueChartProps {
   lineColors?: string[];
 }
 
+// Dynamically import Chart only on client side to avoid "window is not defined"
+const Chart = React.lazy(() => import("react-apexcharts"));
+
 const RevenueChart: React.FC<RevenueChartProps> = ({
   dataSet,
   className,
   lineColors = ["#4338CA", "#A855F7"], // Default line colors
 }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   const options: ApexCharts.ApexOptions = {
     chart: {
       type: "line",
@@ -81,7 +89,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
       padding: {
           top: -20
       }
-  },
+    },
   };
 
   const series = [
@@ -157,10 +165,13 @@ const RevenueChart: React.FC<RevenueChartProps> = ({
             </div>
           </div>
         </div>
-        <Chart options={options} series={series} type="line" height={200} />
+        {isClient && (
+          <React.Suspense fallback={<div>Loading chart...</div>}>
+            <Chart options={options} series={series} type="line" height={200} />
+          </React.Suspense>
+        )}
       </div>
     </div>
-
   );
 };
 

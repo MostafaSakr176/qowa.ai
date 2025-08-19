@@ -89,7 +89,7 @@ const columns = [
     key: "organizations",
     header: "Organizations",
     render: (row: { organizations: { name: string; mail: string; logo: React.ReactNode } }) => (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center text-start gap-2">
         <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-primary text-white">
           {row.organizations.logo}
         </span>

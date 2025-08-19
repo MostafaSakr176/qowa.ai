@@ -53,7 +53,7 @@ function CustomTable<T extends { [key: string]: any }>({
                 <TableHeader className="bg-[#ECEFF3] py-1">
                     <TableRow>
                         {columns.map((col) => (
-                            <TableHead key={col.key as string} className={col.className}>
+                            <TableHead key={col.key as string} className={col.className + " text-center"}>
                                 {col.header}
                             </TableHead>
                         ))}
@@ -70,7 +70,7 @@ function CustomTable<T extends { [key: string]: any }>({
                         pageData.map((row, i) => (
                             <TableRow key={row.id ?? i}>
                                 {columns.map((col) => (
-                                    <TableCell key={col.key as string} className={col.className}>
+                                    <TableCell key={col.key as string} className={(col.className ? col.className + " " : "") + "text-center"}>
                                         {col.render
                                             ? col.render(row)
                                             : row[col.key as keyof T]}

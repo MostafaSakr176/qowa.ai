@@ -1,6 +1,6 @@
 import AllScans from "@/components/dashboard/all-scans";
 import AnalyticCard from "@/components/dashboard/analytic-card";
-import SemiDonut from "@/components/dashboard/donut-chart";
+import SemiDonutChart from "@/components/dashboard/donut-chart";
 import AreaChart from "@/components/dashboard/line-chart";
 import { Calendar, CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users } from "lucide-react";
 
@@ -92,7 +92,7 @@ const GeneralSummary = () => {
                 </div>
                 <div className="col-span-3 space-y-4">
                     <div className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF]">
-                        <SemiDonut />
+                        <SemiDonutChart labels={["Open Findings","Closed Findings"]} series={[69,40]} colors={["#736DFF","#2F3A61"]} totalLabel='Total findings' />
                     </div>
                     <div className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF]">
                         <AllScans />

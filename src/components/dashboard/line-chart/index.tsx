@@ -1,7 +1,6 @@
 "use client";
 
-import React from "react";
-import Chart from "react-apexcharts";
+import React, { useEffect, useState } from "react";
 
 interface AreaChartProps {
   dataSet: number[][][];
@@ -9,11 +8,26 @@ interface AreaChartProps {
   lineColors?: string[];
 }
 
+// Dynamically import react-apexcharts only on the client
+const DynamicChart = React.lazy(() => import("react-apexcharts"));
+
 const AreaChart: React.FC<AreaChartProps> = ({
   dataSet,
   className,
   lineColors = ["#4338CA", "#A855F7"], // Default line colors
 }) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    // Only set to true on client side
+    setIsClient(true);
+  }, []);
+
+  // Avoid SSR "window is not defined" error by only rendering chart on client
+  if (!isClient) {
+    return <div className={className} />;
+  }
+
   const options: ApexCharts.ApexOptions = {
     chart: {
       type: "area",
@@ -36,9 +50,6 @@ const AreaChart: React.FC<AreaChartProps> = ({
     },
     dataLabels: {
       enabled: true,
-      // Use a custom formatter to wrap the value in a rounded "badge" style using SVG foreignObject
-      // ApexCharts does not support true borderRadius, so we use background and borderRadius via HTML
-      // This will render a rounded label with white background and colored text
       style: {
         fontSize: '12px',
         fontWeight: 600,
@@ -47,7 +58,7 @@ const AreaChart: React.FC<AreaChartProps> = ({
       background: {
         enabled: true,
         foreColor: '#fff',
-        borderRadius: 10, // This makes the background rounded
+        borderRadius: 10,
         padding: 6,
         opacity: 1,
         borderWidth: 0,
@@ -56,7 +67,6 @@ const AreaChart: React.FC<AreaChartProps> = ({
         },
       },
       formatter: function (val: number) {
-        // Optionally, you can round the value to 2 decimals
         return val.toFixed(2);
       }
     },
@@ -92,7 +102,9 @@ const AreaChart: React.FC<AreaChartProps> = ({
 
   return (
     <div id="chart" className={`${className}`}>
-      <Chart options={options} series={series} type="area" height={385} />
+      <React.Suspense fallback={<div>Loading chart...</div>}>
+        <DynamicChart options={options} series={series} type="area" height={385} />
+      </React.Suspense>
     </div>
   );
 };
