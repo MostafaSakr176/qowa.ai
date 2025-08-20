@@ -10,7 +10,6 @@ const page = () => {
                 <Image src={'/media/images/auth/auth-img.svg'} alt='logo' width={100} height={100} className='h-full w-full object-cover' />
             </div>
         </main>
-
     )
 }
 
