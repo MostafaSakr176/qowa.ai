@@ -1,6 +1,4 @@
-import AllScans from "@/components/dashboard/all-scans";
 import AnalyticCard from "@/components/dashboard/analytic-card";
-import SemiDonutChart from "@/components/dashboard/donut-chart";
 import AreaChart from "@/components/dashboard/line-chart";
 import { Calendar, CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users } from "lucide-react";
 import SupportTable from "./_services/components/PaymentsTable";
