@@ -21,6 +21,7 @@ const WorldMap: React.FC = () => {
         Thailand: { label: "11,320 visits" },
         Egypt: { label: "5,200 visits" },
         Germany: { label: "8,500 visits" },
+        Sweden: { label: "2,330 visits" },
     };
 
     // Mount map only once

@@ -6,12 +6,13 @@ import Scanning from "./_services/components/Scanning";
 import Findings from "./_services/components/Findings";
 import Reports from "./_services/components/Reports";
 import Organization from "./_services/components/Organization";
+import Support from "./_services/components/Support";
 
 export default function DashboardOverview() {
 
   return (
     <>
-      <Tabs defaultValue="organization" className="space-y-2">
+      <Tabs defaultValue="support" className="space-y-2">
         <TabsList>
           <TabsTrigger value="general_summary">General Summary</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -19,6 +20,7 @@ export default function DashboardOverview() {
           <TabsTrigger value="findings">Findings</TabsTrigger>
           <TabsTrigger value="reports">Reports</TabsTrigger>
           <TabsTrigger value="organization">Organization</TabsTrigger>
+          <TabsTrigger value="support">Support</TabsTrigger>
         </TabsList>
         <TabsContent value="general_summary" className="space-y-6" >
           <GeneralSummary />
@@ -37,6 +39,9 @@ export default function DashboardOverview() {
         </TabsContent>
         <TabsContent value="organization">
           <Organization />
+        </TabsContent>
+        <TabsContent value="support">
+          <Support />
         </TabsContent>
       </Tabs>
 
