@@ -16,7 +16,7 @@ export default function DashboardLayout({
 }) {
 
   return (
-    <div className="h-screen flex bg-[#F8F9FA] p-3 gap-2">
+    <div className="h-full flex bg-[#F8F9FA] p-3 gap-2">
       <SideBar />
       {/* Main Content */}
       <main className="flex-1 transition-all h-full duration-200 p-4 space-y-4 bg-white border border-[#E9ECEF] rounded-2xl">

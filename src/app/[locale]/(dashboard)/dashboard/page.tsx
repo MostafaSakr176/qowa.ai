@@ -8,9 +8,12 @@ import Findings from "./_services/components/Findings";
 import Reports from "./_services/components/Reports";
 import Organization from "./_services/components/Organization";
 import Support from "./_services/components/Support";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "@/i18n/navigation";
 
 export default function DashboardOverview() {
   const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter()
 
   useEffect(() => {
     const checkMobile = () => {
@@ -27,9 +30,10 @@ export default function DashboardOverview() {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
         <div className="text-2xl font-semibold mb-2">Can&apos;t open on mobile</div>
-        <div className="text-muted-foreground text-center">
+        <div className="text-muted-foreground text-center mb-6">
           The dashboard is not available on mobile devices. Please use a desktop or tablet.
         </div>
+        <Button variant="primary" onClick={()=>router.push('/')}>Go Home</Button>
       </div>
     );
   }
