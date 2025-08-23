@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 // Dynamically import react-apexcharts only on the client side
 const ReactApexChart = React.lazy(() => import("react-apexcharts"));
 
-export interface SemiDonutChartProps {
+export interface DonutChartProps {
     className?: string;
     series: number[];
     labels: string[];
@@ -14,13 +14,15 @@ export interface SemiDonutChartProps {
     totalFormatter?: (series: number[]) => string;
     legend?: boolean; // show/hide custom legend
     height?: number;
+    chartStyle?: "semi"|"full",
+    showLegend?: boolean
 }
 
 const DEFAULT_COLORS = ["#4338CA", "#A855F7"];
 const DEFAULT_TOTAL_LABEL = "Total";
 const DEFAULT_HEIGHT = 300;
 
-export default function SemiDonutChart({
+export default function DonutChart({
     className,
     series,
     labels,
@@ -29,7 +31,10 @@ export default function SemiDonutChart({
     totalFormatter,
     legend = true,
     height = DEFAULT_HEIGHT,
-}: SemiDonutChartProps) {
+    chartStyle = "semi",
+    showLegend = true
+
+}: DonutChartProps) {
     const [isClient, setIsClient] = useState(false);
 
     useEffect(() => {
@@ -47,8 +52,7 @@ export default function SemiDonutChart({
         colors: colors,
         plotOptions: {
             pie: {
-                startAngle: -90,
-                endAngle: 90,
+                ...(chartStyle === "semi" ? { startAngle: -90, endAngle: 90 } : {}),
                 offsetY: 10,
                 customScale:1,
                 expandOnClick: false, // Disable click effect
@@ -67,7 +71,7 @@ export default function SemiDonutChart({
                             show: true,
                             showAlways: true,
                             label: totalLabel,
-                            fontSize: "20px",
+                            fontSize: "18px",
                             fontWeight: 600,
                             color: "#000",
                             formatter: function () {
@@ -90,8 +94,8 @@ export default function SemiDonutChart({
         },
         grid: {
             padding: {
-                bottom: -110,
-                top: -20
+                // bottom: chartStyle !== "semi"? 20 : -110,
+                ...(chartStyle === "semi" ? { bottom: -110,top: -20} : {bottom: 10,top: 0}),
             }
         },
         states: {
@@ -123,8 +127,8 @@ export default function SemiDonutChart({
 
     // ApexCharts only shows donut.labels.total if you set labels in options and pass labels prop to the chart
     return (
-        <div id="chart" className={`relative ${className || ""}`}>
-            {legend && (
+        <div id="chart" className={`relative ${className || ""} ${chartStyle === "semi"? "semi_chart":"full_chart"}`}>
+            {legend && showLegend && (
                 <div className="flex justify-around gap-6 p-6">
                     {labels.map((label, idx) => (
                         <div key={label} className="flex flex-col items-start space-x-2">

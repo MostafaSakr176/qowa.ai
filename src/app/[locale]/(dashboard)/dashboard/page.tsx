@@ -12,7 +12,7 @@ export default function DashboardOverview() {
 
   return (
     <>
-      <Tabs defaultValue="support" className="space-y-2">
+      <Tabs defaultValue="general_summary" className="space-y-2">
         <TabsList>
           <TabsTrigger value="general_summary">General Summary</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>

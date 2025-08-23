@@ -32,7 +32,7 @@ function CustomTable<T extends { [key: string]: any }>({
     columns,
     data,
     caption,
-    rowsPerPage = 5,
+    rowsPerPage = 10,
     showFooter = false,
     renderFooterRow,
 }: CustomTableProps<T>) {
@@ -47,51 +47,54 @@ function CustomTable<T extends { [key: string]: any }>({
     const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
 
     return (
-        <div>
-            <Table className="rounded-xl border border-[#ECEFF3] overflow-hidden">
-                {caption && <TableCaption>{caption}</TableCaption>}
-                <TableHeader className="bg-[#ECEFF3] py-1">
-                    <TableRow>
-                        {columns.map((col) => (
-                            <TableHead key={col.key as string} className={col.className + " text-center"}>
-                                {col.header}
-                            </TableHead>
-                        ))}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {pageData.length === 0 ? (
+        <>
+            <div className="rounded-xl border border-[#ECEFF3] overflow-hidden">
+                <Table>
+                    {caption && <TableCaption>{caption}</TableCaption>}
+                    <TableHeader className="bg-[#ECEFF3] py-1 w-full">
                         <TableRow>
-                            <TableCell colSpan={columns.length} className="text-center">
-                                No data found.
-                            </TableCell>
+                            {columns.map((col) => (
+                                <TableHead key={col.key as string} className={col.className + " text-center"}>
+                                    {col.header}
+                                </TableHead>
+                            ))}
                         </TableRow>
-                    ) : (
-                        pageData.map((row, i) => (
-                            <TableRow key={row.id ?? i}>
-                                {columns.map((col) => (
-                                    <TableCell key={col.key as string} className={(col.className ? col.className + " " : "") + "text-center"}>
-                                        {col.render
-                                            ? col.render(row)
-                                            : row[col.key as keyof T]}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                    )}
-                </TableBody>
-                {showFooter && (
-                    <TableFooter>
-                        {renderFooterRow ? (
-                            renderFooterRow(pageData)
-                        ) : (
+                    </TableHeader>
+                    <TableBody className="w-full">
+                        {pageData.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length} />
+                                <TableCell colSpan={columns.length} className="text-center">
+                                    No data found.
+                                </TableCell>
                             </TableRow>
+                        ) : (
+                            pageData.map((row, i) => (
+                                <TableRow key={row.id ?? i}>
+                                    {columns.map((col) => (
+                                        <TableCell key={col.key as string} className={(col.className ? col.className + " " : "") + "text-center"}>
+                                            {col.render
+                                                ? col.render(row)
+                                                : row[col.key as keyof T]}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))
                         )}
-                    </TableFooter>
-                )}
-            </Table>
+                    </TableBody>
+                    {showFooter && (
+                        <TableFooter>
+                            {renderFooterRow ? (
+                                renderFooterRow(pageData)
+                            ) : (
+                                <TableRow>
+                                    <TableCell colSpan={columns.length} />
+                                </TableRow>
+                            )}
+                        </TableFooter>
+                    )}
+                </Table>
+            </div>
+
             {/* Pagination Controls */}
             <div className="flex items-center justify-between mt-4">
                 <button
@@ -112,7 +115,7 @@ function CustomTable<T extends { [key: string]: any }>({
                     Next
                 </button>
             </div>
-        </div>
+        </>
     );
 }
 

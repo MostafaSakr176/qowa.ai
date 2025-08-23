@@ -1,10 +1,10 @@
 import React from 'react'
-import TeamList from './_services/components/TeamList'
+import SupportList from './_services/components/SupportList'
 
 const Team = () => {
   return (
     <div>
-      <TeamList />
+      <SupportList />
     </div>
   )
 }

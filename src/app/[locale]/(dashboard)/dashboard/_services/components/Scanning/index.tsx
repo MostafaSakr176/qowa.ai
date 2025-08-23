@@ -3,7 +3,7 @@ import React from 'react'
 import { Calendar, CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users } from "lucide-react";
 import RevenueChart from '@/components/dashboard/revenue-chart';
 import ScanningTable from './_services/components/ScanningTable';
-import SemiDonutChart from '@/components/dashboard/donut-chart';
+import DonutChart from '@/components/dashboard/donut-chart';
 
 const Scanning = () => {
 
@@ -133,7 +133,7 @@ const Scanning = () => {
                         <div className="flex items-center justify-between px-4 pt-2">
                             <h5 className="text-lg font-medium">Scan Intensity</h5>
                         </div>
-                        <SemiDonutChart labels={["High","Medium","low"]} series={[20,50,30]} colors={["#DF1C41","#FD914D","#28806F"]} totalLabel='Total Scans' className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pe-4 h-full" />
+                        <DonutChart labels={["High","Medium","low"]} series={[20,50,30]} colors={["#DF1C41","#FD914D","#28806F"]} totalLabel='Total Scans' className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pe-4 h-full" />
                     </div>
 
                 </div>

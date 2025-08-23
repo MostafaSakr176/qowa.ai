@@ -6,6 +6,9 @@
 
 @custom-variant dark (&:is(.dark *));
 
+*{
+  box-sizing: border-box;
+}
 body {
   font-family: "Inter", sans-serif;
 }
@@ -245,6 +248,9 @@ body {
   }
 }
 
-.apexcharts-datalabels-group{
+.semi_chart .apexcharts-datalabels-group{
   transform: translateY(-20px);
+}
+.full_chart .apexcharts-datalabels-group{
+  transform: translateY(0px);
 }

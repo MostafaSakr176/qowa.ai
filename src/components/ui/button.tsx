@@ -6,12 +6,12 @@ import { cn } from "@/lib/utils"
 
 // Custom shadow and gradient for primary button
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-4 whitespace-nowrap rounded-full text-sm cursor-pointer transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-6 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-[#1A4DFF]/50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-sm cursor-pointer transition-all disabled:pointer-events-none disabled:opacity-50 shrink-0  outline-none focus-visible:ring-2 focus-visible:ring-[#1A4DFF]/50",
   {
     variants: {
       variant: {
         primary:
-          "bg-gradient-to-t from-[#007EF9] to-[#66B2FB] text-white shadow-[0_6px_24px_0_rgba(30,144,255,0.25)] rounded-full border-none",
+          "bg-gradient-to-t from-[#007EF9] to-[#66B2FB] text-white rounded-full border-none",
         default:
           "bg-[#1A4DFF] text-primary-foreground shadow-xs hover:bg-primary/90",
         destructive:
@@ -21,7 +21,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+          "text-neutral-900 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 ",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {

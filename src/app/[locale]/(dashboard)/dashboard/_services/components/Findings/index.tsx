@@ -1,7 +1,7 @@
 import AnalyticCard from '@/components/dashboard/analytic-card'
 import React from 'react'
 import { Calendar, CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users } from "lucide-react";
-import SemiDonutChart from '@/components/dashboard/donut-chart';
+import DonutChart from '@/components/dashboard/donut-chart';
 import FindingsTable from './_services/components/FindingsTable';
 
 const Findings = () => {
@@ -56,7 +56,7 @@ const Findings = () => {
                         <div className="flex items-center justify-between px-4 pt-2">
                             <h5 className="text-lg font-medium">Findings</h5>
                         </div>
-                        <SemiDonutChart labels={["Open Findings", "Closed Findings"]} series={[69, 40]} colors={["#736DFF", "#2F3A61"]} totalLabel='Total findings' className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pe-4 h-full" />
+                        <DonutChart labels={["Open Findings", "Closed Findings"]} series={[69, 40]} colors={["#736DFF", "#2F3A61"]} totalLabel='Total findings' className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pe-4 h-full" />
                     </div>
                 </div>
             </div>

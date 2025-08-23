@@ -20,15 +20,15 @@ const navItems = [
     icon: <Users size={20} />,
   },
   {
-    href: '/dashboard/payments',
-    label: 'Payments',
+    href: '/dashboard/invoices',
+    label: 'Invoices',
     icon: <ReceiptText size={20} />,
   },
-  {
-    href: '/dashboard/ai-agent',
-    label: 'Ai Agent',
-    icon: <ShieldUser size={20} />,
-  },
+  // {
+  //   href: '/dashboard/ai-scan-configrations',
+  //   label: 'Ai scan configurations',
+  //   icon: <ShieldUser size={20} />,
+  // },
   {
     href: '/dashboard/ai-scan-configurations',
     label: 'Ai scan configurations',

@@ -3,23 +3,19 @@ import React from 'react'
 import { Bell, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger,
-} from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import Image from 'next/image'
-
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+  } from "@/components/ui/sheet"
 
 const DashboardHeader = () => {
     const pathname = usePathname()
     const router = useRouter()
-
-
-    console.log(pathname.split("/")[3]);
 
 
     return (
@@ -35,21 +31,21 @@ const DashboardHeader = () => {
             </span>
             <div className="ml-auto">
 
-                <Dialog>
-                    <DialogTrigger asChild>
+                <Sheet>
+                    <SheetTrigger asChild>
                         <Button
                             variant="ghost"
                             size="icon"
                             className="w-10 h-10 p-0 text-gray-600 rounded-full bg-[#E9ECEF]"
                             aria-label="Info"
                         >
-                            <Bell size={10} />
+                            <Bell size={20} />
                         </Button>
-                    </DialogTrigger>
-                    <DialogContent className='p-0'>
-                        <DialogHeader className='p-6'>
-                            <DialogTitle>Notification</DialogTitle>
-                        </DialogHeader>
+                    </SheetTrigger>
+                    <SheetContent className='p-0'>
+                        <SheetHeader className='p-6'>
+                            <SheetTitle>Notification</SheetTitle>
+                        </SheetHeader>
                         {/* Tabs and Mark as Read */}
 
                         {/* Chadcn Tabs */}
@@ -130,8 +126,8 @@ const DashboardHeader = () => {
                                     </div>
                             </TabsContent>
                         </Tabs>
-                    </DialogContent>
-                </Dialog>
+                    </SheetContent>
+                </Sheet>
             </div>
         </header>
     )
