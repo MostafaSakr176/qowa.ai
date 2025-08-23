@@ -1,4 +1,5 @@
-
+"use client"
+import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GeneralSummary from "./_services/components/GeneralSummary";
 import Payments from "./_services/components/Payments";
@@ -9,6 +10,29 @@ import Organization from "./_services/components/Organization";
 import Support from "./_services/components/Support";
 
 export default function DashboardOverview() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      if (typeof window !== "undefined") {
+        setIsMobile(window.innerWidth < 1300);
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+        <div className="text-2xl font-semibold mb-2">Can&apos;t open on mobile</div>
+        <div className="text-muted-foreground text-center">
+          The dashboard is not available on mobile devices. Please use a desktop or tablet.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -44,7 +68,6 @@ export default function DashboardOverview() {
           <Support />
         </TabsContent>
       </Tabs>
-
     </>
-  )
+  );
 } 
