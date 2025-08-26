@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Ban, Download, Ellipsis, Logs, Plus, ScanLine, Search, SquarePen } from "lucide-react";
+import { ArrowLeft, Ban, Download, Ellipsis, Building2, Plus, ScanLine, Search, SquarePen } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -33,7 +33,7 @@ const organizations = [
         organizations: {
             name: "StellarTech sakr",
             mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
+            logo: <Building2 size={20} />,
         },
         country: "Egypt",
         pest_organization: 209,
@@ -47,7 +47,7 @@ const organizations = [
         organizations: {
             name: "StellarTech sakr",
             mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
+            logo: <Building2 size={20} />,
         },
         country: "Egypt",
         pest_organization: 209,
@@ -61,7 +61,7 @@ const organizations = [
         organizations: {
             name: "StellarTech sakr",
             mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
+            logo: <Building2 size={20} />,
         },
         country: "Egypt",
         pest_organization: 209,
@@ -75,7 +75,7 @@ const organizations = [
         organizations: {
             name: "StellarTech sakr",
             mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
+            logo: <Building2 size={20} />,
         },
         country: "Egypt",
         pest_organization: 209,
@@ -128,7 +128,7 @@ const OrganizationsList = () => {
             key: "organizations",
             header: "Organizations",
             render: (row: { organizations: { name: string; mail: string; logo: React.ReactNode } }) => (
-                <div className="flex items-center justify-center text-start gap-2">
+                <div className="flex items-center text-start gap-2">
                     <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-primary text-white">
                         {row.organizations.logo}
                     </span>
@@ -222,7 +222,7 @@ const OrganizationsList = () => {
                     </SheetContent>
                 </Sheet>
             </div>
-            <CustomTable data={filteredData} columns={columns} />
+            <CustomTable data={filteredData} columns={columns} onRowClick={(row)=>router.push(`/dashboard/organizations/${row.id}/scans`)} />
         </div>
     );
 };

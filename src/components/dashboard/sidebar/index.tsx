@@ -30,8 +30,8 @@ const navItems = [
   //   icon: <ShieldUser size={20} />,
   // },
   {
-    href: '/dashboard/ai-scan-configurations',
-    label: 'Ai scan configurations',
+    href: '/dashboard/ai-scan-configrations',
+    label: 'Ai scan configrations',
     icon: <QrCode size={20} />,
   },
   {
@@ -108,10 +108,10 @@ const SideBar = () => {
                   <TooltipTrigger asChild>
                     <Link
                       href={item.href}
-                      className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors
+                      className={`text-sm flex items-center gap-3 px-3 py-2 rounded-md transition-colors
                         ${sidebarOpen ? '' : 'justify-center'}
                         ${active
-                          ? 'bg-[#E9ECEF] text-black font-semibold shadow-sm'
+                          ? 'bg-[#E9ECEF] text-black shadow-sm'
                           : 'text-gray-700 hover:bg-[#E9ECEF]'
                         }
                       `}
@@ -122,7 +122,7 @@ const SideBar = () => {
                     </Link>
                   </TooltipTrigger>
                   {!sidebarOpen && (
-                    <TooltipContent side="right">
+                    <TooltipContent side="right" >
                       {item.label}
                     </TooltipContent>
                   )}

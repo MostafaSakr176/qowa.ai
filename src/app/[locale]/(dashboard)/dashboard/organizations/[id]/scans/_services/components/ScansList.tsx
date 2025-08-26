@@ -32,13 +32,14 @@ import {
 } from "@/components/ui/avatar"
 import { useRouter } from "@/i18n/navigation";
 import CreateScanForm from "./CreateForm";
+import { Badge } from "@/components/ui/badge";
 
 const scans = [
     {
         id: 1,
         title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
         type: "web",
-        status: "Completed",
+        status: "open",
         progress: 40,
         assign: ["MS", "ND", "AW"],
         startDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -47,7 +48,7 @@ const scans = [
         id: 2,
         title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
         type: "web",
-        status: "Completed",
+        status: "closed",
         progress: 60,
         assign: ["MS", "ND", "AW"],
         startDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -56,7 +57,7 @@ const scans = [
         id: 3,
         title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
         type: "web",
-        status: "Completed",
+        status: "finished",
         progress: 20,
         assign: ["MS", "ND", "AW"],
         startDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -65,7 +66,7 @@ const scans = [
         id: 4,
         title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
         type: "web",
-        status: "Completed",
+        status: "finished",
         progress: 90,
         assign: ["MS", "ND", "AW"],
         startDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -128,16 +129,7 @@ const ScansList = () => {
             key: "status",
             header: "Status",
             render: (row: { status: string }) => (
-                <span
-                    className={`px-4 py-1 rounded-full border ${row.status === "rejected"
-                        ? "border-red-800 text-red-800"
-                        : row.status === "pendding"
-                            ? "border-amber-500 text-amber-500"
-                            : "border-emerald-700 text-emerald-700"
-                        }`}
-                >
-                    {row.status}
-                </span>
+                <Badge withDot variant={row.status === "closed" ? "failed" : row.status === "open" ? "pending":"success"}>{row.status}</Badge>
             ),
         },
         {
@@ -153,7 +145,7 @@ const ScansList = () => {
             key: "assign",
             header: "Assign",
             render: (row: { assign: string[] }) => (
-                <div className="*:data-[slot=avatar]:ring-background flex justify-center -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
                     {row.assign.map((ele,idx) => (
                         <Avatar key={idx}>
                             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
@@ -226,7 +218,7 @@ const ScansList = () => {
                     </SheetContent>
                 </Sheet>
             </div>
-            <CustomTable data={filteredData} columns={columns} />
+            <CustomTable data={filteredData} columns={columns} onRowClick={(row)=>router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)}/>
         </div>
     );
 };

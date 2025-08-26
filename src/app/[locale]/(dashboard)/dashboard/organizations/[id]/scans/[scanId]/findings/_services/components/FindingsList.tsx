@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/avatar"
 import { useRouter } from "@/i18n/navigation";
 import CreateScanForm from "./CreateForm";
+import { Badge } from "@/components/ui/badge";
 
 const findings = [
     {
@@ -92,7 +93,7 @@ const findings = [
         id: 7,
         title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
         type: "web",
-        status: "Pendding",
+        status: "Rejected",
         progress: 20,
         assign: ["MS", "ND", "AW"],
         startDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -111,7 +112,7 @@ const findings = [
 const statusOptions = [
     { value: "all", label: "All" },
     { value: "Completed", label: "Completed" },
-    { value: "Pendding", label: "Pendding" },
+    { value: "Rejected", label: "Rejected" },
     { value: "Open", label: "Open" },
 ];
 
@@ -164,16 +165,7 @@ const FindingsList = () => {
             key: "status",
             header: "Status",
             render: (row: { status: string }) => (
-                <span
-                    className={`px-4 py-1 rounded-full border ${row.status === "rejected"
-                        ? "border-red-800 text-red-800"
-                        : row.status === "pendding"
-                            ? "border-amber-500 text-amber-500"
-                            : "border-emerald-700 text-emerald-700"
-                        }`}
-                >
-                    {row.status}
-                </span>
+                <Badge withDot variant={row.status === "Rejected" ? "failed" : row.status === "Open" ? "pending":"success"}>{row.status}</Badge>
             ),
         },
         {
@@ -189,7 +181,7 @@ const FindingsList = () => {
             key: "assign",
             header: "Assign",
             render: (row: { assign: string[] }) => (
-                <div className="*:data-[slot=avatar]:ring-background flex justify-center -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
                     {row.assign.map((ele,idx) => (
                         <Avatar key={idx}>
                             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
@@ -252,11 +244,11 @@ const FindingsList = () => {
                 </div>
                 <Sheet open={isModalOpen}>
                     <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
-                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create scan</Button>
+                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create Finding</Button>
                     </SheetTrigger>
                     <SheetContent showCloseButton={false}>
                         <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create scan</SheetTitle>
+                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create Finding</SheetTitle>
                         </SheetHeader>
                         <CreateScanForm setIsModalOpen={setIsModalOpen} />
                     </SheetContent>

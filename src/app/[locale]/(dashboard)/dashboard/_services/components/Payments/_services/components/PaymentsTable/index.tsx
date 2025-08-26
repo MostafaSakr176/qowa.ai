@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { BadgeDollarSign, Ellipsis, Logs, Search } from "lucide-react";
+import { BadgeDollarSign, Building2, Dot, Ellipsis, Logs, Search } from "lucide-react";
 
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 const invoices = [
   {
@@ -19,7 +20,7 @@ const invoices = [
     organizations: {
       name: "StellarTech sakr",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     invoice: "#UM-8424",
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -36,7 +37,7 @@ const invoices = [
     organizations: {
       name: "StellarTech Moo",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     invoice: "#UM-8424",
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -53,7 +54,7 @@ const invoices = [
     organizations: {
       name: "StellarTech John",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     invoice: "#UM-8424",
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -70,7 +71,7 @@ const invoices = [
     organizations: {
       name: "StellarTech Solutions",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     invoice: "#UM-8424",
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
@@ -89,7 +90,7 @@ const columns = [
     key: "organizations",
     header: "Organizations",
     render: (row: { organizations: { name: string; mail: string; logo: React.ReactNode } }) => (
-      <div className="flex items-center justify-center text-start gap-2">
+      <div className="flex items-center gap-2">
         <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-primary text-white">
           {row.organizations.logo}
         </span>
@@ -137,17 +138,7 @@ const columns = [
     key: "status",
     header: "Status",
     render: (row: { status: string }) => (
-      <span
-        className={`px-4 py-1 rounded-full border ${
-          row.status === "rejected"
-            ? "border-red-800 text-red-800"
-            : row.status === "pendding"
-            ? "border-amber-500 text-amber-500"
-            : "border-emerald-700 text-emerald-700"
-        }`}
-      >
-        {row.status}
-      </span>
+      <Badge withDot variant={row.status === "rejected" ? "failed" : row.status === "pendding" ? "pending":"success"}>{row.status}</Badge>
     ),
   },
   {

@@ -50,7 +50,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div
           className={cn(
-            "relative flex items-center w-full",
+            "relative flex items-center w-full min-w-64 ",
           )}
         >
           {icon && iconPosition === "left" && (
@@ -68,7 +68,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             type={inputType}
             data-slot="input"
             className={cn(
-              "w-full py-2 px-4 rounded-full border border-[#E5E7EB] text-gray-700",
+              "w-full py-2 px-4 rounded-full bg-white border border-[#E5E7EB] text-gray-700",
               hasLeftIcon ? "pl-12 " : "",
               hasRightIcon ? "pr-12" : "",
               "placeholder:text-[#9CA3AF] placeholder:text-base outline-none focus:border-[#C7C9D9] transition-colors",

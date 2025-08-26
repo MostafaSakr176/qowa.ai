@@ -8,7 +8,7 @@ export default function DashboardOverview() {
     return (
         <>
             <Tabs defaultValue="scanning" className="space-y-2">
-                <TabsList>
+                <TabsList className="w-fit">
                     <TabsTrigger value="scanning">Scanning</TabsTrigger>
                     <TabsTrigger value="finding">Finding</TabsTrigger>
                 </TabsList>

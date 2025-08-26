@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { Ellipsis, Logs, Search } from "lucide-react";
+import { Ellipsis, Building2, Search } from "lucide-react";
 
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ const scans = [
     organizations: {
       name: "StellarTech sakr",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
     scans: 267400,
@@ -23,7 +23,7 @@ const scans = [
     organizations: {
       name: "StellarTech sakr",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
     scans: 267400,
@@ -34,7 +34,7 @@ const scans = [
     organizations: {
       name: "StellarTech sakr",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
     scans: 267400,
@@ -45,7 +45,7 @@ const scans = [
     organizations: {
       name: "StellarTech sakr",
       mail: "stellartech@uimiye.com",
-      logo: <Logs size={20} />,
+      logo: <Building2 size={20} />,
     },
     paymentDate: { date: "June 28, 2023", time: "10:45PM" },
     scans: 267400,
@@ -58,7 +58,7 @@ const columns = [
     key: "organizations",
     header: "Organizations",
     render: (row: { organizations: { name: string; mail: string; logo: React.ReactNode } }) => (
-      <div className="flex items-center justify-center text-start gap-2">
+      <div className="flex items-center text-start gap-2">
         <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-primary text-white">
           {row.organizations.logo}
         </span>
