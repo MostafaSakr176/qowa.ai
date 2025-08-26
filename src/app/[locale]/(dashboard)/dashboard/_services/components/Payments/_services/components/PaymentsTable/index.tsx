@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { BadgeDollarSign, Building2, Dot, Ellipsis, Logs, Search } from "lucide-react";
+import { BadgeDollarSign, Building2, Ellipsis, Search } from "lucide-react";
 
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
