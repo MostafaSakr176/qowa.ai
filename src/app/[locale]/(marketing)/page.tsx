@@ -16,6 +16,7 @@ import 'swiper/css';
 import 'swiper/css/autoplay'; // Import Swiper autoplay styles if needed
 
 const HERO_BG_SRC = "/media/images/hero/ooooo.webp";
+const HERO_SHEILD_BG = "/media/images/hero/sheild.png";
 
 
 
@@ -29,7 +30,21 @@ export default function Home() {
         <main className="relative">
           {/* Hero Background */}
           <div
-            className="w-full overflow-hidden absolute top-0 left-0 right-0 z-1"
+            className="w-full h-screen overflow-hidden absolute top-0 left-0 z-1 opacity-30"
+             style={{ transform: "translateY(30px)" }}
+          >
+            <Image
+              src={HERO_SHEILD_BG}
+              alt="Hero background"
+              width={1920}
+              height={600}
+              className="h-full object-contain"
+              // style={{ transform: "translateY(-30px)" }}
+              priority
+            />
+          </div>
+          <div
+            className="w-full overflow-hidden absolute top-0 left-0 right-0 z-2"
             style={{ height: "calc(100% - 30px)" }}
           >
             <Image
@@ -44,7 +59,7 @@ export default function Home() {
           </div>
 
           {/* Main Content */}
-          <div className="pt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-2">
+          <div className="pt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-3">
             <HeroSection />
           </div>
 
