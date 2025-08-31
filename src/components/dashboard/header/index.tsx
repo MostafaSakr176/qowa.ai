@@ -2,7 +2,7 @@
 import React from 'react'
 import { Bell, CheckCheck, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from '@/i18n/navigation'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import Image from 'next/image'
 import {

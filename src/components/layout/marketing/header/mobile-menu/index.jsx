@@ -3,7 +3,7 @@ import styles from './style.module.css'
 import { useEffect, useState } from 'react';
 import Nav from './nav';
 import { AnimatePresence } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 
 export default function SideNav({navItems}) {
 

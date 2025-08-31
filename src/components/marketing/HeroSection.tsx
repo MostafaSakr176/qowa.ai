@@ -36,7 +36,6 @@ export const HeroSection = () => {
           className="text-white text-[12px] md:text-[14px]  flex items-center px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200"
           aria-label="Go to dashboard"
         >
-          <span className="w-1 h-1 rounded-full bg-white mr-3 inline-block" />
           Cyber Security
         </Link>
 

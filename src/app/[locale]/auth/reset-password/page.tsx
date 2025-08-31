@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input'
 import { ArrowLeft, Loader2Icon, Lock } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/navigation"
 import { useTranslations } from 'next-intl';
 
 // Improved validation schema for login

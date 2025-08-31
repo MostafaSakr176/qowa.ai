@@ -7,7 +7,7 @@ import {
     InputOTPGroup,
     InputOTPSlot,
 } from "@/components/ui/input-otp"
-import { useRouter } from 'next/navigation'
+import { useRouter } from '@/i18n/navigation'
 
 const TwoStepVerification = () => {
 

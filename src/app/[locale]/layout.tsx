@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { routing } from "@/i18n/routing";
+import ReactQueryProvider from "@/lib/reactQueryProvider";
+import { notFound } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -17,11 +18,11 @@ export default async function RootLayout({
   params
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{locale: string}>;
+  params: Promise<{ locale: string }>;
 }>) {
 
   // Ensure that the incoming `locale` is valid
-  const {locale} = await params;
+  const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) {
     notFound();
   }
@@ -30,7 +31,9 @@ export default async function RootLayout({
       <body
       >
         <NextIntlClientProvider>
-          {children}
+            <ReactQueryProvider>
+              {children}
+            </ReactQueryProvider>
         </NextIntlClientProvider>
       </body>
     </html>

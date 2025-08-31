@@ -50,7 +50,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         )}
         <div
           className={cn(
-            "relative flex items-center w-full min-w-64 ",
+            "relative flex items-center w-full",
           )}
         >
           {icon && iconPosition === "left" && (

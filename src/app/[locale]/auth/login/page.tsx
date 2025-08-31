@@ -7,8 +7,11 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input'
 import { Loader2Icon, Lock, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/navigation"
 import { useTranslations } from 'next-intl';
+import { useMutation } from '@tanstack/react-query'
+import toast from "react-hot-toast"
+import { api } from "@/lib/ApiService"
 
 // Improved validation schema for login
 const formSchema = z.object({
@@ -40,10 +43,30 @@ const Login = () => {
         mode: "onTouched", // Show errors when clicking outside inputs
     })
 
+    // React Query mutation for login
+    const mutation = useMutation({
+        mutationFn: async (values: z.infer<typeof formSchema>) => {
+            const body = {
+                email: values.email,
+                password: values.password,
+            }
+            // Adjust the endpoint as needed
+            return await api.post("client/login/", body)
+
+        },
+        onSuccess: (data) => {
+            
+            // You can also store tokens, etc.
+            router.push('/dashboard')
+        },
+        onError: (error: { message: string }) => {
+            // Optionally handle error, e.g. show toast
+            toast.error(error?.message || "Login failed")
+        }
+    });
+
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values);
+        mutation.mutate(values);
     }
 
     return (
@@ -96,9 +119,9 @@ const Login = () => {
                         type="submit"
                         className="w-full"
                         variant="primary"
-                        disabled={!form.formState.isValid || form.formState.isSubmitting}
+                        disabled={!form.formState.isValid || mutation.isPending}
                     >
-                        Login {form.formState.isSubmitting && <Loader2Icon className="animate-spin" />}
+                        Login {mutation.isPending && <Loader2Icon className="animate-spin" />}
                     </Button>
                 </form>
             </Form>
@@ -106,7 +129,7 @@ const Login = () => {
                 <span className="text-secondary text-sm md:text-lg">
                     Don’t have an account? <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/signup')}>Sign Up</Button>
                 </span>
-                <Button variant="link" className="p-0 h-auto" onClick={()=>router.push('/auth/forget-password')} >Forgot Password?</Button>
+                <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/forget-password')} >Forgot Password?</Button>
             </div>
         </div>
     )

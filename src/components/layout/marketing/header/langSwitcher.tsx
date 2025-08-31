@@ -2,7 +2,8 @@
 'use client';
 
 import Link from 'next/link';
-import {useParams, usePathname} from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
+import { useParams } from 'next/navigation';
 
 export default function LanguageSwitcher() {
   const params = useParams();

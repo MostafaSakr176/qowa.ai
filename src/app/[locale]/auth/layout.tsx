@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import React from 'react'
+import { Toaster } from 'react-hot-toast';
 
 const AuthLayout = ({
     children,
@@ -12,6 +13,7 @@ const AuthLayout = ({
                 <Image src={'/media/images/auth/auth-img.svg'} alt='logo' width={100} height={100} className='h-full w-full object-cover' />
             </div>
             {children}
+            <Toaster />
         </main>
     )
 }

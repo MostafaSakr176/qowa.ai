@@ -7,8 +7,11 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from '@/component
 import { Input } from '@/components/ui/input'
 import { Building, Link, Loader2Icon, Lock, User, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useMutation } from "@tanstack/react-query"
+import { api } from "@/lib/ApiService"
+import toast from 'react-hot-toast';
 
 // Validation schema for signup with suitable validation
 const formSchema = z.object({
@@ -18,19 +21,8 @@ const formSchema = z.object({
   last_name: z.string()
     .min(2, { message: "Last name must be at least 2 characters." })
     .max(50, { message: "Last name must be at most 50 characters." }),
-  organization_name: z.string()
-    .min(2, { message: "Organization name must be at least 2 characters." })
-    .max(100, { message: "Organization name must be at most 100 characters." }),
-  apps_number: z.string()
-    .refine(val => {
-      const num = Number(val)
-      return !isNaN(num) && num > 0 && Number.isInteger(num)
-    }, { message: "Please enter a valid number of apps (integer > 0)." }),
-  business_link: z.string()
-    .url({ message: "Please enter a valid URL." })
-    .max(200, { message: "URL must be at most 200 characters." }),
-  business_email: z.string()
-    .email({ message: "Please enter a valid business email address." }),
+  email: z.string()
+    .email({ message: "Please enter a valid email address." }),
   password: z.string()
     .min(8, { message: "Password must be at least 8 characters." })
     .max(64, { message: "Password must be at most 64 characters." })
@@ -41,10 +33,25 @@ const formSchema = z.object({
           "Password must contain uppercase, lowercase, number, and special character.",
       }
     ),
-  confirmPassword: z.string().min(1, { message: "Please confirm your password." }),
-}).refine((data) => data.password === data.confirmPassword, {
+  password_confirm: z.string().min(1, { message: "Please confirm your password." }),
+  organization: z.object({
+    name: z.string()
+      .min(2, { message: "Organization name must be at least 2 characters." })
+      .max(100, { message: "Organization name must be at most 100 characters." }),
+    number_of_apps: z.string()
+      .refine(val => {
+        const num = Number(val)
+        return !isNaN(num) && num > 0 && Number.isInteger(num)
+      }, { message: "Please enter a valid number of apps (integer > 0)." }),
+    url: z.string()
+      .url({ message: "Please enter a valid URL." })
+      .max(200, { message: "URL must be at most 200 characters." }),
+    business_email: z.string()
+      .email({ message: "Please enter a valid business email address." }),
+  }),
+}).refine((data) => data.password === data.password_confirm, {
   message: "Passwords do not match.",
-  path: ["confirmPassword"],
+  path: ["password_confirm"],
 })
 
 const SignUp = () => {
@@ -55,20 +62,55 @@ const SignUp = () => {
     defaultValues: {
       first_name: "",
       last_name: "",
-      organization_name: "",
-      apps_number: "",
-      business_link: "",
-      business_email: "",
+      email: "",
       password: "",
-      confirmPassword: "",
+      password_confirm: "",
+      organization: {
+        name: "",
+        number_of_apps: "",
+        url: "",
+        business_email: "",
+      },
     },
     mode: "onTouched",
   })
 
+  // React Query mutation for signup
+  const mutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      // Prepare body as per API requirements
+      const body = {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        password: values.password,
+        password_confirm: values.password_confirm,
+        organization: {
+          name: values.organization.name,
+          number_of_apps: Number(values.organization.number_of_apps),
+          url: values.organization.url,
+          business_email: values.organization.business_email,
+        }
+      }
+      // Adjust endpoint as needed
+      return api.post("client/register/", body)
+    },
+    onSuccess: (_data, variables) => {
+      // Pass the registered email to the OTP page via query param or localStorage
+      // Here, we'll use localStorage for simplicity and reliability
+      if (typeof window !== "undefined") {
+        localStorage.setItem("signup_email", variables.email)
+      }
+      router.push('/auth/2-step-verification')
+    },
+    onError: (error: {message:string}) => {
+      // Optionally handle error, e.g. show toast
+      toast.error(error.message || "Signup failed")
+    }
+  })
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Remove confirmPassword before sending to backend
-    console.log(values)
-    router.push('/auth/2-step-verification')
+    mutation.mutate(values)
   }
 
   return (
@@ -126,7 +168,26 @@ const SignUp = () => {
               />
             </div>
             <FormField
-              name="organization_name"
+              name="email"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      label="Email"
+                      placeholder="Enter your Email"
+                      icon={<Mail size={20} />}
+                      iconPosition="left"
+                      error={fieldState.error}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="organization.name"
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
@@ -144,26 +205,8 @@ const SignUp = () => {
                 </FormItem>
               )}
             />
-            {/* <FormField
-            name="apps_number"
-            render={({ field, fieldState }) => (
-              <FormItem>
-                <FormControl>
-                  <Input
-                    type="number"
-                    label="How many apps in the organization?"
-                    placeholder="Enter number of apps"
-                    min={1}
-                    error={fieldState.error}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          /> */}
             <FormField
-              name="apps_number"
+              name="organization.number_of_apps"
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
@@ -188,7 +231,7 @@ const SignUp = () => {
               )}
             />
             <FormField
-              name="business_link"
+              name="organization.url"
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
@@ -207,7 +250,7 @@ const SignUp = () => {
               )}
             />
             <FormField
-              name="business_email"
+              name="organization.business_email"
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
@@ -245,7 +288,7 @@ const SignUp = () => {
               )}
             />
             <FormField
-              name="confirmPassword"
+              name="password_confirm"
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
@@ -267,9 +310,9 @@ const SignUp = () => {
               type="submit"
               className="w-full"
               variant="primary"
-              disabled={!form.formState.isValid || form.formState.isSubmitting}
+              disabled={!form.formState.isValid || mutation.isPending}
             >
-              Sign Up {form.formState.isSubmitting && <Loader2Icon className="animate-spin" />}
+              Sign Up {mutation.isPending && <Loader2Icon className="animate-spin" />}
             </Button>
           </form>
         </Form>

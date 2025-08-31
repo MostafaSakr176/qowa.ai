@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FindingList from "./_services/components/FindingList";
 import ScanningList from "./_services/components/ScanningList";
 
-export default function DashboardOverview() {
+export default async function DashboardOverview() {
 
     return (
         <>

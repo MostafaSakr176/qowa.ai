@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import styles from './style.module.css';
 import { motion } from 'framer-motion';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { menuSlide } from '../anim';
 import Link from './Link';
 import Curve from './Curve';
