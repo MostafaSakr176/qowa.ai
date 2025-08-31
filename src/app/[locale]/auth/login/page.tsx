@@ -55,6 +55,7 @@ const Login = () => {
 
         },
         onSuccess: (data) => {
+            console.log(data);
             
             // You can also store tokens, etc.
             router.push('/dashboard')
