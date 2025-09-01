@@ -4,6 +4,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { routing } from "@/i18n/routing";
 import ReactQueryProvider from "@/lib/reactQueryProvider";
 import { notFound } from "next/navigation";
+import { AuthProviders } from "@/lib/authProvider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -32,7 +33,9 @@ export default async function RootLayout({
       >
         <NextIntlClientProvider>
             <ReactQueryProvider>
+              <AuthProviders>
               {children}
+              </AuthProviders>
             </ReactQueryProvider>
         </NextIntlClientProvider>
       </body>
