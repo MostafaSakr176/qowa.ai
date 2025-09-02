@@ -7,7 +7,7 @@ type ApiServiceOptions = {
 };
 
 function createApiService(options?: ApiServiceOptions) {
-  const baseUrl = process.env.BASE_URL || "http://api.qowa.ai";
+  const baseUrl = process.env.BASE_URL || "https://api.qowa.ai";
 
   async function request<T>(
     url: string,

@@ -90,6 +90,7 @@ const SignUp = () => {
           number_of_apps: Number(values.organization.number_of_apps),
           url: values.organization.url,
           business_email: values.organization.business_email,
+          country: "Egypt"
         }
       }
       // Adjust endpoint as needed
@@ -101,6 +102,7 @@ const SignUp = () => {
       if (typeof window !== "undefined") {
         localStorage.setItem("signup_email", variables.email)
       }
+      toast.success("Signup successful")
       router.push('/auth/2-step-verification')
     },
     onError: (error: {message:string}) => {

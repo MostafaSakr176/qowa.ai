@@ -32,7 +32,7 @@ const ForgetPassword = () => {
 
     // React Query mutation for forget password
     const mutation = useMutation({
-        mutationFn: async (values: z.infer<typeof formSchema>) => {
+        mutationFn: async (values: z.infer<typeof formSchema>): Promise<{ token: string }> => {
             // The body is just the email
             const body = {
                 email: values.email
@@ -40,8 +40,12 @@ const ForgetPassword = () => {
             // Adjust the endpoint as needed
             return await api.post("core/password-reset/request/", body)
         },
-        onSuccess: (data) => {
+        onSuccess: (data:{token:string}, variables) => {
             // Optionally show a success toast or message
+            if (typeof window !== "undefined") {
+                localStorage.setItem("forget_password_email", variables.email)
+                localStorage.setItem("reset_password_token", data.token)
+              }
             toast.success("Reset instructions sent to your email")
             router.push('/auth/otp')
         },

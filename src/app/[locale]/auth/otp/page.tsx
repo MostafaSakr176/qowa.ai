@@ -8,8 +8,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useRouter } from "@/i18n/navigation";
 import { ArrowLeft } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { api } from "@/lib/ApiService";
 import toast from "react-hot-toast";
 
 const OtpPage = () => {
@@ -19,36 +17,40 @@ const OtpPage = () => {
   // Get email from localStorage on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedEmail = localStorage.getItem("signup_email");
+      const storedEmail = localStorage.getItem("forget_password_email");
       setEmail(storedEmail);
     }
   }, []);
 
   // React Query mutation for submitting OTP
-  const mutation = useMutation({
-    mutationFn: async (values: { otp: string; email: string }) => {
-      const body = {
-        email: values.email,
-        otp: values.otp,
-      };
-      return await api.post("core/verify-otp/", body);
-    },
-    onSuccess: () => {
-      toast.success("OTP verified successfully");
-      router.push("/auth/reset-password");
-    },
-    onError: (error: { message: string }) => {
-      toast.error(error?.message || "OTP verification failed");
-    },
-  });
+  // const mutation = useMutation({
+  //   mutationFn: async (values: { code: string; email: string }) => {
+  //     const body = {
+  //       email: values.email,
+  //       code: values.code,
+  //     };
+  //     return await api.post("core/verify-otp/", body);
+  //   },
+  //   onSuccess: () => {
+  //     toast.success("OTP verified successfully");
+  //     router.push("/auth/reset-password");
+  //   },
+  //   onError: (error: { message: string }) => {
+  //     toast.error(error?.message || "OTP verification failed");
+  //   },
+  // });
 
   // Handler for OTP completion
   const handleComplete = (value: string) => {
     if (!email) {
       toast.error("No email found. Please restart the process.");
+      router.push("/auth/forget-password");
       return;
     }
-    mutation.mutate({ otp: value, email });
+    if (typeof window !== "undefined") {
+      localStorage.setItem("forget_password_code", value)
+    }
+    router.push("/auth/reset-password");
   };
 
   return (
@@ -67,7 +69,6 @@ const OtpPage = () => {
           maxLength={6}
           className="w-full"
           onComplete={handleComplete}
-          disabled={mutation.isPending}
         >
           <InputOTPGroup className="flex items-center justify-center gap-1 md:gap-4 w-full">
             <InputOTPSlot index={0} className="bg-white" />
@@ -82,8 +83,8 @@ const OtpPage = () => {
           variant="link"
           className="p-0 h-auto text-neutral-900"
           size="lg"
-          onClick={() => router.push("/auth/forget-password")}
-          disabled={mutation.isPending}
+            onClick={() => router.push("/auth/forget-password")}
+            disabled={false}
         >
           <ArrowLeft size={15} /> Back
         </Button>

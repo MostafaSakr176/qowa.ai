@@ -9,6 +9,10 @@ import { ArrowLeft, Loader2Icon, Lock } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "@/i18n/navigation"
 import { useTranslations } from 'next-intl';
+import { useMutation } from '@tanstack/react-query'
+import { api } from "@/lib/ApiService"
+import toast from "react-hot-toast"
+import { useEffect, useState } from "react"
 
 // Improved validation schema for login
 const formSchema = z.object({
@@ -28,23 +32,62 @@ const formSchema = z.object({
     path: ["confirmPassword"],
 })
 
-const Login = () => {
+const ResetPassword = () => {
     const router = useRouter()
     const t = useTranslations();
+  const [email, setEmail] = useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedEmail = localStorage.getItem("forget_password_email");
+            const storedCode = localStorage.getItem("forget_password_code");
+            const storedToken = localStorage.getItem("reset_password_token");
+            setEmail(storedEmail);
+            setCode(storedCode);
+            setToken(storedToken);
+        }
+    }, []);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
             password: "",
+            confirmPassword: "",
         },
         mode: "onTouched", // Show errors when clicking outside inputs
     })
 
+    // React Query mutation for reset password
+    const mutation = useMutation({
+        mutationFn: async (values: z.infer<typeof formSchema>) => {
+
+            // For now, just send password and confirmPassword as in your example
+            return await api.post("core/password-reset/confirm/", {
+                new_password: values.password,
+                email: email as string,
+                code: code as string,
+                token: token as string,
+            });
+        },
+        onSuccess: () => {
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("forget_password_email");
+                localStorage.removeItem("forget_password_code");
+                localStorage.removeItem("reset_password_token");
+            }
+            toast.success("Password reset successful");
+            router.push("/auth/login");
+        },
+        onError: (error: { message: string }) => {
+            toast.error(error?.message || "Password reset failed");
+        },
+    });
+
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values);
-        router.push('/auth/login')
+        mutation.mutate(values);
     }
 
     return (
@@ -97,16 +140,15 @@ const Login = () => {
                         type="submit"
                         className="w-full"
                         variant="primary"
-                        disabled={!form.formState.isValid || form.formState.isSubmitting}
+                        disabled={!form.formState.isValid || mutation.isPending}
                     >
-                        Create new password {form.formState.isSubmitting && <Loader2Icon className="animate-spin" />}
+                        Create new password {mutation.isPending && <Loader2Icon className="animate-spin" />}
                     </Button>
                     <Button variant="link" className="p-0 h-auto text-neutral-900" size="lg" onClick={() => router.push('/auth/otp')}><ArrowLeft size={15} /> Back</Button>
-
                 </form>
             </Form>
         </div>
     )
 }
 
-export default Login
+export default ResetPassword

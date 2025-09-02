@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { api } from '@/lib/ApiService'
+import toast from 'react-hot-toast'
 
 const VerifyAccount = () => {
     const router = useRouter()
@@ -26,14 +27,18 @@ const VerifyAccount = () => {
     const mutation = useMutation({
         mutationFn: async (data: { email: string, code: string }) => {
             // Adjust endpoint as needed
-            return api.post('/auth/verify', data)
+            return api.post('core/verify-otp/', data)
         },
         onSuccess: () => {
-            router.push('/dashboard')
+            if (typeof window !== "undefined") {
+                localStorage.removeItem("signup_email");
+            }
+            toast.success("Verification successful")
+            router.push('/auth/login')
         },
         onError: (error: {message:string}) => {
             // Handle error, e.g. show toast or error message
-            alert(error?.message || "Verification failed")
+            toast.error(error?.message || "Verification failed")
         }
     })
 
