@@ -52,8 +52,8 @@ const Login = () => {
       } else {
         toast.error(res?.error || "Login failed")
       }
-    } catch (err) {
-      toast.error("Unexpected error occurred")
+    } catch (err: {message:string} | unknown) {
+      toast.error((err as {message:string}).message || "Unexpected error occurred")
     } finally {
       setLoading(false)
     }
