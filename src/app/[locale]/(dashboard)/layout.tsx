@@ -4,7 +4,7 @@ import SideBar from "@/components/dashboard/sidebar";
 import DashboardHeader from "@/components/dashboard/header";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // مهم عشان ال config
+import { authOptions } from "@/lib/authOptions"; // مهم عشان ال config
 import { getLocale } from "next-intl/server";
 
 export const metadata: Metadata = {
@@ -19,6 +19,7 @@ export default async function DashboardLayout({
 }) {
   // ⬅️ check session on server
   const session = await getServerSession(authOptions);
+  
   const locale = await getLocale();
 
   if (!session) {

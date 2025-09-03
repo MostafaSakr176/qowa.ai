@@ -1,12 +1,12 @@
 "use client"
-import Link from 'next/link'
 import * as React from 'react'
-import { usePathname } from '@/i18n/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
 import { HeartHandshake, Home, PanelLeftOpen, PanelRightOpen, QrCode, ReceiptText, Settings, Users } from 'lucide-react';
 import { useLocale } from 'next-intl'
+import { signOut } from 'next-auth/react';
 
 const navItems = [
   {
@@ -131,6 +131,15 @@ const SideBar = () => {
             })}
           </div>
         </nav>
+        <Button
+          onClick={() =>
+            signOut({
+              callbackUrl: `/${Locale}/auth/login`, // يرجعك على صفحة اللوجين بعد الـ logout
+            })
+          }
+        >
+          Logout
+        </Button>
       </div>
     </TooltipProvider>
   )

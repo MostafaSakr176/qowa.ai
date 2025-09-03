@@ -42,12 +42,33 @@ const VerifyAccount = () => {
         }
     })
 
+    const resendCodeMutation = useMutation({
+        mutationFn: async (data: { email: string }) => {
+            // Use the correct endpoint for resending OTP
+            return api.post('core/resend-otp/', data)
+        },
+        onSuccess: () => {
+            toast.success("Code resent successfully")
+        },
+        onError: (error: {message:string}) => {
+            toast.error(error?.message || "Failed to resend code")
+        }
+    })
+
     const handleComplete = (value: string) => {
         if (!email) {
             alert("No email found. Please restart the process.")
             return
         }
         mutation.mutate({ email, code: value })
+    }
+
+    const resendCode = () => {
+        if (!email) {
+            alert("No email found. Please restart the process.")
+            return
+        }
+        resendCodeMutation.mutate({ email })
     }
 
     return (
@@ -74,6 +95,7 @@ const VerifyAccount = () => {
                         <InputOTPSlot index={5} className="bg-white" />
                     </InputOTPGroup>
                 </InputOTP>
+                <div className='w-full flex justify-between items-center gap-6'>
                 <Button
                     variant="link"
                     className="p-0 h-auto text-neutral-900"
@@ -83,6 +105,18 @@ const VerifyAccount = () => {
                 >
                     <ArrowLeft size={15} /> Back
                 </Button>
+
+                <Button
+                    variant="link"
+                    className="p-0 h-auto text-neutral-900"
+                    size="lg"
+                    onClick={resendCode}
+                    disabled={mutation.isPending || resendCodeMutation.isPending}
+                >
+                    resend code
+                </Button>
+                </div>
+                
             </div>
         </div>
     )
