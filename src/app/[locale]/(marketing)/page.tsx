@@ -38,7 +38,7 @@ export default function Home() {
               alt="Hero background"
               width={1920}
               height={600}
-              className="h-full object-contain"
+              className="h-full object-contain scale-150 md:scale-0 -translate-y-12 md:-translate-y-0"
               // style={{ transform: "translateY(-30px)" }}
               priority
             />
