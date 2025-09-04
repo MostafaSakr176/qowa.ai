@@ -34,10 +34,7 @@ function createApiService(options?: ApiServiceOptions) {
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `API Error: ${response.status} ${response.statusText} - ${errorText}`
-      );
+      return response.json() as Promise<T>;
     }
 
     const contentType = response.headers.get("content-type");

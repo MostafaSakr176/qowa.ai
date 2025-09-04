@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Ban, Download, Ellipsis, Logs, Plus, ScanLine, Search, SquarePen } from "lucide-react";
+import { ArrowLeft, Ban, Download, Ellipsis, Plus, ScanLine, Search, SquarePen } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -24,150 +24,108 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
-  } from "@/components/ui/sheet"
+} from "@/components/ui/sheet"
 import { useRouter } from "@/i18n/navigation";
 
-const organizations = [
-    {
-        id: 1,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    },
-    {
-        id: 2,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    },
-    {
-        id: 3,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    },
-    {
-        id: 4,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Logs size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    }
-];
+// Types for TeamsData prop
+type TeamsData = {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: {
+        id: number;
+        user: {
+            email: string;
+            first_name: string;
+            last_name: string;
+            is_2fa_enabled: boolean;
+        };
+    }[];
+};
 
-const statesOptions = [
-    { value: "all", label: "All" },
-    { value: "open", label: "Open" },
-    { value: "closed", label: "Closed" },
-    { value: "finished", label: "Finished" },
-];
+type TeamListProps = {
+    teamsData: TeamsData;
+};
 
-const TeamList = () => {
+const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
     const [search, setSearch] = useState("");
-    const [states, setStates] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const router = useRouter()
-    // Filtered and sorted data
-    const filteredData = useMemo(() => {
-        let data = organizations;
+    const router = useRouter();
 
-        // Filter by search (organization name, mail, invoice, method type, etc.)
+    // Transform teamsData.results to table data
+    const tableData = useMemo(() => {
+        if (!teamsData?.results) return [];
+        let data = teamsData.results.map((item) => ({
+            id: item.id,
+            user: item.user,
+            // You can add more fields here as needed for the table
+        }));
+
+        // Filter by search (user email, first name, last name)
         if (search.trim() !== "") {
             const lower = search.toLowerCase();
             data = data.filter((row) => {
                 return (
-                    row.organizations.name.toLowerCase().includes(lower) ||
-                    row.organizations.mail.toLowerCase().includes(lower)
+                    row.user.email.toLowerCase().includes(lower) ||
+                    row.user.first_name.toLowerCase().includes(lower) ||
+                    row.user.last_name.toLowerCase().includes(lower)
                 );
             });
         }
 
-        // Filter by status
-        if (states !== "all") {
-            data = data.filter((row) => row.states === states);
-        }
-
-        // Sort by priority if selected (optional: you can sort, but here we just filter)
         return data;
-    }, [search, states]);
+    }, [teamsData, search]);
 
     const columns = [
         {
-            key: "organizations",
-            header: "Organizations",
-            render: (row: { organizations: { name: string; mail: string; logo: React.ReactNode } }) => (
-                <div className="flex items-center justify-center text-start gap-2">
-                    <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-primary text-white">
-                        {row.organizations.logo}
+            key: "id",
+            header: "ID",
+        },
+        {
+            key: "user",
+            header: "User",
+            render: (row: { user: { email: string; first_name: string; last_name: string; is_2fa_enabled: boolean } }) => (
+                <div className="flex items-center text-start gap-2">
+                    <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-[#FFE8CC] text-white">
+                        {row.user.first_name?.[0]}
+                        {row.user.last_name?.[0]}
                     </span>
-                    <div>
-                        <p className="text-sm text-[#070A0E]">{row.organizations.name}</p>
-                        <p className="text-sm text-[#4A4C4F]">{row.organizations.mail}</p>
-                    </div>
+                    <span className="font-medium text-[#070A0E]">{row.user.first_name} {row.user.last_name}</span>
                 </div>
+
             ),
         },
         {
-            key: "country",
-            header: "Country",
-        },
-        {
-            key: "pest_organization",
-            header: "Best Organizations"
-        },
-        {
-            key: "teams",
-            header: "Teams"
-        },
-        {
-            key: "states",
-            header: "States"
+            key: "email",
+            header: "Email",
+            render: (row: { user: { email: string; first_name: string; last_name: string; is_2fa_enabled: boolean } }) => (
+                <span className="font-medium text-[#070A0E]">{row.user.email}</span>
+            ),
         },
         {
             key: "registerationDate",
             header: "registeration date",
-            render: (row: { registerationDate: { date: string; time: string } }) => (
+            render: () => (
                 <div>
-                    <p className="text-sm text-[#070A0E]">{row.registerationDate.date}</p>
-                    <p className="text-sm text-[#4A4C4F]">{row.registerationDate.time}</p>
+                    <p className="text-sm text-[#070A0E]">June 28, 2023</p>
+                    <p className="text-sm text-[#4A4C4F]">10:45PM</p>
                 </div>
             ),
         },
         {
-            key: "amount",
-            header: "Amount"
+            key: "accessLevel",
+            header: "Access Level",
+            render: () => (
+                <span>Yes</span>
+            ),
+        },
+        {
+            key: "lastLogin",
+            header: "Last Login",
+            render: () => (
+                <span>Yesterday, 06:21 PM</span>
+            ),
         },
         {
             key: "actions",
@@ -176,10 +134,10 @@ const TeamList = () => {
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg"><SquarePen size={18} /> Edit Organization</Button>
-                        <Button variant="ghost" className="rounded-lg" onClick={()=>router.push("/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
-                        <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export Report</Button>
-                        <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Block</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit User</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push(`/dashboard/teams/${row.id}/scans`)}><ScanLine size={18} />View Scans</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button>
                     </PopoverContent>
                 </Popover>
             ),
@@ -191,24 +149,12 @@ const TeamList = () => {
             <div className="flex items-center justify-between mb-4">
                 <div className="grid grid-cols-2 gap-2 items-center">
                     <Input
-                        placeholder="Search payments..."
+                        placeholder="Search users..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         icon={<Search size={20} />}
                         iconPosition="right"
                     />
-                    <Select value={states} onValueChange={setStates}>
-                        <SelectTrigger className="w-full md:w-48">
-                            <SelectValue placeholder="Filter by status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {statesOptions.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
                 </div>
                 <Sheet open={isModalOpen}>
                     <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
@@ -222,7 +168,7 @@ const TeamList = () => {
                     </SheetContent>
                 </Sheet>
             </div>
-            <CustomTable data={filteredData} columns={columns} />
+            <CustomTable data={tableData} columns={columns} />
         </div>
     );
 };

@@ -22,7 +22,7 @@ const formSchema = z.object({
     .min(5, { message: "Email must be at least 5 characters." })
     .email({ message: "Please enter a valid email address." }),
   password: z.string()
-    .min(8, { message: "Password must be at least 8 characters." })
+    .min(3, { message: "Password must be at least 8 characters." })
     .max(64, { message: "Password must be at most 64 characters." })
 })
 

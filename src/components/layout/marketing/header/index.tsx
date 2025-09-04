@@ -1,8 +1,7 @@
 'use client'
 import React from 'react'
-import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from '@/i18n/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import SideNav from './mobile-menu'
 
 const navItems = [
@@ -108,7 +107,7 @@ export default function Header() {
           {/* Desktop Try Demo Button */}
           <div className={`items-center ${navAndLinkHeight}`}>
             <Link
-              href="/dashboard"
+              href="/auth/login"
               className={`
                 text-white
                 flex

@@ -2,6 +2,7 @@
 // src/lib/authOptions.ts
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import toast from "react-hot-toast";
 
 async function refreshAccessToken(token: any) {
     try {
@@ -15,7 +16,7 @@ async function refreshAccessToken(token: any) {
 
         const data = await res.json();
 
-        if (!res.ok || !data?.access) {
+        if (!res.ok) {
             console.error("Token refresh failed:", data);
             throw data;
         }
@@ -28,7 +29,7 @@ async function refreshAccessToken(token: any) {
         const session = {
             user: token.user,
             accessToken: data.access,
-            accessTokenExpires: Date.now() + 30 * 60 * 1000, // 30 minutes (fixed from 1 minute)
+            accessTokenExpires: Date.now() + 13 * 60 * 1000, // 30 minutes (fixed from 1 minute)
             refreshToken: newRefreshToken,
             error: null,
         };
@@ -74,19 +75,19 @@ export const authOptions: NextAuthOptions = {
                     }
 
                     if (!res.ok || !data?.tokens?.access) {
-                        console.error("Login failed:", data);
+                        toast.error("Login failed: "+data);
                         return null;
                     }
 
                     return {
                         id: data?.user_id ?? "13",
-                        email: credentials?.email,
+                        email: credentials?.email ?? "",
                         role: data?.role,
                         accessToken: data.tokens.access,
                         refreshToken: data.tokens.refresh,
                     };
                 } catch (err) {
-                    console.error("Login error:", err);
+                    toast.error("Login error:"+ err);
                     throw err;
                 }
             }
@@ -110,7 +111,7 @@ export const authOptions: NextAuthOptions = {
                     accessToken: (user as any).accessToken,
                     refreshToken: (user as any).refreshToken,
                     role: (user as any).role,
-                    accessTokenExpires: Date.now() + 30 * 60 * 1000, // 30 minutes (fixed from 1 minute)
+                    accessTokenExpires: Date.now() + 13 * 60 * 1000, // 30 minutes (fixed from 1 minute)
                 };
             }
 
@@ -124,7 +125,7 @@ export const authOptions: NextAuthOptions = {
             
             // If refresh failed, return error token
             if (refreshedToken.error) {
-                console.error("Token refresh failed, user needs to re-login");
+                toast.error("Token refresh failed, user needs to re-login");
                 return refreshedToken;
             }
 

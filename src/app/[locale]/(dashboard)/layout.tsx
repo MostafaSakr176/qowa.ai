@@ -22,7 +22,13 @@ export default async function DashboardLayout({
   
   const locale = await getLocale();
 
-  if (!session) {
+  // Check if session exists and if user has a role other than "employee"
+  // Since 'role' is not a property on the default Session type, we need to access it from session.user
+  if (
+    !session ||
+    !session.user ||
+    (session.user as { role?: string }).role !== "employee"
+  ) {
     redirect(`/${locale}/auth/login`); // لو مش عامل login يرجع على صفحة login
   }
 
