@@ -127,7 +127,7 @@ export default function Header() {
                 text-sm md:text-base lg:text-lg
               `}
             >
-              Try Demo
+              Log In
             </Link>
 
             {/* <LanguageSwitcher /> */}
