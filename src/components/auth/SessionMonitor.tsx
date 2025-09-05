@@ -59,8 +59,8 @@ export default function SessionMonitor({
     } catch {
       // Fallback: assume token expires in 1 minute from last refresh
       const assumedExpiry = lastRefresh
-        ? lastRefresh.getTime() + 1 * 60 * 1000
-        : Date.now() + 1 * 60 * 1000;
+        ? lastRefresh.getTime() + 15 * 60 * 1000
+        : Date.now() + 15 * 60 * 1000;
       return assumedExpiry - Date.now();
     }
   };
