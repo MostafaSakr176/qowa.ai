@@ -5,7 +5,7 @@ import { routing } from "@/i18n/routing";
 import ReactQueryProvider from "@/lib/reactQueryProvider";
 import { notFound } from "next/navigation";
 import { AuthProviders } from "@/lib/authProvider";
-import SessionMonitor from "@/components/auth/SessionMonitor";
+// import SessionMonitor from "@/components/auth/SessionMonitor";
 
 export const metadata: Metadata = {
   title: "Create Next App",
