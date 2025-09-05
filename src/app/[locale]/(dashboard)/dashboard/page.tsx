@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import { useEffect, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import GeneralSummary from "./_services/components/GeneralSummary";
@@ -13,7 +13,7 @@ import { useRouter } from "@/i18n/navigation";
 
 export default function DashboardOverview() {
   const [isMobile, setIsMobile] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const checkMobile = () => {
@@ -29,11 +29,16 @@ export default function DashboardOverview() {
   if (isMobile) {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
-        <div className="text-2xl font-semibold mb-2">Can&apos;t open on mobile</div>
-        <div className="text-muted-foreground text-center mb-6">
-          The dashboard is not available on mobile devices. Please use a desktop or tablet.
+        <div className="text-2xl font-semibold mb-2">
+          Can&apos;t open on mobile
         </div>
-        <Button variant="primary" onClick={()=>router.push('/')}>Go Home</Button>
+        <div className="text-muted-foreground text-center mb-6">
+          The dashboard is not available on mobile devices. Please use a desktop
+          or tablet.
+        </div>
+        <Button variant="primary" onClick={() => router.push("/")}>
+          Go Home
+        </Button>
       </div>
     );
   }
@@ -50,7 +55,7 @@ export default function DashboardOverview() {
           <TabsTrigger value="organization">Organization</TabsTrigger>
           <TabsTrigger value="support">Support</TabsTrigger>
         </TabsList>
-        <TabsContent value="general_summary" className="space-y-6" >
+        <TabsContent value="general_summary" className="space-y-6">
           <GeneralSummary />
         </TabsContent>
         <TabsContent value="payments">
@@ -74,4 +79,4 @@ export default function DashboardOverview() {
       </Tabs>
     </>
   );
-} 
+}
