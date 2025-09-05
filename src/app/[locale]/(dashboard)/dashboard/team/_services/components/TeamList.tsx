@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Ban, Download, Ellipsis, Plus, ScanLine, Search, SquarePen } from "lucide-react";
+import { ArrowLeft, Ban, Download, Ellipsis, Plus, ScanLine, Search, SquarePen, Loader2 } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -10,7 +10,6 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
-import CreateOrganizationForm from "./CreateForm";
 import {
     Sheet,
     SheetContent,
@@ -19,6 +18,10 @@ import {
     SheetTrigger,
 } from "@/components/ui/sheet"
 import { useRouter } from "@/i18n/navigation";
+import CreateTeamForm from "./CreateForm";
+import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 // Types for TeamsData prop
 type TeamsData = {
@@ -40,11 +43,31 @@ type TeamListProps = {
     teamsData: TeamsData;
 };
 
+// Delete employee API call
+async function deleteEmployee(id: number, accessToken: string | undefined) {
+    if (!accessToken) {
+        throw new Error("No access token found in session");
+    }
+    const res = await fetch(`https://api.qowa.ai/employee/employees/${id}/`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${accessToken}`,
+        },
+    });
+    if (!res.ok) {
+        const error = await res.text();
+        throw new Error(error || "Failed to delete employee");
+    }
+    return true;
+}
+
 const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
     const [search, setSearch] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const router = useRouter();
+    const { data: session } = useSession();
 
     // Transform teamsData.results to table data
     const tableData = useMemo(() => {
@@ -70,6 +93,29 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
         return data;
     }, [teamsData, search]);
 
+    // Tanstack mutation for delete
+    const deleteMutation = useMutation({
+        mutationFn: async (id: number) => {
+            setDeletingId(id);
+            // You may need to adjust the path to the access token depending on your next-auth config
+            const accessToken = session?.accessToken;
+            return deleteEmployee(id, accessToken);
+        },
+        onSuccess: () => {
+            toast.success("User deleted successfully");
+            setDeletingId(null);
+            router.refresh();
+        },
+        onError: (error) => {
+            toast.error(error?.message || "Failed to delete user");
+            setDeletingId(null);
+        }
+    });
+
+    const handleDelete = (id: number) => {
+        deleteMutation.mutate(id);
+    };
+
     const columns = [
         {
             key: "id",
@@ -86,7 +132,6 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
                     </span>
                     <span className="font-medium text-[#070A0E]">{row.user.first_name} {row.user.last_name}</span>
                 </div>
-
             ),
         },
         {
@@ -130,7 +175,21 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
                         <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit User</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push(`/dashboard/teams/${row.id}/scans`)}><ScanLine size={18} />View Scans</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button>
+                        <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start"
+                            onClick={() => handleDelete(row.id)}
+                            disabled={deletingId === row.id && deleteMutation.isPending}
+                        >
+                            <Ban size={18} />
+                            {deletingId === row.id && deleteMutation.isPending ? (
+                                <span className="flex items-center gap-2 ml-1">
+                                    <Loader2 className="animate-spin" size={16} /> Deleting...
+                                </span>
+                            ) : (
+                                <span>Delete</span>
+                            )}
+                        </Button>
                     </PopoverContent>
                 </Popover>
             ),
@@ -157,7 +216,7 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
                         <SheetHeader>
                             <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create User</SheetTitle>
                         </SheetHeader>
-                        <CreateOrganizationForm setIsModalOpen={setIsModalOpen} />
+                        <CreateTeamForm setIsModalOpen={setIsModalOpen} />
                     </SheetContent>
                 </Sheet>
             </div>

@@ -33,11 +33,11 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <ReactQueryProvider>
             <AuthProviders>
-              <SessionMonitor
+              {/* <SessionMonitor
                 checkInterval={20000}
                 refreshBuffer={45}
                 debug={true}
-              />
+              /> */}
               {children}
             </AuthProviders>
           </ReactQueryProvider>

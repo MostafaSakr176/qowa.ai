@@ -5,10 +5,13 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Building, Link, Loader2Icon, User, Mail } from 'lucide-react'
+import { Loader2Icon, User, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { useMutation } from "@tanstack/react-query"
+import { useState } from "react"
+import toast from "react-hot-toast"
+import { useSession } from "next-auth/react"
 import { useRouter } from "@/i18n/navigation"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Validation schema for CreateForm with suitable validation
 const formSchema = z.object({
@@ -18,23 +21,39 @@ const formSchema = z.object({
   last_name: z.string()
     .min(2, { message: "Last name must be at least 2 characters." })
     .max(50, { message: "Last name must be at most 50 characters." }),
-  organization_name: z.string()
-    .min(2, { message: "Organization name must be at least 2 characters." })
-    .max(100, { message: "Organization name must be at most 100 characters." }),
-  apps_number: z.string()
-    .refine(val => {
-      const num = Number(val)
-      return !isNaN(num) && num > 0 && Number.isInteger(num)
-    }, { message: "Please enter a valid number of apps (integer > 0)." }),
-  business_link: z.string()
-    .url({ message: "Please enter a valid URL." })
-    .max(200, { message: "URL must be at most 200 characters." }),
-  business_email: z.string()
+  email: z.string()
     .email({ message: "Please enter a valid business email address." }),
-  country: z.string(),
+  password: z.string()
+    .min(3, { message: "Password must be at least 8 characters." })
+    .max(64, { message: "Password must be at most 64 characters." })
 })
 
-const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<React.SetStateAction<boolean>>}) => {
+// Accept accessToken as an argument
+async function createEmployee(
+  body: { user: { first_name: string; last_name: string; email: string; password: string } },
+  accessToken: string | undefined
+) {
+  if (!accessToken) {
+    throw new Error("No access token found in session");
+  }
+  const res = await fetch("https://api.qowa.ai/employee/employees/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(error || "Failed to create employee");
+  }
+  return res.json();
+}
+
+const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const { data: session } = useSession();
   const router = useRouter()
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -42,19 +61,43 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
     defaultValues: {
       first_name: "",
       last_name: "",
-      organization_name: "",
-      apps_number: "",
-      business_link: "",
-      business_email: "",
-      country: "",
+      email: "",
+      password: "",
     },
     mode: "onTouched",
   })
 
+  // Use a mutation that passes the accessToken from session
+  const mutation = useMutation({
+    mutationFn: async (body: { user: { first_name: string; last_name: string; email: string; password: string } }) => {
+      // You may need to adjust the path to the access token depending on your next-auth config
+      // Commonly: session?.accessToken or session?.user?.accessToken
+      const accessToken =
+        session?.accessToken
+      return createEmployee(body, accessToken);
+    },
+    onSuccess: (data) => {
+      setIsModalOpen(false);
+      toast.success("Create employee successfully")
+      router.refresh()
+      // Optionally, you can refetch team list or show a toast here
+    },
+    onError: (error) => {
+      setErrorMsg(error?.message || "Failed to create employee");
+    }
+  });
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Remove confirmcountry before sending to backend
-    console.log(values)
-    router.push('/auth/2-step-verification')
+    setErrorMsg(null);
+    const body = {
+      user: {
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        password: values.password,
+      }
+    };
+    mutation.mutate(body);
   }
 
   // Cancel button handler that does not interact with the form state
@@ -82,7 +125,7 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                         <Input
                           type="text"
                           label="First Name"
-                          placeholder="Enter your first name"
+                          placeholder="Ente client first name"
                           icon={<User size={20} />}
                           iconPosition="left"
                           error={fieldState.error}
@@ -101,7 +144,7 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                         <Input
                           type="text"
                           label="Last Name"
-                          placeholder="Enter your last name"
+                          placeholder="Enter client last name"
                           icon={<User size={20} />}
                           iconPosition="left"
                           error={fieldState.error}
@@ -114,77 +157,14 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                 />
               </div>
               <FormField
-                name="organization_name"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        type="text"
-                        label="Organization Name"
-                        placeholder="Organization name"
-                        icon={<Building size={20} />}
-                        iconPosition="left"
-                        error={fieldState.error}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="apps_number"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        label="How many apps in the organization?"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger error={fieldState.error}>
-                          <SelectValue placeholder="Select number of apps" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1</SelectItem>
-                          <SelectItem value="2">2</SelectItem>
-                          <SelectItem value="3">3</SelectItem>
-                          <SelectItem value="4">4</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="business_link"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        type="url"
-                        label="Organization Website"
-                        placeholder="https://your-organization.com"
-                        icon={<Link size={20} />}
-                        iconPosition="left"
-                        error={fieldState.error}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="business_email"
+                name="email"
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
                       <Input
                         type="email"
-                        label="Business Email"
-                        placeholder="Enter your business email"
+                        label="Email"
+                        placeholder="Enter Employee email"
                         icon={<Mail size={20} />}
                         iconPosition="left"
                         error={fieldState.error}
@@ -196,30 +176,27 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                 )}
               />
               <FormField
-                name="country"
+                name="password"
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Select
-                        label="Country"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger error={fieldState.error}>
-                          <SelectValue placeholder="Select Country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="egypt">Egypt</SelectItem>
-                          <SelectItem value="senegal">Senegal</SelectItem>
-                          <SelectItem value="france">France</SelectItem>
-                          <SelectItem value="qatar">Qatar</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        type="password"
+                        label="Password"
+                        placeholder="Enter your Employee Password"
+                        icon={<Mail size={20} />}
+                        iconPosition="left"
+                        error={fieldState.error}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              {errorMsg && (
+                <div className="text-red-500 text-sm">{errorMsg}</div>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
@@ -227,9 +204,9 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                 type="submit"
                 className="w-full"
                 variant="primary"
-                disabled={!form.formState.isValid || form.formState.isSubmitting}
+                disabled={!form.formState.isValid || form.formState.isSubmitting || mutation.isPending}
               >
-                Create {form.formState.isSubmitting && <Loader2Icon className="animate-spin" />}
+                Create {(form.formState.isSubmitting || mutation.isPending) && <Loader2Icon className="animate-spin" />}
               </Button>
             </div>
           </form>
@@ -239,4 +216,4 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
   )
 }
 
-export default CreateOrganizationForm
+export default CreateEmployeeForm
