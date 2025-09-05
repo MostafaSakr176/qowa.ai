@@ -76,7 +76,7 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
         session?.accessToken
       return createEmployee(body, accessToken);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       setIsModalOpen(false);
       toast.success("Create employee successfully")
       router.refresh()
