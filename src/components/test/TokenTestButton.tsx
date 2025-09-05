@@ -57,9 +57,7 @@ export default function TokenTestButton() {
           <strong>Has Access Token:</strong>{" "}
           {session?.accessToken ? "Yes" : "No"}
         </p>
-        <p>
-          <strong>Has Error:</strong> {session?.error || "None"}
-        </p>
+        {/* Removed Has Error: session?.error, as Session type does not have 'error' */}
         <p>
           <strong>Auto-Refreshing:</strong> {autoRefreshing ? "Yes" : "No"}
         </p>

@@ -1,6 +1,5 @@
 import React from 'react'
 import TeamList from './_services/components/TeamList'
-import { api } from '@/lib/ApiService';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
 
@@ -37,8 +36,6 @@ const Team = async () => {
     }
 
     const data = await res.json();
-
-    console.log("==========>", data);
 
     return (
       <div>

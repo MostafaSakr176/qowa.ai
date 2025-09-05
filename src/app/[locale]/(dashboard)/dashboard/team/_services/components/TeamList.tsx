@@ -5,13 +5,6 @@ import { ArrowLeft, Ban, Download, Ellipsis, Plus, ScanLine, Search, SquarePen }
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectTrigger,
-    SelectValue,
-    SelectContent,
-    SelectItem,
-} from "@/components/ui/select";
-import {
     Popover,
     PopoverContent,
     PopoverTrigger,

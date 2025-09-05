@@ -62,8 +62,8 @@ async function performRefresh(token: any) {
       user: token.user,
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      // Set expiration to 1 minute for testing token refresh flow
-      accessTokenExpires: Date.now() + 1 * 60 * 1000,
+      // Set expiration to 15 minutes for testing token refresh flow
+      accessTokenExpires: Date.now() + 15 * 60 * 1000,
       role: token.role,
       error: null,
     };
@@ -180,8 +180,8 @@ export const authOptions: NextAuthOptions = {
           accessToken: (user as any).accessToken,
           refreshToken: (user as any).refreshToken,
           role: (user as any).role,
-          // Set expiration to 1 minute for testing token refresh flow
-          accessTokenExpires: Date.now() + 1 * 60 * 1000,
+          // Set expiration to 15 minutes for testing token refresh flow
+          accessTokenExpires: Date.now() + 15 * 60 * 1000,
         };
       }
 
