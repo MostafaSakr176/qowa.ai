@@ -44,7 +44,6 @@ export default function DashboardOverview() {
   }
 
   return (
-    <>
       <Tabs defaultValue="general_summary" className="space-y-2">
         <TabsList>
           <TabsTrigger value="general_summary">General Summary</TabsTrigger>
@@ -77,6 +76,6 @@ export default function DashboardOverview() {
           <Support />
         </TabsContent>
       </Tabs>
-    </>
   );
 }
+ 
