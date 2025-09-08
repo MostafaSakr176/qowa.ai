@@ -58,6 +58,15 @@ async function performRefresh(token: any) {
       throw new Error("Invalid refresh response");
     }
 
+    // Try to preserve group in token if present
+    const group =
+      token.group ||
+      (data.access_control &&
+        Array.isArray(data.access_control.groups) &&
+        data.access_control.groups.length > 0
+        ? data.access_control.groups[0]
+        : undefined);
+
     const session = {
       user: token.user,
       accessToken: newAccessToken,
@@ -65,6 +74,7 @@ async function performRefresh(token: any) {
       // Set expiration to 15 minutes for testing token refresh flow
       accessTokenExpires: Date.now() + 15 * 60 * 1000,
       role: token.role,
+      group: group,
       error: null,
     };
 
@@ -137,9 +147,17 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (!res.ok || !data?.tokens?.access) {
-            toast.error("Login failed: " + data);
+            toast.error("Login failed: " + JSON.stringify(data));
             return null;
           }
+
+          // Extract the first group from access_control.groups if available
+          const group =
+            data?.access_control &&
+            Array.isArray(data.access_control.groups) &&
+            data.access_control.groups.length > 0
+              ? data.access_control.groups[0]
+              : undefined;
 
           return {
             id: data?.user_id ?? "13",
@@ -147,6 +165,7 @@ export const authOptions: NextAuthOptions = {
             role: data?.role,
             accessToken: data.tokens.access,
             refreshToken: data.tokens.refresh,
+            group: group,
           };
         } catch (err) {
           toast.error("Login error:" + err);
@@ -180,6 +199,7 @@ export const authOptions: NextAuthOptions = {
           accessToken: (user as any).accessToken,
           refreshToken: (user as any).refreshToken,
           role: (user as any).role,
+          group: (user as any).group,
           // Set expiration to 15 minutes for testing token refresh flow
           accessTokenExpires: Date.now() + 15 * 60 * 1000,
         };
@@ -221,6 +241,7 @@ export const authOptions: NextAuthOptions = {
           ...session.user,
           role: token.role,
         },
+        group: token.group,
         accessToken: token.accessToken,
         refreshToken: token.refreshToken,
         error: token.error,

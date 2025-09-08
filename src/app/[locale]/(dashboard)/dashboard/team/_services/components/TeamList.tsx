@@ -22,6 +22,7 @@ import CreateTeamForm from "./CreateForm";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Types for TeamsData prop
 type TeamsData = {
@@ -65,6 +66,8 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
     const [search, setSearch] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [selectedRows, setSelectedRows] = useState<number[]>([]);
+
 
     const router = useRouter();
     const { data: session } = useSession();
@@ -118,6 +121,37 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
 
     const columns = [
         {
+            key: "select",
+            header: (
+                <Checkbox
+                    // indeterminate={selectedRows.length > 0 && selectedRows.length < tableData.length}
+                    checked={selectedRows.length === tableData.length && tableData.length > 0}
+                    onCheckedChange={checked => {
+                        if (checked) {
+                            setSelectedRows(tableData.map(row => row.id));
+                        } else {
+                            setSelectedRows([]);
+                        }
+                    }}
+                    aria-label="Select all rows"
+                />
+            ),
+            render: (row: { id: number }) => (
+                <Checkbox
+                    checked={selectedRows.includes(row.id)}
+                    onCheckedChange={checked => {
+                        if (checked) {
+                            setSelectedRows(prev => [...prev, row.id]);
+                        } else {
+                            setSelectedRows(prev => prev.filter(id => id !== row.id));
+                        }
+                    }}
+                    aria-label={`Select row ${row.id}`}
+                />
+            ),
+            width: 48,
+        },
+        {
             key: "id",
             header: "ID",
         },
@@ -170,9 +204,20 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
             header: "",
             render: (row: { id: number }) => (
                 <Popover>
-                    <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
+                    <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit User</Button>
+                        <Sheet open={isModalOpen}>
+                            <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
+                                <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit User</Button>
+                            </SheetTrigger>
+                            <SheetContent showCloseButton={false}>
+                                <SheetHeader>
+                                    <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create User</SheetTitle>
+                                </SheetHeader>
+                                <CreateTeamForm setIsModalOpen={setIsModalOpen} />
+                            </SheetContent>
+                        </Sheet>
+
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push(`/dashboard/teams/${row.id}/scans`)}><ScanLine size={18} />View Scans</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
                         <Button

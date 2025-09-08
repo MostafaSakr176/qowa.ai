@@ -75,7 +75,7 @@ const SideBar = () => {
   return (
     <TooltipProvider>
       <div
-        className={`sticky inset-y-0 left-0 z-50 transition-all duration-200
+        className={`sticky inset-y-0 left-0 z-50 transition-all duration-200 flex flex-col
               ${sidebarOpen ? 'w-64' : 'w-20'}
             `}
       >
@@ -132,6 +132,7 @@ const SideBar = () => {
           </div>
         </nav>
         <Button
+          variant="ghost"
           onClick={() =>
             signOut({
               callbackUrl: `/${Locale}/auth/login`, // يرجعك على صفحة اللوجين بعد الـ logout
