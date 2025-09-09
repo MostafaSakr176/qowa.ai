@@ -29,12 +29,9 @@ const VerifyAccount = () => {
             // Adjust endpoint as needed
             return api.post('core/verify-otp/', data)
         },
-        onSuccess: () => {
-            if (typeof window !== "undefined") {
-                localStorage.removeItem("signup_email");
-            }
+        onSuccess: () => {         
             toast.success("Verification successful")
-            router.push('/auth/login')
+            router.push('/auth/2-step-verification')
         },
         onError: (error: {message:string}) => {
             // Handle error, e.g. show toast or error message

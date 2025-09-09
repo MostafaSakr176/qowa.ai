@@ -49,6 +49,16 @@ const Login = () => {
         password: values.password,
       })
 
+      // The error is not caused by this line, but by a problem with how `toast` is imported or used.
+      // The correct import for react-hot-toast is:
+      // import toast from "react-hot-toast"
+      // and you should use `toast.error("message")` as you do elsewhere.
+      // The error message suggests that `toast.error` is not a function, which usually means
+      // the import is broken or being mocked incorrectly by Turbopack.
+
+      // For debugging, you can log the response here:
+      console.log("Login response:", res);
+
       if (res?.error === "OTP_REQUIRED") {
         setUserCreds(values)
         setShowOtpModal(true)
@@ -151,6 +161,14 @@ const Login = () => {
               "Login"
             )}
           </Button>
+          <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-1">
+                    <span className="text-secondary">
+                      Don&apos;t have an account? <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/register')}>Register</Button>
+                    </span>
+                    <span className="text-secondary">
+                      <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/forget-password')}>Forget Password?</Button>
+                    </span>
+                  </div>
         </form>
       </Form>
 

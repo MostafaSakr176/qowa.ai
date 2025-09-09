@@ -2,7 +2,7 @@
 // src/lib/authOptions.ts
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import toast from "react-hot-toast";
+// import toast from "react-hot-toast";
 
 // Global refresh lock to prevent concurrent refresh attempts
 let refreshPromise: Promise<any> | null = null;
@@ -138,6 +138,8 @@ export const authOptions: NextAuthOptions = {
 
           const data = await res.json();
 
+          console.log(data);
+          
           // Handle OTP requirement
           if (
             data?.errors?.non_field_errors?.[0] ===
@@ -147,7 +149,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           if (!res.ok || !data?.tokens?.access) {
-            toast.error("Login failed: " + JSON.stringify(data));
+            console.error("Login failed: " + JSON.stringify(data));
             return null;
           }
 
@@ -168,7 +170,7 @@ export const authOptions: NextAuthOptions = {
             group: group,
           };
         } catch (err) {
-          toast.error("Login error:" + err);
+          console.error("Login error:" + err);
           throw err;
         }
       },
@@ -225,7 +227,7 @@ export const authOptions: NextAuthOptions = {
             refreshToken: null,
           };
         } else {
-          toast.error("Token refresh failed, user needs to re-login");
+          console.error("Token refresh failed, user needs to re-login");
           return refreshedToken;
         }
       }

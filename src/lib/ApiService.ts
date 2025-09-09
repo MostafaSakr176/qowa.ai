@@ -1,5 +1,4 @@
 
-
 type ApiServiceOptions = {
   baseUrl?: string;
   headers?: Record<string, string>;
@@ -45,11 +44,24 @@ function createApiService(options?: ApiServiceOptions) {
     return text as unknown as T;
   }
 
-  function get<T>(url: string, reqOptions?: RequestInit): Promise<T> {
-    return request<T>(url, {
+  // Modified get to accept an optional body
+  function get<T, U = unknown>(url: string, body?: U, reqOptions?: RequestInit): Promise<T> {
+    // If body is provided, set it as JSON and add Content-Type header
+    let finalOptions: RequestInit = {
       ...reqOptions,
       method: "GET",
-    });
+    };
+    if (body !== undefined) {
+      finalOptions = {
+        ...finalOptions,
+        headers: {
+          "Content-Type": "application/json",
+          ...(reqOptions?.headers || {}),
+        },
+        body: JSON.stringify(body),
+      };
+    }
+    return request<T>(url, finalOptions);
   }
 
   function post<T, U = unknown>(url: string, body?: U, reqOptions?: RequestInit): Promise<T> {
@@ -110,6 +122,13 @@ export { createApiService as ApiService, api };
 //   type User = { id: number; name: string };
 //   const users = await api.get<User[]>("/api/users");
 //   return users;
+// }
+
+// Example 1b: GET request with body (if your backend supports it)
+// async function fetchWithBody() {
+//   type Result = { foo: string };
+//   const data = await api.get<Result, { param: string }>("/api/with-body", { param: "bar" });
+//   return data;
 // }
 
 // Example 2: POST request (create user)

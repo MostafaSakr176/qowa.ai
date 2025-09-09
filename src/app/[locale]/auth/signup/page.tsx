@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from "@/i18n/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMutation } from "@tanstack/react-query"
-import { api } from "@/lib/ApiService"
 import toast from 'react-hot-toast';
 
 // Validation schema for signup with suitable validation
@@ -75,7 +74,7 @@ const SignUp = () => {
     mode: "onTouched",
   })
 
-  // React Query mutation for signup
+  // React Query mutation for signup using fetch
   const mutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       // Prepare body as per API requirements
@@ -93,8 +92,26 @@ const SignUp = () => {
           country: "Egypt"
         }
       }
-      // Adjust endpoint as needed
-      return api.post("client/register/", body)
+      // Use fetch instead of api.post
+      const response = await fetch("https://api.qowa.ai/client/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Signup failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {}
+        throw { message: errorMessage };
+      }
+
+      // Return the response data (if needed)
+      return response.json();
     },
     onSuccess: (_data, variables) => {
       // Pass the registered email to the OTP page via query param or localStorage
@@ -103,7 +120,7 @@ const SignUp = () => {
         localStorage.setItem("signup_email", variables.email)
       }
       toast.success("Signup successful")
-      router.push('/auth/2-step-verification')
+      router.push('/auth/verify-account')
     },
     onError: (error: {message:string}) => {
       // Optionally handle error, e.g. show toast

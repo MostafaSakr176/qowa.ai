@@ -22,7 +22,7 @@ function getAccessToken(session: any): string | undefined {
 
 const TwoStepVerification = () => {
     const router = useRouter();
-    const { data: session, status } = useSession();
+    const { data: session } = useSession();
 
     const [loading, setLoading] = useState(true);
     const [setupData, setSetupData] = useState<null | {
@@ -34,23 +34,28 @@ const TwoStepVerification = () => {
     const [otp, setOtp] = useState("");
     const [enabling, setEnabling] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
+    const [email, setEmail] = useState<string | null>(null)
+
 
     // Fetch 2FA setup data on mount
     useEffect(() => {
+        // Get email from localStorage on mount (same as OTP page)
+        if (typeof window !== "undefined") {
+            const storedEmail = localStorage.getItem("signup_email")
+            setEmail(storedEmail)
+        }
+
         const fetchSetup = async () => {
             setLoading(true);
             try {
-                const token = getAccessToken(session);
-                if (!token) {
-                    toast.error("No access token found. Please login again.");
-                    router.push("/auth/login");
-                    return;
-                }
-                const res = await api.get(`core/2fa/setup/`, {
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
+                // const token = getAccessToken(session);
+                // if (!token) {
+                //     toast.error("No access token found. Please login again.");
+                //     router.push("/auth/login");
+                //     return;
+                // }
+                const res = await api.post(`core/2fa/setup/`, {
+                    email: email
                 });
                 // Ensure res is the expected object before setting state
                 if (
@@ -77,11 +82,9 @@ const TwoStepVerification = () => {
             }
         };
         // Only fetch if authenticated
-        if (status === "authenticated") {
-            fetchSetup();
-        }
+        fetchSetup();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [status, session]);
+    }, [session]);
 
     const handleCopy = () => {
         if (setupData?.otp_secret) {
@@ -94,27 +97,27 @@ const TwoStepVerification = () => {
     const handleComplete = async (value: string) => {
         setOtp(value);
         if (!setupData) return;
-        const token = getAccessToken(session);
-        if (!token) {
-            toast.error("No access token found. Please login again.");
-            router.push("/auth/login");
-            return;
-        }
+        // const token = getAccessToken(session);
+        // if (!token) {
+        //     toast.error("No access token found. Please login again.");
+        //     router.push("/auth/login");
+        //     return;
+        // }
         setEnabling(true);
         try {
             // Use JSON body instead of FormData for API consistency and proper Content-Type
             const res = await api.post(
                 "core/2fa/enable/",
-                { code: value },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        "Content-Type": "application/json",
-                    },
-                }
+                { code: value, email: email },
+                // {
+                //     headers: {
+                //         Authorization: `Bearer ${token}`,
+                //         "Content-Type": "application/json",
+                //     },
+                // }
             );
             console.log(res);
-            
+
             toast.success("Two-factor authentication enabled!");
             router.push("/dashboard");
         } catch (err: any) {
