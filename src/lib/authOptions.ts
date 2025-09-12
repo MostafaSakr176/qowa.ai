@@ -30,7 +30,7 @@ async function performRefresh(token: any) {
   try {
     console.log(
       "Starting token refresh with token:",
-      token.refreshToken?.substring(0, 20) + "..."
+      token.refreshToken
     );
 
     const formdata = new FormData();
@@ -72,7 +72,7 @@ async function performRefresh(token: any) {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
       // Set expiration to 15 minutes for testing token refresh flow
-      accessTokenExpires: Date.now() + 15 * 60 * 1000,
+      accessTokenExpires: Date.now() + 2 * 60 * 1000,
       role: token.role,
       group: group,
       error: null,
@@ -205,7 +205,7 @@ export const authOptions: NextAuthOptions = {
           role: (user as any).role,
           group: (user as any).group,
           // Set expiration to 15 minutes for testing token refresh flow
-          accessTokenExpires: Date.now() + 15 * 60 * 1000,
+          accessTokenExpires: Date.now() + 2 * 60 * 1000,
         };
       }
 

@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Ban, Download, Ellipsis, Plus, ScanLine, Search, SquarePen, Loader2 } from "lucide-react";
+import { ArrowLeft, Ban, Download, Ellipsis, Plus, Search, SquarePen, Loader2 } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -17,7 +17,6 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import { useRouter } from "@/i18n/navigation";
 import CreateTeamForm from "./CreateForm";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
@@ -76,8 +75,6 @@ const TeamList: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
-
-    const router = useRouter();
 
     // Fetch teams data using react-query
     const {
@@ -235,7 +232,6 @@ const TeamList: React.FC = () => {
                             </SheetContent>
                         </Sheet>
 
-                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push(`/dashboard/teams/${row.id}/scans`)}><ScanLine size={18} />View Scans</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
                         <Button
                             variant="ghost"
