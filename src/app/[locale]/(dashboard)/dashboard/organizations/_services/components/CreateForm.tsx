@@ -64,9 +64,6 @@ type CreateOrganizationFormProps = {
     editOrganization?: OrganizationRow | null;
 };
 
-// Replace with actual client_id (get from context/session if needed)
-const CLIENT_ID = 36;
-
 type Country = {
     flag: string;
     country: string;
