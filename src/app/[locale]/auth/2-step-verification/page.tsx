@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import { useEffect, useState } from "react";
 import { Button } from '@/components/ui/button'
@@ -12,13 +11,7 @@ import {
 import { useRouter } from '@/i18n/navigation'
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast"
-import { api } from "@/lib/ApiService";
-
-// Helper to get accessToken from next-auth session (custom property)
-function getAccessToken(session: any): string | undefined {
-    // Our session callback in next-auth adds accessToken at the root
-    return session?.accessToken;
-}
+import api from "@/lib/axiosClient";
 
 const TwoStepVerification = () => {
     const router = useRouter();
@@ -31,7 +24,6 @@ const TwoStepVerification = () => {
         qr_code_url: string;
         qr_code_base64: string;
     }>(null);
-    const [otp, setOtp] = useState("");
     const [enabling, setEnabling] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
     const [email, setEmail] = useState<string | null>(null)
@@ -48,12 +40,6 @@ const TwoStepVerification = () => {
         const fetchSetup = async () => {
             setLoading(true);
             try {
-                // const token = getAccessToken(session);
-                // if (!token) {
-                //     toast.error("No access token found. Please login again.");
-                //     router.push("/auth/login");
-                //     return;
-                // }
                 const res = await api.post(`core/2fa/setup/`, {
                     email: email
                 });
@@ -75,8 +61,12 @@ const TwoStepVerification = () => {
                 } else {
                     throw new Error("Invalid 2FA setup response from server");
                 }
-            } catch (err: any) {
-                toast.error(err?.message || "Failed to load 2FA setup");
+            } catch (err: unknown) {
+                if (typeof err === "object" && err !== null && "message" in err) {
+                    toast.error((err as { message?: string }).message || "Failed to load 2FA setup");
+                } else {
+                    toast.error("Failed to load 2FA setup");
+                }
             } finally {
                 setLoading(false);
             }
@@ -95,33 +85,23 @@ const TwoStepVerification = () => {
     };
 
     const handleComplete = async (value: string) => {
-        setOtp(value);
         if (!setupData) return;
-        // const token = getAccessToken(session);
-        // if (!token) {
-        //     toast.error("No access token found. Please login again.");
-        //     router.push("/auth/login");
-        //     return;
-        // }
+
         setEnabling(true);
         try {
             // Use JSON body instead of FormData for API consistency and proper Content-Type
-            const res = await api.post(
+            await api.post(
                 "core/2fa/enable/",
                 { code: value, email: email },
-                // {
-                //     headers: {
-                //         Authorization: `Bearer ${token}`,
-                //         "Content-Type": "application/json",
-                //     },
-                // }
             );
-            console.log(res);
-
             toast.success("Two-factor authentication enabled!");
             router.push("/dashboard");
-        } catch (err: any) {
-            toast.error(err?.message || "Failed to enable 2FA");
+        } catch (err: unknown) {
+            if (typeof err === "object" && err !== null && "message" in err) {
+                toast.error((err as { message?: string }).message || "Failed to enable 2FA");
+            } else {
+                toast.error("Failed to enable 2FA");
+            }
         } finally {
             setEnabling(false);
         }

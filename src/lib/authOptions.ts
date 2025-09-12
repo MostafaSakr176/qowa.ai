@@ -102,9 +102,11 @@ async function performRefresh(token: any) {
       console.log("Token is blacklisted, forcing re-login");
       return {
         ...token,
+        group:null,
         error: "TokenBlacklistedError",
         accessToken: null,
         refreshToken: null,
+
       };
     }
 

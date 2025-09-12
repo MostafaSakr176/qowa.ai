@@ -172,7 +172,13 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
       router.refresh()
     },
     onError: (error) => {
-      setErrorMsg(error?.message || "Failed to create employee");
+      // Try to access error.message, error.response.data.message, or error.toString()
+      let msg = "Failed to create employee";
+      if (error?.message) {
+        msg = error.message;
+      }
+      console.log(msg);
+      setErrorMsg(msg);
     }
   });
 

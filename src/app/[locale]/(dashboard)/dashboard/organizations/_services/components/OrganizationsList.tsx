@@ -24,81 +24,115 @@ import {
     SheetHeader,
     SheetTitle,
     SheetTrigger,
-  } from "@/components/ui/sheet"
+} from "@/components/ui/sheet"
 import { useRouter } from "@/i18n/navigation";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import api from "@/lib/axiosClient";
 
-const organizations = [
-    {
-        id: 1,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Building2 size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    },
-    {
-        id: 2,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Building2 size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    },
-    {
-        id: 3,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Building2 size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    },
-    {
-        id: 4,
-        organizations: {
-            name: "StellarTech sakr",
-            mail: "stellartech@uimiye.com",
-            logo: <Building2 size={20} />,
-        },
-        country: "Egypt",
-        pest_organization: 209,
-        teams: 5,
-        states: "subscribers",
-        registerationDate: { date: "June 28, 2023", time: "10:45PM" },
-        amount: "$328.85",
-    }
-];
+// API response types
+type OrganizationApi = {
+    id: number;
+    name: string;
+    country: string;
+    number_of_apps: number;
+    url: string;
+    business_email: string;
+    created_at: string;
+    scans_count: number;
+    team_members_count: number;
+    rank: number;
+    amount: number;
+};
 
-const statesOptions = [
-    { value: "all", label: "All" },
-    { value: "open", label: "Open" },
-    { value: "closed", label: "Closed" },
-    { value: "finished", label: "Finished" },
-];
+type OrganizationsApiResponse = {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: OrganizationApi[];
+};
+
+// Table row type
+type OrganizationRow = {
+    id: number;
+    organizations: {
+        name: string;
+        mail: string;
+        logo: React.ReactNode;
+    };
+    country: string;
+    pest_organization: number;
+    teams: number;
+    states: string;
+    registerationDate: {
+        date: string;
+        time: string;
+    };
+    amount: string;
+};
+
+const fetchOrganizations = async (): Promise<OrganizationsApiResponse> => {
+    const res = await api.get("/client/organizations/");
+    return res.data;
+};
+
+const deleteOrganization = async (id: number) => {
+    await api.delete(`/client/organizations/${id}/`);
+};
 
 const OrganizationsList = () => {
     const [search, setSearch] = useState("");
     const [states, setStates] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editOrganization, setEditOrganization] = useState<OrganizationRow | null>(null);
 
-    const router = useRouter()
+    const router = useRouter();
+
+    // Fetch organizations data
+    const { data, isLoading, isError, refetch } = useQuery<OrganizationsApiResponse>({
+        queryKey: ["organizations"],
+        queryFn: fetchOrganizations,
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: deleteOrganization,
+        onSuccess: () => {
+            refetch();
+        },
+        onError: (error) => {
+            // Optionally: show error message
+            console.error(error);
+        }
+    });
+
+    // Map API data to table format
+    const organizations: OrganizationRow[] = useMemo(() => {
+        if (!data?.results) return [];
+        return data.results.map((org) => ({
+            id: org.id,
+            organizations: {
+                name: org.name,
+                mail: org.business_email,
+                logo: <Building2 size={20} />,
+            },
+            country: org.country,
+            pest_organization: org.rank,
+            teams: org.team_members_count,
+            states: "subscribers", // You may want to map this from API if available
+            registerationDate: {
+                date: new Date(org.created_at).toLocaleDateString(),
+                time: new Date(org.created_at).toLocaleTimeString(),
+            },
+            amount: `$${org.amount}`,
+        }));
+    }, [data]);
+
+    const statesOptions = [
+        { value: "all", label: "All" },
+        { value: "open", label: "Open" },
+        { value: "closed", label: "Closed" },
+        { value: "finished", label: "Finished" },
+    ];
+
     // Filtered and sorted data
     const filteredData = useMemo(() => {
         let data = organizations;
@@ -121,7 +155,7 @@ const OrganizationsList = () => {
 
         // Sort by priority if selected (optional: you can sort, but here we just filter)
         return data;
-    }, [search, states]);
+    }, [search, states, organizations]);
 
     const columns = [
         {
@@ -172,19 +206,39 @@ const OrganizationsList = () => {
         {
             key: "actions",
             header: "",
-            render: (row: { id: number }) => (
+            render: (row: OrganizationRow) => (
                 <Popover>
-                    <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
+                    <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg"><SquarePen size={18} /> Edit Organization</Button>
-                        <Button variant="ghost" className="rounded-lg" onClick={()=>router.push("/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
+                        <Button
+                            variant="ghost"
+                            className="rounded-lg"
+                            onClick={() => {
+                                setEditOrganization(row);
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            <SquarePen size={18} /> Edit Organization
+                        </Button>
+                        <Button variant="ghost" className="rounded-lg" onClick={() => router.push("/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
                         <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export Report</Button>
                         <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Block</Button>
+                        <Button
+                            variant="destructive"
+                            className="rounded-lg"
+                            onClick={() => deleteMutation.mutate(row.id)}
+                            disabled={deleteMutation.isPending}
+                        >
+                            Delete
+                        </Button>
                     </PopoverContent>
                 </Popover>
             ),
         },
     ];
+
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error loading organizations.</div>;
 
     return (
         <div>
@@ -211,18 +265,25 @@ const OrganizationsList = () => {
                     </Select>
                 </div>
                 <Sheet open={isModalOpen}>
-                    <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
+                    <SheetTrigger asChild onClick={() => { setIsModalOpen(true); setEditOrganization(null); }}>
                         <Button variant={"primary"} size="lg"><Plus size={20} />  Create organization</Button>
                     </SheetTrigger>
                     <SheetContent showCloseButton={false}>
                         <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create Organization</SheetTitle>
+                            <SheetTitle className="flex items-center gap-4">
+                                <ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditOrganization(null); }} />
+                                {editOrganization ? "Edit Organization" : "Create Organization"}
+                            </SheetTitle>
                         </SheetHeader>
-                        <CreateOrganizationForm setIsModalOpen={setIsModalOpen} />
+                        <CreateOrganizationForm
+                            setIsModalOpen={setIsModalOpen}
+                            refetch={refetch}
+                            editOrganization={editOrganization}
+                        />
                     </SheetContent>
                 </Sheet>
             </div>
-            <CustomTable data={filteredData} columns={columns} onRowClick={(row)=>router.push(`/dashboard/organizations/${row.id}/scans`)} />
+            <CustomTable data={filteredData} columns={columns} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans`)} />
         </div>
     );
 };

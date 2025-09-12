@@ -5,19 +5,15 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Building, Link, Loader2Icon, User, Mail } from 'lucide-react'
+import { Building, Link, Loader2Icon, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { useRouter } from "@/i18n/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useMutation, useQuery } from "@tanstack/react-query";
+import api from "@/lib/axiosClient";
+import Image from "next/image"
 
 // Validation schema for CreateForm with suitable validation
 const formSchema = z.object({
-  first_name: z.string()
-    .min(2, { message: "First name must be at least 2 characters." })
-    .max(50, { message: "First name must be at most 50 characters." }),
-  last_name: z.string()
-    .min(2, { message: "Last name must be at least 2 characters." })
-    .max(50, { message: "Last name must be at most 50 characters." }),
   organization_name: z.string()
     .min(2, { message: "Organization name must be at least 2 characters." })
     .max(100, { message: "Organization name must be at most 100 characters." }),
@@ -34,33 +30,147 @@ const formSchema = z.object({
   country: z.string(),
 })
 
-const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<React.SetStateAction<boolean>>}) => {
-  const router = useRouter()
+// Type for API body
+type CreateOrganizationBody = {
+  client_id: number;
+  name: string;
+  number_of_apps: number;
+  url: string;
+  business_email: string;
+  country: string;
+};
+
+type OrganizationRow = {
+    id: number;
+    organizations: {
+        name: string;
+        mail: string;
+        logo: React.ReactNode;
+    };
+    country: string;
+    pest_organization: number;
+    teams: number;
+    states: string;
+    registerationDate: {
+        date: string;
+        time: string;
+    };
+    amount: string;
+};
+
+type CreateOrganizationFormProps = {
+    setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    refetch: () => void;
+    editOrganization?: OrganizationRow | null;
+};
+
+// Replace with actual client_id (get from context/session if needed)
+const CLIENT_ID = 36;
+
+type Country = {
+    flag: string;
+    country: string;
+    code: string;
+};
+
+type CountriesResponse = {
+    success: boolean;
+    message: string;
+    data: Country[];
+};
+
+const fetchCountries = async (): Promise<CountriesResponse> => {
+    const res = await api.get("/core/countries/");
+    return res.data;
+};
+
+const CreateOrganizationForm = ({
+    setIsModalOpen,
+    refetch,
+    editOrganization,
+}: CreateOrganizationFormProps) => {
+    // Set default values based on editOrganization
+    const defaultValues = editOrganization
+        ? {
+            organization_name: editOrganization.organizations.name,
+            apps_number: editOrganization.teams.toString(),
+            business_link: "", // You may want to pass the URL if available
+            business_email: editOrganization.organizations.mail,
+            country: editOrganization.country,
+        }
+        : {
+            organization_name: "",
+            apps_number: "",
+            business_link: "",
+            business_email: "",
+            country: "",
+        };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      organization_name: "",
-      apps_number: "",
-      business_link: "",
-      business_email: "",
-      country: "",
-    },
+    defaultValues,
     mode: "onTouched",
   })
 
+  const mutation = useMutation({
+    mutationFn: async (body: CreateOrganizationBody) => {
+      const res = await api.post("/client/organizations/", body);
+      return res.data;
+    },
+    onSuccess: () => {
+      setIsModalOpen(false);
+      form.reset();
+      refetch();
+    },
+    onError: (error) => {
+      // Optionally: show error message
+      console.error(error);
+    }
+  });
+
+  // Add update mutation
+  const updateMutation = useMutation({
+    mutationFn: async (body: CreateOrganizationBody) => {
+      if (!editOrganization) return;
+      const res = await api.put(`/client/organizations/${editOrganization.id}/`, body);
+      return res.data;
+    },
+    onSuccess: () => {
+      setIsModalOpen(false);
+      form.reset();
+      refetch();
+    },
+    onError: (error) => {
+      console.error(error);
+    }
+  });
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Remove confirmcountry before sending to backend
-    console.log(values)
-    router.push('/auth/2-step-verification')
+    const payload = {
+      client_id: 36,
+      name: values.organization_name,
+      number_of_apps: Number(values.apps_number),
+      url: values.business_link,
+      business_email: values.business_email,
+      country: values.country,
+    };
+    if (editOrganization) {
+      updateMutation.mutate(payload);
+    } else {
+      mutation.mutate(payload);
+    }
   }
 
   // Cancel button handler that does not interact with the form state
   function handleCancel() {
     setIsModalOpen(false)
   }
+
+  // Fetch countries
+  const { data: countriesData, isLoading: countriesLoading, isError: countriesError } = useQuery<CountriesResponse>({
+      queryKey: ["countries"],
+      queryFn: fetchCountries,
+  });
 
   return (
     <>
@@ -73,46 +183,6 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
         <Form {...form}>
           <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  name="first_name"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          label="First Name"
-                          placeholder="Enter your first name"
-                          icon={<User size={20} />}
-                          iconPosition="left"
-                          error={fieldState.error}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="last_name"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          label="Last Name"
-                          placeholder="Enter your last name"
-                          icon={<User size={20} />}
-                          iconPosition="left"
-                          error={fieldState.error}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
               <FormField
                 name="organization_name"
                 render={({ field, fieldState }) => (
@@ -204,15 +274,26 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                         label="Country"
                         value={field.value}
                         onValueChange={field.onChange}
+                        disabled={countriesLoading || countriesError}
                       >
                         <SelectTrigger error={fieldState.error}>
-                          <SelectValue placeholder="Select Country" />
+                          <SelectValue placeholder={countriesLoading ? "Loading countries..." : countriesError ? "Error loading countries" : "Select Country"} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="egypt">Egypt</SelectItem>
-                          <SelectItem value="senegal">Senegal</SelectItem>
-                          <SelectItem value="france">France</SelectItem>
-                          <SelectItem value="qatar">Qatar</SelectItem>
+                          {countriesLoading && (
+                            <div className="px-4 py-2 text-muted-foreground">Loading...</div>
+                          )}
+                          {countriesError && (
+                            <div className="px-4 py-2 text-destructive">Error loading countries</div>
+                          )}
+                          {countriesData?.data?.map((c, idx) => (
+                            <SelectItem key={idx} value={c.country}>
+                              <span className="flex items-center gap-2">
+                                <Image src={c.flag} alt={c.country} width={16} height={16} className="w-4 h-4" />
+                                {c.country}
+                              </span>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -227,9 +308,9 @@ const CreateOrganizationForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<
                 type="submit"
                 className="w-full"
                 variant="primary"
-                disabled={!form.formState.isValid || form.formState.isSubmitting}
+                disabled={!form.formState.isValid || mutation.isPending}
               >
-                Create {form.formState.isSubmitting && <Loader2Icon className="animate-spin" />}
+                Create {mutation.isPending && <Loader2Icon className="animate-spin" />}
               </Button>
             </div>
           </form>

@@ -9,8 +9,8 @@ import { ArrowLeft, Loader2Icon, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "@/i18n/navigation"
 import { useMutation } from '@tanstack/react-query'
-import { api } from "@/lib/ApiService"
 import toast from "react-hot-toast"
+import api from "@/lib/axiosClient"
 
 // Improved validation schema for login
 const formSchema = z.object({

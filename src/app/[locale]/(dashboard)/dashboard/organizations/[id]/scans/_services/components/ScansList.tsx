@@ -33,45 +33,40 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import CreateScanForm from "./CreateForm";
 import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/axiosClient";
 
-const scans = [
-    {
-        id: 1,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "open",
-        progress: 40,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 2,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "closed",
-        progress: 60,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 3,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "finished",
-        progress: 20,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 4,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "finished",
-        progress: 90,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-];
+type ScanApi = {
+    id: number;
+    title: string;
+    status: string;
+    created_at: string;
+    testers: { id: number; email: string; first_name: string; last_name: string }[];
+    team_members: { id: number; email: string; first_name: string; last_name: string }[];
+    progress: number;
+};
+
+type ScansApiResponse = {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: ScanApi[];
+};
+
+type ScanRow = {
+    id: number;
+    title: string;
+    type: string;
+    status: string;
+    progress: number;
+    assign: string[];
+    startDate: { date: string; time: string };
+};
+
+const fetchScans = async (organizationId: string): Promise<ScansApiResponse> => {
+    const res = await api.get(`/scan/scans/?organization_id=${organizationId}`);
+    return res.data;
+};
 
 const statusOptions = [
     { value: "all", label: "All" },
@@ -80,12 +75,36 @@ const statusOptions = [
     { value: "finished", label: "Finished" },
 ];
 
-const ScansList = () => {
+const ScansList = ({ organizationId }: { organizationId: string }) => {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const router = useRouter()
+    const router = useRouter();
+
+    // Fetch scans data
+    const { data, isLoading, isError } = useQuery<ScansApiResponse>({
+        queryKey: ["scans", organizationId],
+        queryFn: () => fetchScans(organizationId),
+    });
+
+    // Map API data to table format
+    const scans: ScanRow[] = useMemo(() => {
+        if (!data?.results) return [];
+        return data.results.map((scan) => ({
+            id: scan.id,
+            title: scan.title,
+            type: "web", // Not provided by API, set default or map if available
+            status: scan.status === "pending" ? "open" : scan.status, // Map API status if needed
+            progress: scan.progress,
+            assign: scan.testers.map(t => `${t.first_name[0] ?? ""}${t.last_name[0] ?? ""}`),
+            startDate: {
+                date: new Date(scan.created_at).toLocaleDateString(),
+                time: new Date(scan.created_at).toLocaleTimeString(),
+            },
+        }));
+    }, [data]);
+
     // Filtered and sorted data
     const filteredData = useMemo(() => {
         let data = scans;
@@ -108,7 +127,7 @@ const ScansList = () => {
 
         // Sort by priority if selected (optional: you can sort, but here we just filter)
         return data;
-    }, [search, status]);
+    }, [search, status, scans]);
 
     const columns = [
         {
@@ -129,7 +148,7 @@ const ScansList = () => {
             key: "status",
             header: "Status",
             render: (row: { status: string }) => (
-                <Badge withDot variant={row.status === "closed" ? "failed" : row.status === "open" ? "pending":"success"}>{row.status}</Badge>
+                <Badge withDot variant={row.status === "closed" ? "failed" : row.status === "open" ? "pending" : "success"}>{row.status}</Badge>
             ),
         },
         {
@@ -146,7 +165,7 @@ const ScansList = () => {
             header: "Assign",
             render: (row: { assign: string[] }) => (
                 <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                    {row.assign.map((ele,idx) => (
+                    {row.assign.map((ele, idx) => (
                         <Avatar key={idx}>
                             <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                             <AvatarFallback>{ele}</AvatarFallback>
@@ -181,6 +200,9 @@ const ScansList = () => {
             ),
         },
     ];
+
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error loading scans.</div>;
 
     return (
         <div>
@@ -218,7 +240,7 @@ const ScansList = () => {
                     </SheetContent>
                 </Sheet>
             </div>
-            <CustomTable data={filteredData} columns={columns} onRowClick={(row)=>router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)}/>
+            <CustomTable data={filteredData} columns={columns} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)} />
         </div>
     );
 };

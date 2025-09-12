@@ -19,10 +19,11 @@ import {
 } from "@/components/ui/sheet"
 import { useRouter } from "@/i18n/navigation";
 import CreateTeamForm from "./CreateForm";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import { useSession } from "next-auth/react";
 import { Checkbox } from "@/components/ui/checkbox";
+import api from "@/lib/axiosClient";
+import { formatDateTime } from "@/utils/formateDate";
 
 // Types for TeamsData prop
 type TeamsData = {
@@ -32,52 +33,71 @@ type TeamsData = {
     results: {
         id: number;
         user: {
+            id: number;
             email: string;
             first_name: string;
             last_name: string;
             is_2fa_enabled: boolean;
+            created_at: string;
+            last_login: string | null;
         };
+        group_name: string | null;
     }[];
 };
 
-type TeamListProps = {
-    teamsData: TeamsData;
-};
+type IRow = {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_2fa_enabled: boolean;
+    created_at: string;
+    last_login: string | null;
+    group_name: string | null;
+}
+
+// Fetch employees API call
+async function fetchEmployees(): Promise<TeamsData> {
+    const res = await api.get("/employee/employees/");
+    return res.data;
+}
 
 // Delete employee API call
-async function deleteEmployee(id: number, accessToken: string | undefined) {
-    if (!accessToken) {
-        throw new Error("No access token found in session");
-    }
-    const res = await fetch(`https://api.qowa.ai/employee/employees/${id}/`, {
-        method: "DELETE",
-        headers: {
-            "Authorization": `Bearer ${accessToken}`,
-        },
-    });
-    if (!res.ok) {
-        const error = await res.text();
-        throw new Error(error || "Failed to delete employee");
+async function deleteEmployee(id: number) {
+    const res = await api.delete(`/employee/employees/${id}/`);
+    if (res.status !== 204 && res.status !== 200) {
+        throw new Error("Failed to delete employee");
     }
     return true;
 }
 
-const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
+const TeamList: React.FC = () => {
     const [search, setSearch] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
 
-
     const router = useRouter();
-    const { data: session } = useSession();
+
+    // Fetch teams data using react-query
+    const {
+        data: teamsData,
+        isLoading,
+        isError,
+        error,
+        refetch,
+    } = useQuery<TeamsData, Error>({
+        queryKey: ["teams"],
+        queryFn: () => fetchEmployees(),
+    });
 
     // Transform teamsData.results to table data
     const tableData = useMemo(() => {
         if (!teamsData?.results) return [];
         let data = teamsData.results.map((item) => ({
+            ...item.user,
             id: item.id,
-            user: item.user,
+            group_name: item.group_name
             // You can add more fields here as needed for the table
         }));
 
@@ -86,9 +106,9 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
             const lower = search.toLowerCase();
             data = data.filter((row) => {
                 return (
-                    row.user.email.toLowerCase().includes(lower) ||
-                    row.user.first_name.toLowerCase().includes(lower) ||
-                    row.user.last_name.toLowerCase().includes(lower)
+                    row.email.toLowerCase().includes(lower) ||
+                    row.first_name.toLowerCase().includes(lower) ||
+                    row.last_name.toLowerCase().includes(lower)
                 );
             });
         }
@@ -100,16 +120,14 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
     const deleteMutation = useMutation({
         mutationFn: async (id: number) => {
             setDeletingId(id);
-            // You may need to adjust the path to the access token depending on your next-auth config
-            const accessToken = session?.accessToken;
-            return deleteEmployee(id, accessToken);
+            return deleteEmployee(id);
         },
         onSuccess: () => {
             toast.success("User deleted successfully");
             setDeletingId(null);
-            router.refresh();
+            refetch();
         },
-        onError: (error) => {
+        onError: (error: Error) => {
             toast.error(error?.message || "Failed to delete user");
             setDeletingId(null);
         }
@@ -119,12 +137,13 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
         deleteMutation.mutate(id);
     };
 
+
+
     const columns = [
         {
             key: "select",
             header: (
                 <Checkbox
-                    // indeterminate={selectedRows.length > 0 && selectedRows.length < tableData.length}
                     checked={selectedRows.length === tableData.length && tableData.length > 0}
                     onCheckedChange={checked => {
                         if (checked) {
@@ -136,7 +155,7 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
                     aria-label="Select all rows"
                 />
             ),
-            render: (row: { id: number }) => (
+            render: (row: IRow) => (
                 <Checkbox
                     checked={selectedRows.includes(row.id)}
                     onCheckedChange={checked => {
@@ -149,60 +168,58 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
                     aria-label={`Select row ${row.id}`}
                 />
             ),
-            width: 48,
-        },
-        {
-            key: "id",
-            header: "ID",
         },
         {
             key: "user",
             header: "User",
-            render: (row: { user: { email: string; first_name: string; last_name: string; is_2fa_enabled: boolean } }) => (
+            render: (row: IRow) => (
                 <div className="flex items-center text-start gap-2">
                     <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-[#FFE8CC] text-white">
-                        {row.user.first_name?.[0]}
-                        {row.user.last_name?.[0]}
+                        {row.first_name?.[0]}
+                        {row.last_name?.[0]}
                     </span>
-                    <span className="font-medium text-[#070A0E]">{row.user.first_name} {row.user.last_name}</span>
+                    <span className="font-medium text-[#070A0E]">{row.first_name} {row.last_name}</span>
                 </div>
             ),
         },
         {
             key: "email",
             header: "Email",
-            render: (row: { user: { email: string; first_name: string; last_name: string; is_2fa_enabled: boolean } }) => (
-                <span className="font-medium text-[#070A0E]">{row.user.email}</span>
+            render: (row: IRow) => (
+                <span className="font-medium text-[#070A0E]">{row.email}</span>
             ),
         },
         {
-            key: "registerationDate",
+            key: "created_at",
             header: "registeration date",
-            render: () => (
+            render: (row: IRow) => (
                 <div>
-                    <p className="text-sm text-[#070A0E]">June 28, 2023</p>
-                    <p className="text-sm text-[#4A4C4F]">10:45PM</p>
+                    <p className="text-sm text-[#070A0E]">{formatDateTime(row.created_at)?.date}</p>
+                    <p className="text-sm text-[#4A4C4F]">{formatDateTime(row.created_at)?.time}</p>
                 </div>
             ),
         },
         {
-            key: "accessLevel",
-            header: "Access Level",
-            render: () => (
-                <span>Yes</span>
+            key: "group_name",
+            header: "Role",
+            render: (row: IRow) => (
+                <span>{row.group_name ? row.group_name : "None"}</span>
             ),
         },
         {
-            key: "lastLogin",
+            key: "last_login",
             header: "Last Login",
-            render: () => (
-                <span>Yesterday, 06:21 PM</span>
+            render: (row:IRow) => (
+                <div>
+                    <p className="text-sm text-[#070A0E]">{formatDateTime(row?.last_login)?.date}</p>
+                    <p className="text-sm text-[#4A4C4F]">{formatDateTime(row?.last_login)?.time}</p>
+                </div>
             ),
         },
         {
             key: "actions",
             header: "",
-            render: (row: { id: number }) => (
+            render: (row:IRow) => (
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
@@ -240,6 +257,24 @@ const TeamList: React.FC<TeamListProps> = ({ teamsData }) => {
             ),
         },
     ];
+
+    if (isLoading) {
+        return (
+            <div className="flex justify-center items-center h-40">
+                <Loader2 className="animate-spin" size={32} />
+                <span className="ml-2">Loading users...</span>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center h-40 text-red-500">
+                <span>Error loading users: {error?.message}</span>
+                <Button onClick={() => refetch()} className="mt-2">Retry</Button>
+            </div>
+        );
+    }
 
     return (
         <div>

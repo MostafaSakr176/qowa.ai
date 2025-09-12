@@ -3,7 +3,15 @@ import { BadgeCheck, SquarePen } from 'lucide-react'
 import React from 'react'
 import ScansList from './_services/components/ScansList'
 
-const Scans = () => {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+
+const Scans = async ({ params }: PageProps) => {
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+
     return (
         <div>
             <div className="flex items-center justify-between w-full border-b border-[#DADADB] pb-4 mb-4">
@@ -34,7 +42,7 @@ const Scans = () => {
                 </Button>
             </div>
             <div className='rounded-xl bg-[#F8F9FA] p-2'>
-                <ScansList />
+                <ScansList organizationId={id} />
             </div>
         </div>
     )

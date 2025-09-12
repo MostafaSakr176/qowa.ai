@@ -114,7 +114,7 @@ function CustomTable<T extends { [key: string]: any }>({
                         ) : (
                             pageData.map((row, i) => (
                                 <TableRow
-                                    key={row.id ?? i}
+                                    key={i}
                                     onClick={onRowClick ? (e) => { 
                                         // Prevent row click if the click originated from a button or link inside the row
                                         if (
