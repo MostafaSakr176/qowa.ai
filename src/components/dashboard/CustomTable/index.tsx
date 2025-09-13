@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
     Table,
     TableBody,
@@ -25,7 +25,14 @@ type CustomTableProps<T> = {
     rowsPerPage?: number;
     showFooter?: boolean;
     renderFooterRow?: (pageData: T[]) => React.ReactNode;
-    onRowClick?: (row: T, index: number) => void; // <-- Added prop
+    onRowClick?: (row: T, index: number) => void;
+    // NEW (server-side pagination)
+    serverSidePagination?: boolean;
+    page?: number;             // controlled current page (1-based)
+    pageSize?: number;         // page size (if not provided falls back to rowsPerPage or data.length)
+    totalCount?: number;       // total items on server
+    onPageChange?: (page: number) => void;
+    loading?: boolean;
 };
 
 // Helper for page range with ellipsis
@@ -64,31 +71,69 @@ function CustomTable<T extends { [key: string]: any }>({
     rowsPerPage = 10,
     showFooter = false,
     renderFooterRow,
-    onRowClick, // <-- Added prop
+    onRowClick,
+    serverSidePagination = false,
+    page: controlledPage,
+    pageSize,
+    totalCount,
+    onPageChange,
+    loading = false,
 }: CustomTableProps<T>) {
-    const [page, setPage] = useState(1);
+    // Internal page state only when NOT server-side
+    const [internalPage, setInternalPage] = useState(1);
 
-    const totalPages = Math.max(1, Math.ceil(data.length / rowsPerPage));
-    const startIdx = (page - 1) * rowsPerPage;
-    const endIdx = startIdx + rowsPerPage;
-    const pageData = data.slice(startIdx, endIdx);
+    // NEW: keep initial (stable) server page size so last short page does not change totalPages
+    const initialServerPageSizeRef = useRef<number | null>(null);
+    if (serverSidePagination) {
+        if (initialServerPageSizeRef.current === null) {
+            // Latch first non-zero size (prefer explicit prop, fallback to rowsPerPage, then data.length)
+            const firstSize = (pageSize && pageSize > 0)
+                ? pageSize
+                : (rowsPerPage || 10);
+            initialServerPageSizeRef.current = firstSize;
+        }
+    }
 
-    const handlePrev = () => setPage((p) => Math.max(1, p - 1));
-    const handleNext = () => setPage((p) => Math.min(totalPages, p + 1));
-    const handlePage = (p: number) => setPage(p);
+    // Effective current page
+    const effectivePage = serverSidePagination ? (controlledPage || 1) : internalPage;
 
-    // For "1 Page" dropdown (not implemented, just static for now)
+    // CHANGED: use latched size for server mode
+    const effectivePageSize = serverSidePagination
+        ? (initialServerPageSizeRef.current || pageSize || rowsPerPage || 10)
+        : rowsPerPage;
+
+    // Total items & total pages
+    const totalItems = serverSidePagination
+        ? (totalCount ?? 0)
+        : data.length;
+
+    const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
+
+
+    // Slice only for client-side pagination
+    const startIdx = (effectivePage - 1) * effectivePageSize;
+    const endIdx = startIdx + effectivePageSize;
+    const pageData = serverSidePagination ? data : data.slice(startIdx, endIdx);
+
+    const changePage = (p: number) => {
+        if (p < 1 || p > totalPages) return;
+        if (serverSidePagination) {
+            onPageChange && onPageChange(p);
+        } else {
+            setInternalPage(p);
+        }
+    };
+    const handlePrev = () => changePage(effectivePage - 1);
+    const handleNext = () => changePage(effectivePage + 1);
+    const handlePage = (p: number) => changePage(p);
+
+    const pageNumbers = getPageNumbers(effectivePage, totalPages);
+
     const pageDropdown = (
         <div className="flex items-center gap-1 text-xs text-gray-500">
-            <span>1 Page</span>
-            <svg width="12" height="12" className="ml-1" viewBox="0 0 20 20" fill="none">
-                <path d="M5 8L10 13L15 8" stroke="#A0AEC0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <span>{data.length} / page</span>
         </div>
     );
-
-    // Pagination numbers with ellipsis
-    const pageNumbers = getPageNumbers(page, totalPages);
 
     return (
         <>
@@ -97,7 +142,7 @@ function CustomTable<T extends { [key: string]: any }>({
                     {caption && <TableCaption>{caption}</TableCaption>}
                     <TableHeader className="bg-[#ECEFF3] py-1 w-full">
                         <TableRow>
-                            {columns.map((col) => (
+                            {columns.map(col => (
                                 <TableHead key={col.key as string} className={col.className}>
                                     {col.header}
                                 </TableHead>
@@ -105,30 +150,31 @@ function CustomTable<T extends { [key: string]: any }>({
                         </TableRow>
                     </TableHeader>
                     <TableBody className="w-full">
-                        {pageData.length === 0 ? (
+                        {loading ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length}>
-                                    No data found.
+                                    <div className="py-6 text-center text-sm text-muted-foreground">Loading...</div>
+                                </TableCell>
+                            </TableRow>
+                        ) : pageData.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={columns.length}>
+                                    <div className="py-6 text-center text-sm text-muted-foreground">No data found.</div>
                                 </TableCell>
                             </TableRow>
                         ) : (
                             pageData.map((row, i) => (
                                 <TableRow
                                     key={i}
-                                    onClick={onRowClick ? (e) => { 
-                                        // Prevent row click if the click originated from a button or link inside the row
-                                        if (
-                                            (e.target as HTMLElement).closest("button, a, [role=button]")
-                                        ) return;
-                                        onRowClick(row, startIdx + i);
+                                    onClick={onRowClick ? (e) => {
+                                        if ((e.target as HTMLElement).closest("button, a, [role=button]")) return;
+                                        onRowClick(row, serverSidePagination ? i : startIdx + i);
                                     } : undefined}
                                     className={onRowClick ? "cursor-pointer hover:bg-[#F5F6FA] transition-colors" : undefined}
                                 >
-                                    {columns.map((col) => (
-                                        <TableCell key={col.key as string} className={(col.className ? col.className + " " : "")}>
-                                            {col.render
-                                                ? col.render(row)
-                                                : row[col.key as keyof T]}
+                                    {columns.map(col => (
+                                        <TableCell key={col.key as string} className={col.className ? col.className + " " : ""}>
+                                            {col.render ? col.render(row) : row[col.key as keyof T]}
                                         </TableCell>
                                     ))}
                                 </TableRow>
@@ -137,35 +183,33 @@ function CustomTable<T extends { [key: string]: any }>({
                     </TableBody>
                     {showFooter && (
                         <TableFooter>
-                            {renderFooterRow ? (
-                                renderFooterRow(pageData)
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={columns.length} />
-                                </TableRow>
-                            )}
+                            {renderFooterRow
+                                ? renderFooterRow(pageData)
+                                : <TableRow><TableCell colSpan={columns.length} /></TableRow>
+                            }
                         </TableFooter>
                     )}
                 </Table>
             </div>
 
-            {/* Pagination Controls - styled like the image */}
             <div className="flex items-center justify-between mt-4 px-2">
-                {/* Left: Page Dropdown and total */}
                 <div className="flex items-center gap-2">
                     {pageDropdown}
-                    <span className="text-xs text-gray-400 ml-2">of {totalPages}</span>
+                    <span className="text-xs text-gray-400 ml-2">
+                        Page {effectivePage} of {totalPages}
+                        {serverSidePagination && typeof totalCount === "number" && (
+                            <span className="ml-2 text-gray-500">({totalItems} items)</span>
+                        )}
+                        {loading && <span className="ml-2 text-xs">Updating...</span>}
+                    </span>
                 </div>
-                {/* Right: Pagination */}
                 <div className="flex items-center gap-1 text-xs">
                     <button
                         onClick={handlePrev}
-                        disabled={page === 1}
+                        disabled={effectivePage === 1 || loading}
                         className="px-2 py-1 rounded transition border border-transparent text-gray-400 hover:text-gray-700 disabled:opacity-50"
                         style={{ minWidth: 32 }}
-                    >
-                        Prev
-                    </button>
+                    >Prev</button>
                     {pageNumbers.map((num, idx) =>
                         num === "..." ? (
                             <span key={`ellipsis-${idx}`} className="px-2 py-1 text-gray-400 select-none">...</span>
@@ -174,25 +218,21 @@ function CustomTable<T extends { [key: string]: any }>({
                                 key={num}
                                 onClick={() => handlePage(num as number)}
                                 className={`px-2 py-1 rounded transition border ${
-                                    page === num
+                                    effectivePage === num
                                         ? "bg-[#F5F6FA] border-[#ECEFF3] text-gray-900 font-semibold"
                                         : "border-transparent text-gray-700 hover:bg-[#F5F6FA]"
                                 }`}
                                 style={{ minWidth: 32 }}
-                                disabled={page === num}
-                            >
-                                {num}
-                            </button>
+                                disabled={effectivePage === num || loading}
+                            >{num}</button>
                         )
                     )}
                     <button
                         onClick={handleNext}
-                        disabled={page === totalPages}
+                        disabled={effectivePage === totalPages || loading}
                         className="px-2 py-1 rounded transition border border-transparent text-gray-400 hover:text-gray-700 disabled:opacity-50"
                         style={{ minWidth: 32 }}
-                    >
-                        Next
-                    </button>
+                    >Next</button>
                 </div>
             </div>
         </>

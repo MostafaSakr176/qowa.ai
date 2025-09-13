@@ -28,6 +28,7 @@ const formSchema = z.object({
   business_email: z.string()
     .email({ message: "Please enter a valid business email address." }),
   country: z.string(),
+  client_id: z.string().min(1, { message: "Client is required." }),
 })
 
 // Type for API body
@@ -81,6 +82,21 @@ const fetchCountries = async (): Promise<CountriesResponse> => {
     return res.data;
 };
 
+// Types for clients
+type ClientUser = { id: number; email: string; first_name: string; last_name: string }
+type ClientItem = { id: number; user: ClientUser }
+type ClientsResponse = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ClientItem[];
+};
+
+const fetchClients = async (): Promise<ClientsResponse> => {
+  const res = await api.get("/client/clients/");
+  return res.data;
+};
+
 const CreateOrganizationForm = ({
     setIsModalOpen,
     refetch,
@@ -94,6 +110,7 @@ const CreateOrganizationForm = ({
             business_link: "", // You may want to pass the URL if available
             business_email: editOrganization.organizations.mail,
             country: editOrganization.country,
+            client_id: "", // unknown in edit context
         }
         : {
             organization_name: "",
@@ -101,6 +118,7 @@ const CreateOrganizationForm = ({
             business_link: "",
             business_email: "",
             country: "",
+            client_id: "",
         };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -143,8 +161,8 @@ const CreateOrganizationForm = ({
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const payload = {
-      client_id: 36,
+    const payload: CreateOrganizationBody = {
+      client_id: Number(values.client_id),
       name: values.organization_name,
       number_of_apps: Number(values.apps_number),
       url: values.business_link,
@@ -169,6 +187,16 @@ const CreateOrganizationForm = ({
       queryFn: fetchCountries,
   });
 
+  // Clients query
+  const {
+    data: clientsData,
+    isLoading: clientsLoading,
+    isError: clientsError,
+  } = useQuery<ClientsResponse>({
+    queryKey: ["clients"],
+    queryFn: fetchClients,
+  });
+
   return (
     <>
       <div className='flex flex-col h-full overflow-y-auto justify-start items-center'
@@ -180,6 +208,36 @@ const CreateOrganizationForm = ({
         <Form {...form}>
           <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
             <div className="space-y-4">
+              {/* Client Select Field */}
+              <FormField
+                name="client_id"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Select
+                        label="Owaner"
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        disabled={clientsLoading || clientsError}
+                      >
+                        <SelectTrigger error={fieldState.error}>
+                          <SelectValue placeholder={clientsLoading ? "Loading clients..." : clientsError ? "Error loading clients" : "Select Client"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {clientsLoading && <div className="px-4 py-2 text-muted-foreground text-sm">Loading...</div>}
+                          {clientsError && <div className="px-4 py-2 text-destructive text-sm">Error loading clients</div>}
+                          {clientsData?.results.map(c => (
+                            <SelectItem key={c.id} value={String(c.id)}>
+                              {c.user.first_name} {c.user.last_name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 name="organization_name"
                 render={({ field, fieldState }) => (
@@ -305,9 +363,14 @@ const CreateOrganizationForm = ({
                 type="submit"
                 className="w-full"
                 variant="primary"
-                disabled={!form.formState.isValid || mutation.isPending}
+                disabled={
+                  !form.formState.isValid ||
+                  mutation.isPending ||
+                  updateMutation.isPending ||
+                  clientsLoading
+                }
               >
-                Create {mutation.isPending && <Loader2Icon className="animate-spin" />}
+                {editOrganization ? "Update" : "Create"} {(mutation.isPending || updateMutation.isPending) && <Loader2Icon className="animate-spin" />}
               </Button>
             </div>
           </form>

@@ -70,8 +70,9 @@ type OrganizationRow = {
     amount: string;
 };
 
-const fetchOrganizations = async (): Promise<OrganizationsApiResponse> => {
-    const res = await api.get("/client/organizations/");
+// UPDATED: accept page param
+const fetchOrganizations = async (page: number): Promise<OrganizationsApiResponse> => {
+    const res = await api.get(`/client/organizations/?page=${page}`);
     return res.data;
 };
 
@@ -84,13 +85,15 @@ const OrganizationsList = () => {
     const [states, setStates] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editOrganization, setEditOrganization] = useState<OrganizationRow | null>(null);
+    const [page, setPage] = useState(1);
 
     const router = useRouter();
 
     // Fetch organizations data
-    const { data, isLoading, isError, refetch } = useQuery<OrganizationsApiResponse>({
-        queryKey: ["organizations"],
-        queryFn: fetchOrganizations,
+    // UPDATED: include page in queryKey & queryFn, keepPreviousData for smooth pagination
+    const { data, isLoading, isError, refetch, isFetching } = useQuery<OrganizationsApiResponse>({
+        queryKey: ["organizations", page],
+        queryFn: () => fetchOrganizations(page),
     });
 
     const deleteMutation = useMutation({
@@ -125,6 +128,10 @@ const OrganizationsList = () => {
             amount: `$${org.amount}`,
         }));
     }, [data]);
+
+    // Pagination meta (server-side)
+    const pageSize = data?.results?.length || 0;
+    const totalCount = data?.count ?? 0;
 
     const statesOptions = [
         { value: "all", label: "All" },
@@ -280,7 +287,20 @@ const OrganizationsList = () => {
                     </SheetContent>
                 </Sheet>
             </div>
-            <CustomTable data={filteredData} columns={columns} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans`)} />
+            <CustomTable
+                data={filteredData}
+                columns={columns}
+                onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans`)}
+                // NEW pagination props (adapt to your CustomTable API)
+                page={page}
+                pageSize={pageSize}
+                totalCount={totalCount}
+                onPageChange={(nextPage: number) => {
+                    if (nextPage !== page) setPage(nextPage);
+                }}
+                loading={isLoading || isFetching}
+                serverSidePagination
+            />
         </div>
     );
 };
