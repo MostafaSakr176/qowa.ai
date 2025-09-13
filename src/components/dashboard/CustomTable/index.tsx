@@ -118,7 +118,9 @@ function CustomTable<T extends { [key: string]: any }>({
     const changePage = (p: number) => {
         if (p < 1 || p > totalPages) return;
         if (serverSidePagination) {
-            onPageChange && onPageChange(p);
+            if (onPageChange) {
+                onPageChange(p);
+            }
         } else {
             setInternalPage(p);
         }
