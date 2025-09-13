@@ -192,9 +192,9 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg"><SquarePen size={18} /> Edit scan</Button>
-                        <Button variant="ghost" className="rounded-lg" onClick={() => router.push("/dashboard/organizations/1/scans/1/findings")}><ScanLine size={18} />View Findings</Button>
-                        <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export Report</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit scan</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/dashboard/organizations/1/scans/1/findings")}><ScanLine size={18} />View Findings</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
                     </PopoverContent>
                 </Popover>
             ),

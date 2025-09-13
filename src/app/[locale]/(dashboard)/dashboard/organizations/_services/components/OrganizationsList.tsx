@@ -212,7 +212,7 @@ const OrganizationsList = () => {
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
                         <Button
                             variant="ghost"
-                            className="rounded-lg"
+                            className="rounded-lg w-full justify-start"
                             onClick={() => {
                                 setEditOrganization(row);
                                 setIsModalOpen(true);
@@ -220,13 +220,10 @@ const OrganizationsList = () => {
                         >
                             <SquarePen size={18} /> Edit Organization
                         </Button>
-                        <Button variant="ghost" className="rounded-lg" onClick={() => router.push("/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
-                        <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export Report</Button>
-                        <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Block</Button>
-                        <Button
-                            variant="destructive"
-                            className="rounded-lg"
-                            onClick={() => deleteMutation.mutate(row.id)}
+                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
                             disabled={deleteMutation.isPending}
                         >
                             Delete

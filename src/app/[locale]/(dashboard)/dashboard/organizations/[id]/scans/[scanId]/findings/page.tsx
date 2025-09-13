@@ -45,35 +45,35 @@ const Scans = () => {
                         <DonutChart chartStyle='full' labels={["Open Findings", "Closed Findings", "Open Findings", "Closed Findings"]} showLegend={false} series={[10, 40, 20, 30]} colors={["#736DFF", "#2F3A61", "#EE534F", "#FFA828"]} totalLabel='Total findings' />
                     </div>
                     <div className="space-y-4">
-                            <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
-                                <span className="absolute top-3 right-3 flex items-center bg-red-50 text-red-600 text-xs font-medium px-3 py-1 rounded-full">
-                                    <span className="w-2 h-2 bg-red-500 rounded-full mr-2 inline-block"></span>
-                                    Critical
-                                </span>
-                                <span className="text-2xl font-bold text-black">990</span>
-                            </div>
-                            <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
-                                <span className="absolute top-3 right-3 flex items-center bg-[#FFF6ED] text-[#C4320A] text-xs font-medium px-3 py-1 rounded-full">
-                                    <span className="w-2 h-2 bg-[#C4320A] rounded-full mr-2 inline-block"></span>
-                                    High
-                                </span>
-                                <span className="text-2xl font-bold text-black">500</span>
-                            </div>
-                            <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
-                                <span className="absolute top-3 right-3 flex items-center bg-[#FFFAEB] text-[#B54708] text-xs font-medium px-3 py-1 rounded-full">
-                                    <span className="w-2 h-2 bg-[#B54708] rounded-full mr-2 inline-block"></span>
-                                    Medium
-                                </span>
-                                <span className="text-2xl font-bold text-black">990</span>
-                            </div>
-                            <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
-                                <span className="absolute top-3 right-3 flex items-center bg-[#ECFDF3] text-[#027A48] text-xs font-medium px-3 py-1 rounded-full">
-                                    <span className="w-2 h-2 bg-[#027A48] rounded-full mr-2 inline-block"></span>
-                                    Low
-                                </span>
-                                <span className="text-2xl font-bold text-black">990</span>
-                            </div>
+                        <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
+                            <span className="absolute top-3 right-3 flex items-center bg-red-50 text-red-600 text-xs font-medium px-3 py-1 rounded-full">
+                                <span className="w-2 h-2 bg-red-500 rounded-full mr-2 inline-block"></span>
+                                Critical
+                            </span>
+                            <span className="text-2xl font-bold text-black">990</span>
                         </div>
+                        <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
+                            <span className="absolute top-3 right-3 flex items-center bg-[#FFF6ED] text-[#C4320A] text-xs font-medium px-3 py-1 rounded-full">
+                                <span className="w-2 h-2 bg-[#C4320A] rounded-full mr-2 inline-block"></span>
+                                High
+                            </span>
+                            <span className="text-2xl font-bold text-black">500</span>
+                        </div>
+                        <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
+                            <span className="absolute top-3 right-3 flex items-center bg-[#FFFAEB] text-[#B54708] text-xs font-medium px-3 py-1 rounded-full">
+                                <span className="w-2 h-2 bg-[#B54708] rounded-full mr-2 inline-block"></span>
+                                Medium
+                            </span>
+                            <span className="text-2xl font-bold text-black">990</span>
+                        </div>
+                        <div className="bg-white w-full rounded-xl border border-[#E9ECEF] shadow-sm flex items-center pt-8 pb-4 px-4 relative min-h-[80px]">
+                            <span className="absolute top-3 right-3 flex items-center bg-[#ECFDF3] text-[#027A48] text-xs font-medium px-3 py-1 rounded-full">
+                                <span className="w-2 h-2 bg-[#027A48] rounded-full mr-2 inline-block"></span>
+                                Low
+                            </span>
+                            <span className="text-2xl font-bold text-black">990</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

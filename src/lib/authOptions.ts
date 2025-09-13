@@ -2,36 +2,55 @@
 // src/lib/authOptions.ts
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-// import toast from "react-hot-toast";
+
+// Global storage for the most recent refresh token - prevents using old tokens
+let currentRefreshToken: string | null = null;
+// Track invalidated (used) refresh tokens to avoid reuse
+const invalidatedRefreshTokens = new Set<string>();
 
 // Global refresh lock to prevent concurrent refresh attempts
 let refreshPromise: Promise<any> | null = null;
+let isRefreshing = false;
 
 async function refreshAccessToken(token: any) {
-  // If a refresh is already in progress, wait for it
-  if (refreshPromise) {
-    console.log("Refresh already in progress, waiting...");
-    return refreshPromise;
+  // Always sync with the latest known refresh token if we have one
+  if (currentRefreshToken && token.refreshToken !== currentRefreshToken) {
+    token.refreshToken = currentRefreshToken;
   }
 
-  // Create the refresh promise
-  refreshPromise = performRefresh(token);
+  // If the token we're about to use was already invalidated, force using currentRefreshToken
+  if (invalidatedRefreshTokens.has(token.refreshToken) && currentRefreshToken) {
+    token.refreshToken = currentRefreshToken;
+  }
+
+  // If a refresh is already in progress, wait for it
+  if (isRefreshing) {
+    console.log("Refresh already in progress, waiting for completion...");
+    if (refreshPromise) {
+      return refreshPromise;
+    }
+  }
+
+  // Set refreshing flag and create the refresh promise
+  isRefreshing = true;
+  refreshPromise = performRefresh({ ...token, refreshToken: token.refreshToken });
 
   try {
     const result = await refreshPromise;
     return result;
   } finally {
-    // Clear the promise when done
+    // Clear the refresh state when done
+    isRefreshing = false;
     refreshPromise = null;
   }
 }
 
+// Replace previous performRefresh implementation
 async function performRefresh(token: any) {
   try {
-    console.log(
-      "Starting token refresh with token:",
-      token.refreshToken
-    );
+    console.log("Starting token refresh with token:", token.refreshToken);
+
+    const oldRefresh = token.refreshToken;
 
     const formdata = new FormData();
     formdata.append("refresh", token.refreshToken);
@@ -48,17 +67,21 @@ async function performRefresh(token: any) {
       throw data;
     }
 
-    // Handle both possible response structures
     const newAccessToken = data.access || data.tokens?.access;
-    const newRefreshToken =
-      data.refresh || data.tokens?.refresh || token.refreshToken;
+    const newRefreshToken = data.refresh || data.tokens?.refresh || token.refreshToken;
 
     if (!newAccessToken) {
       console.error("No access token in refresh response:", data);
       throw new Error("Invalid refresh response");
     }
 
-    // Try to preserve group in token if present
+    // Update global refresh token
+    if (newRefreshToken && newRefreshToken !== token.refreshToken) {
+      console.log("Updating global refresh token");
+      currentRefreshToken = newRefreshToken;
+      invalidatedRefreshTokens.add(oldRefresh); // mark old one as invalidated
+    }
+
     const group =
       token.group ||
       (data.access_control &&
@@ -67,46 +90,40 @@ async function performRefresh(token: any) {
         ? data.access_control.groups[0]
         : undefined);
 
-    const session = {
-      user: token.user,
+    const refreshedToken = {
+      ...token,
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      // Set expiration to 15 minutes for testing token refresh flow
       accessTokenExpires: Date.now() + 2 * 60 * 1000,
-      role: token.role,
-      group: group,
+      group,
       error: null,
     };
 
     console.log("Token refreshed successfully", {
-      hasNewRefreshToken: !!data.refresh || !!data.tokens?.refresh,
-      expiresAt: new Date(session.accessTokenExpires).toISOString(),
-      newRefreshToken: newRefreshToken?.substring(0, 20) + "...",
+      hasNewRefreshToken: !!(data.refresh || data.tokens?.refresh),
+      expiresAt: new Date(refreshedToken.accessTokenExpires).toISOString(),
+      refreshTokenChanged: oldRefresh !== newRefreshToken,
     });
 
-    return session;
+    return refreshedToken;
   } catch (error) {
     console.error("Refresh token error:", error);
 
-    // Check if token is blacklisted or invalid
     const isTokenBlacklisted =
       error &&
       typeof error === "object" &&
       (("message" in error && error.message === "Token is blacklisted") ||
-        ("errors" in error &&
-          (error.errors as any)?.code === "token_not_valid") ||
-        ("detail" in error &&
-          (error as any).detail === "Token is blacklisted"));
+        ("errors" in error && (error as any).errors?.code === "token_not_valid") ||
+        ("detail" in error && (error as any).detail === "Token is blacklisted"));
 
     if (isTokenBlacklisted) {
       console.log("Token is blacklisted, forcing re-login");
       return {
         ...token,
-        group:null,
+        group: null,
         error: "TokenBlacklistedError",
         accessToken: null,
         refreshToken: null,
-
       };
     }
 
@@ -195,48 +212,52 @@ export const authOptions: NextAuthOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      // Initial login
+    async jwt({ token, user, trigger }) {
+      // Initialize global refresh token on first login
+      if (user && (user as any).refreshToken) {
+        currentRefreshToken = (user as any).refreshToken;
+      }
+
+      // Ensure token.refreshToken is always current
+      if (currentRefreshToken && token.refreshToken !== currentRefreshToken) {
+        token.refreshToken = currentRefreshToken;
+      }
+
+      // Initial login return
       if (user) {
         return {
           ...token,
           accessToken: (user as any).accessToken,
-          refreshToken: (user as any).refreshToken,
+            refreshToken: (user as any).refreshToken,
           role: (user as any).role,
           group: (user as any).group,
-          // Set expiration to 15 minutes for testing token refresh flow
           accessTokenExpires: Date.now() + 2 * 60 * 1000,
         };
       }
 
-      // Return previous token if the access token has not expired yet
-      if (Date.now() < (token.accessTokenExpires as number)) {
-        return token;
+      // Allow manual token updates to sync refreshToken
+      if (trigger === "update" && currentRefreshToken) {
+        token.refreshToken = currentRefreshToken;
       }
 
-      // Access token has expired, try to update it
+      // If still valid just return (but keep refreshToken synced)
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return {
+          ...token,
+          refreshToken: currentRefreshToken || token.refreshToken,
+        };
+      }
+
+      console.log("Access token expired, refreshing...");
       const refreshedToken = await refreshAccessToken(token);
 
-      // If refresh failed, handle different error types
-      if (refreshedToken.error) {
-        if (refreshedToken.error === "TokenBlacklistedError") {
-          console.log("Token blacklisted, clearing session");
-          // Return a token that will force sign out
-          return {
-            ...token,
-            error: "TokenBlacklistedError",
-            accessToken: null,
-            refreshToken: null,
-          };
-        } else {
-          console.error("Token refresh failed, user needs to re-login");
-          return refreshedToken;
-        }
-      }
+      console.log("Using refreshed token:", {
+        hasError: !!refreshedToken.error,
+        sameRefreshToken: refreshedToken.refreshToken === token.refreshToken,
+      });
 
       return refreshedToken;
     },
-
     async session({ session, token }) {
       // Send properties to the client
       return {

@@ -8,10 +8,9 @@ import { Input } from '@/components/ui/input'
 import { Loader2Icon, User, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import toast from "react-hot-toast"
 import { useSession } from "next-auth/react"
-import { useRouter } from "@/i18n/navigation"
 import {
   Select,
   SelectContent,
@@ -21,22 +20,56 @@ import {
 } from "@/components/ui/select"
 import { MultiSelect } from "@/components/ui/multiSelect"
 
-// Validation schema for CreateForm with suitable validation
-const formSchema = z.object({
-  first_name: z.string()
-    .min(2, { message: "First name must be at least 2 characters." })
-    .max(50, { message: "First name must be at most 50 characters." }),
-  last_name: z.string()
-    .min(2, { message: "Last name must be at least 2 characters." })
-    .max(50, { message: "Last name must be at most 50 characters." }),
-  email: z.string()
-    .email({ message: "Please enter a valid business email address." }),
-  password: z.string()
-    .min(3, { message: "Password must be at least 8 characters." })
-    .max(64, { message: "Password must be at most 64 characters." }),
+type IRow = {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    is_2fa_enabled: boolean;
+    created_at: string;
+    last_login: string | null;
+    group_name: string | null;
+}
+
+// Adjust schema: password required only on create
+const baseSchema = z.object({
+  first_name: z.string().min(2, { message: "First name must be at least 2 characters." }).max(50),
+  last_name: z.string().min(2, { message: "Last name must be at least 2 characters." }).max(50),
+  email: z.string().email({ message: "Please enter a valid business email address." }),
   group: z.string({ error: "Please select a group." }),
   scan: z.union([z.string(), z.array(z.string())]).optional(),
-})
+});
+const createSchema = baseSchema.extend({
+  password: z.string().min(3, { message: "Password must be at least 8 characters." }).max(64)
+});
+const editSchema = baseSchema.extend({
+  password: z.string().optional()
+});
+
+// Add update employee helper (PATCH)
+async function updateEmployee(
+  id: number,
+  body: {
+    user: { email: string; name: string; password?: string };
+  },
+  accessToken: string | undefined
+) {
+  if (!accessToken) throw new Error("No access token found in session");
+  const res = await fetch(`https://api.qowa.ai/employee/employees/${id}/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const error = await res.text();
+    throw new Error(error || "Failed to update employee");
+  }
+  return res.json();
+}
+
 
 // Accept accessToken as an argument
 async function createEmployee(
@@ -109,10 +142,38 @@ async function fetchScans(accessToken: string | undefined) {
   }));
 }
 
-const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+const CreateEmployeeForm = ({ setIsModalOpen , editUser , refetch }: { setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>, editUser: IRow | null, refetch: () => void }) => {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { data: session } = useSession();
-  const router = useRouter()
+  const isEdit = !!editUser;
+
+  // Dynamic resolver
+  const form = useForm<z.infer<typeof createSchema | typeof editSchema>>({
+    resolver: zodResolver(isEdit ? editSchema : createSchema),
+    defaultValues: {
+      first_name: "",
+      last_name: "",
+      email: "",
+      password: "",
+      group: "",
+      scan: [],
+    },
+    mode: "onTouched",
+  });
+
+  // Prefill on edit
+  useEffect(() => {
+    if (isEdit && editUser) {
+      form.reset({
+        first_name: editUser.first_name || "",
+        last_name: editUser.last_name || "",
+        email: editUser.email || "",
+        password: "", // user may optionally change
+        group: "", // will need mapping if group id available elsewhere
+        scan: [],
+      });
+    }
+  }, [isEdit, editUser, form]);
 
   // Fetch groups using react-query
   const {
@@ -125,19 +186,6 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
     enabled: !!session?.accessToken,
     staleTime: 5 * 60 * 1000,
   });
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      email: "",
-      password: "",
-      group: "",
-      scan: [],
-    },
-    mode: "onTouched",
-  })
 
   // Watch group field to determine if "Tester" is selected
   const selectedGroupId = useWatch({ control: form.control, name: "group" });
@@ -156,7 +204,7 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
     staleTime: 5 * 60 * 1000,
   });
 
-  // Use a mutation that passes the accessToken from session
+  // Create mutation (unchanged except removed schema dependency)
   const mutation = useMutation({
     mutationFn: async (body: {
       user: { first_name: string; last_name: string; email: string; password: string },
@@ -168,8 +216,8 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
     },
     onSuccess: () => {
       setIsModalOpen(false);
-      toast.success("Create employee successfully")
-      router.refresh()
+      toast.success("Employee created successfully");
+      refetch();
     },
     onError: (error) => {
       // Try to access error.message, error.response.data.message, or error.toString()
@@ -182,28 +230,51 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
     }
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  // Update mutation
+  const updateMutation = useMutation({
+    mutationFn: async (body: { user: { email: string; name: string; password?: string } }) => {
+      return updateEmployee(editUser!.id, body, session?.accessToken);
+    },
+    onSuccess: () => {
+      setIsModalOpen(false);
+      toast.success("Employee updated successfully");
+      refetch();
+    },
+    onError: (err) => {
+      setErrorMsg(err?.message || "Failed to update employee");
+    }
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function onSubmit(values:any) {
     setErrorMsg(null);
 
-    // Find group_id as number
-    const groupObj = groupOptions?.find((g: { value: string }) => g.value === values.group);
-    const group_id = groupObj ? Number(groupObj.value) : undefined;
-
-    // Prepare scan_ids as array of numbers if present and isTester
-    let scan_ids: number[] | undefined = undefined;
-    if (isTester && values.scan) {
-      if (Array.isArray(values.scan)) {
-        scan_ids = values.scan.map((id) => Number(id));
-      } else if (typeof values.scan === "string" && values.scan !== "") {
-        scan_ids = [Number(values.scan)];
+    if (isEdit && editUser) {
+      const updateBody: { user: { email: string; name: string; password?: string } } = {
+        user: {
+          email: values.email,
+          name: `${values.first_name} ${values.last_name}`.trim(),
+        }
+      };
+      if (values.password) {
+        updateBody.user.password = values.password;
       }
+      updateMutation.mutate(updateBody);
+      return;
     }
 
-    const body: {
-      user: { first_name: string; last_name: string; email: string; password: string },
-      group_id: number,
-      scan_ids?: number[]
-    } = {
+    // Find group obj
+    const groupObj = groupOptions?.find((g: { value: string }) => g.value === values.group);
+    const group_id = groupObj ? Number(groupObj.value) : undefined;
+    let scan_ids: number[] | undefined = undefined;
+    const selectedGroupId = values.group;
+    const selectedGroup = groupOptions?.find((g: { value: string }) => g.value === selectedGroupId);
+    const isTester = selectedGroup?.label === "Tester" && selectedGroup?.value === "2";
+    if (isTester && values.scan) {
+      if (Array.isArray(values.scan)) scan_ids = values.scan.map((id: string) => Number(id));
+      else if (typeof values.scan === "string" && values.scan !== "") scan_ids = [Number(values.scan)];
+    }
+    mutation.mutate({
       user: {
         first_name: values.first_name,
         last_name: values.last_name,
@@ -211,13 +282,8 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
         password: values.password,
       },
       group_id: group_id!,
-    };
-
-    if (isTester && scan_ids && scan_ids.length > 0) {
-      body.scan_ids = scan_ids;
-    }
-
-    mutation.mutate(body);
+      ...(scan_ids && scan_ids.length > 0 ? { scan_ids } : {})
+    });
   }
 
   // Cancel button handler that does not interact with the form state
@@ -389,9 +455,16 @@ const CreateEmployeeForm = ({ setIsModalOpen }: { setIsModalOpen: React.Dispatch
                 type="submit"
                 className="w-full"
                 variant="primary"
-                disabled={!form.formState.isValid || form.formState.isSubmitting || mutation.isPending || groupsLoading || (isTester && scansLoading)}
+                disabled={
+                  !form.formState.isValid ||
+                  form.formState.isSubmitting ||
+                  mutation.isPending ||
+                  updateMutation.isPending ||
+                  groupsLoading ||
+                  ((selectedGroup?.label === "Tester" && selectedGroup?.value === "2") && scansLoading)
+                }
               >
-                Create {(form.formState.isSubmitting || mutation.isPending) && <Loader2Icon className="animate-spin" />}
+                {isEdit ? "Update" : "Create"} {(form.formState.isSubmitting || mutation.isPending || updateMutation.isPending) && <Loader2Icon className="animate-spin" />}
               </Button>
             </div>
           </form>

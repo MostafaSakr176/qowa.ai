@@ -75,6 +75,7 @@ const TeamList: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [editUser, setEditUser] = useState<IRow | null>(null); // NEW
 
     // Fetch teams data using react-query
     const {
@@ -221,14 +222,34 @@ const TeamList: React.FC = () => {
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
                         <Sheet open={isModalOpen}>
-                            <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
-                                <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit User</Button>
+                            <SheetTrigger
+                                asChild
+                                onClick={() => {
+                                    setEditUser(row);          // set row for edit
+                                    setIsModalOpen(true);
+                                }}
+                            >
+                                <Button variant="ghost" className="rounded-lg w-full justify-start">
+                                    <SquarePen size={18} /> Edit User
+                                </Button>
                             </SheetTrigger>
                             <SheetContent showCloseButton={false}>
                                 <SheetHeader>
-                                    <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create User</SheetTitle>
+                                    <SheetTitle className="flex items-center gap-4">
+                                        <ArrowLeft
+                                            size={20}
+                                            onClick={() => {
+                                                setIsModalOpen(false);
+                                                setEditUser(null);
+                                            }}
+                                        />  {editUser ? "Edit User" : "Create User"}
+                                    </SheetTitle>
                                 </SheetHeader>
-                                <CreateTeamForm setIsModalOpen={setIsModalOpen} />
+                                <CreateTeamForm
+                                    setIsModalOpen={setIsModalOpen}
+                                    editUser={editUser}        // PASS EDIT DATA
+                                    refetch={refetch}
+                                />
                             </SheetContent>
                         </Sheet>
 
@@ -285,14 +306,32 @@ const TeamList: React.FC = () => {
                     />
                 </div>
                 <Sheet open={isModalOpen}>
-                    <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
+                    <SheetTrigger
+                        asChild
+                        onClick={() => {
+                            setIsModalOpen(true);
+                            setEditUser(null); // ensure fresh create
+                        }}
+                    >
                         <Button variant={"primary"} size="lg"><Plus size={20} />  Create User</Button>
                     </SheetTrigger>
                     <SheetContent showCloseButton={false}>
                         <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create User</SheetTitle>
+                            <SheetTitle className="flex items-center gap-4">
+                                <ArrowLeft
+                                    size={20}
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        setEditUser(null);
+                                    }}
+                                />  {editUser ? "Edit User" : "Create User"}
+                            </SheetTitle>
                         </SheetHeader>
-                        <CreateTeamForm setIsModalOpen={setIsModalOpen} />
+                        <CreateTeamForm
+                            setIsModalOpen={setIsModalOpen}
+                            editUser={editUser}   // PASS WHEN NULL OR OBJECT
+                            refetch={refetch}
+                        />
                     </SheetContent>
                 </Sheet>
             </div>
