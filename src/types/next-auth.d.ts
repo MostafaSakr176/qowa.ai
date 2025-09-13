@@ -7,6 +7,14 @@ declare module "next-auth" {
       email: string
       role: string
     }
+    group?: {
+      id: string
+      name: string
+      permissions: {
+        id: number
+        codename: string
+      }[]
+    }
     expires: string
     accessToken: string
     refreshToken: string

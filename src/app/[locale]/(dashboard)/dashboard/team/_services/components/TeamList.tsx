@@ -23,6 +23,8 @@ import toast from "react-hot-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import api from "@/lib/axiosClient";
 import { formatDateTime } from "@/utils/formateDate";
+import { useSession } from "next-auth/react";
+import { hasPermission } from "@/utils/permissions";
 
 // Types for TeamsData prop
 type TeamsData = {
@@ -76,7 +78,8 @@ const TeamList: React.FC = () => {
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
     const [editUser, setEditUser] = useState<IRow | null>(null); // NEW
-
+    const [isExporting, setIsExporting] = useState(false);
+    const { data: session } = useSession();
     // Fetch teams data using react-query
     const {
         data: teamsData,
@@ -84,6 +87,7 @@ const TeamList: React.FC = () => {
         isError,
         error,
         refetch,
+        isFetching,
     } = useQuery<TeamsData, Error>({
         queryKey: ["teams"],
         queryFn: () => fetchEmployees(),
@@ -133,6 +137,69 @@ const TeamList: React.FC = () => {
 
     const handleDelete = (id: number) => {
         deleteMutation.mutate(id);
+    };
+
+    // Helper to safely wrap CSV values in quotes and escape existing quotes
+    function csvEscape(value: unknown) {
+        if (value === null || value === undefined) return "";
+        const str = String(value).replace(/"/g, '""');
+        return `"${str}"`;
+    }
+
+    const handleExportCsv = () => {
+        try {
+            setIsExporting(true);
+            if (!tableData.length) {
+                toast.error("No data to export");
+                return;
+            }
+
+            const headers = [
+                "ID",
+                "First Name",
+                "Last Name",
+                "Email",
+                "Role",
+                "Registration Date",
+                "Last Login Date",
+                "2FA Enabled"
+            ];
+
+            const rows = tableData.map((row, idx) => {
+                const created = formatDateTime(row.created_at);
+                const lastLogin = formatDateTime(row.last_login);
+                return [
+                    idx + 1,
+                    row.first_name,
+                    row.last_name,
+                    row.email,
+                    row.group_name || "None",
+                    created?.date + ""+created?.time,
+                    lastLogin?.date + " " + lastLogin?.time,
+                    row.is_2fa_enabled ? "Yes" : "No"
+                ].map(csvEscape).join(",");
+            });
+
+            const csvContent = [headers.map(csvEscape).join(","), ...rows].join("\r\n");
+            // Add BOM for Excel UTF-8 compatibility
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            const now = new Date();
+            const fileName = `employees_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}.csv`;
+            link.href = url;
+            link.setAttribute("download", fileName);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            toast.success("CSV exported successfully");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to export CSV";
+            toast.error(message);
+        } finally {
+            setIsExporting(false);
+        }
     };
 
 
@@ -207,7 +274,7 @@ const TeamList: React.FC = () => {
         {
             key: "last_login",
             header: "Last Login",
-            render: (row:IRow) => (
+            render: (row: IRow) => (
                 <div>
                     <p className="text-sm text-[#070A0E]">{formatDateTime(row?.last_login)?.date}</p>
                     <p className="text-sm text-[#4A4C4F]">{formatDateTime(row?.last_login)?.time}</p>
@@ -217,11 +284,11 @@ const TeamList: React.FC = () => {
         {
             key: "actions",
             header: "",
-            render: (row:IRow) => (
+            render: (row: IRow) => (
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Sheet open={isModalOpen}>
+                        {hasPermission(session, "change_teammember") && <Sheet open={isModalOpen}>
                             <SheetTrigger
                                 asChild
                                 onClick={() => {
@@ -251,10 +318,10 @@ const TeamList: React.FC = () => {
                                     refetch={refetch}
                                 />
                             </SheetContent>
-                        </Sheet>
+                        </Sheet>}
 
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
-                        <Button
+                        {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button> */}
+                        {hasPermission(session, "delete_teammember") && <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => handleDelete(row.id)}
@@ -268,21 +335,12 @@ const TeamList: React.FC = () => {
                             ) : (
                                 <span>Delete</span>
                             )}
-                        </Button>
+                        </Button>}
                     </PopoverContent>
                 </Popover>
             ),
         },
     ];
-
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-40">
-                <Loader2 className="animate-spin" size={32} />
-                <span className="ml-2">Loading users...</span>
-            </div>
-        );
-    }
 
     if (isError) {
         return (
@@ -305,35 +363,46 @@ const TeamList: React.FC = () => {
                         iconPosition="right"
                     />
                 </div>
-                <Sheet open={isModalOpen}>
-                    <SheetTrigger
-                        asChild
-                        onClick={() => {
-                            setIsModalOpen(true);
-                            setEditUser(null); // ensure fresh create
-                        }}
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleExportCsv}
+                        disabled={!tableData.length || isLoading || isFetching || isExporting}
+                        className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
                     >
-                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create User</Button>
-                    </SheetTrigger>
-                    <SheetContent showCloseButton={false}>
-                        <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4">
-                                <ArrowLeft
-                                    size={20}
-                                    onClick={() => {
-                                        setIsModalOpen(false);
-                                        setEditUser(null);
-                                    }}
-                                />  {editUser ? "Edit User" : "Create User"}
-                            </SheetTitle>
-                        </SheetHeader>
-                        <CreateTeamForm
-                            setIsModalOpen={setIsModalOpen}
-                            editUser={editUser}   // PASS WHEN NULL OR OBJECT
-                            refetch={refetch}
-                        />
-                    </SheetContent>
-                </Sheet>
+                        {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                        {isExporting ? "Exporting..." : "Export CSV"}
+                    </Button>
+                    {hasPermission(session, "add_teammember") && <Sheet open={isModalOpen}>
+                        <SheetTrigger
+                            asChild
+                            onClick={() => {
+                                setIsModalOpen(true);
+                                setEditUser(null); // ensure fresh create
+                            }}
+                        >
+                            <Button variant={"primary"} size="lg"><Plus size={20} />  Create User</Button>
+                        </SheetTrigger>
+                        <SheetContent showCloseButton={false}>
+                            <SheetHeader>
+                                <SheetTitle className="flex items-center gap-4">
+                                    <ArrowLeft
+                                        size={20}
+                                        onClick={() => {
+                                            setIsModalOpen(false);
+                                            setEditUser(null);
+                                        }}
+                                    />  {editUser ? "Edit User" : "Create User"}
+                                </SheetTitle>
+                            </SheetHeader>
+                            <CreateTeamForm
+                                setIsModalOpen={setIsModalOpen}
+                                editUser={editUser}   // PASS WHEN NULL OR OBJECT
+                                refetch={refetch}
+                            />
+                        </SheetContent>
+                    </Sheet>}
+                </div>
             </div>
             <CustomTable data={tableData} columns={columns} />
         </div>

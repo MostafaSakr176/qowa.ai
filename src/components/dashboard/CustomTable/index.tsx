@@ -10,6 +10,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import Loading from "@/components/ui/loading";
 
 type Column<T> = {
     key: keyof T | string;
@@ -155,7 +156,9 @@ function CustomTable<T extends { [key: string]: any }>({
                         {loading ? (
                             <TableRow>
                                 <TableCell colSpan={columns.length}>
-                                    <div className="py-6 text-center text-sm text-muted-foreground">Loading...</div>
+                                    <div className="py-6 text-center text-sm text-muted-foreground">
+                                        <Loading />
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ) : pageData.length === 0 ? (

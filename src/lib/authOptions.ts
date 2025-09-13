@@ -94,7 +94,7 @@ async function performRefresh(token: any) {
       ...token,
       accessToken: newAccessToken,
       refreshToken: newRefreshToken,
-      accessTokenExpires: Date.now() + 2 * 60 * 1000,
+      accessTokenExpires: Date.now() + 10 * 60 * 1000,
       group,
       error: null,
     };
@@ -268,7 +268,7 @@ export const authOptions: NextAuthOptions = {
         },
         group: token.group,
         accessToken: token.accessToken,
-        refreshToken: token.refreshToken,
+        // refreshToken: token.refreshToken,
         error: token.error,
       };
     },

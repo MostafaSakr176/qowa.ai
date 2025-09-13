@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Download, Ellipsis, Plus, ScanLine, Search, SquarePen } from "lucide-react";
+import { ArrowLeft, Ellipsis, Plus, ScanLine, Search, SquarePen, Trash } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress"
@@ -35,6 +35,8 @@ import CreateScanForm from "./CreateForm";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
+import { useSession } from "next-auth/react";
+import { hasPermission } from "@/utils/permissions";
 
 type ScanApi = {
     id: number;
@@ -76,6 +78,7 @@ const statusOptions = [
 ];
 
 const ScansList = ({ organizationId }: { organizationId: string }) => {
+    const { data: session } = useSession();
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -188,13 +191,13 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
         {
             key: "actions",
             header: "",
-            render: (row: { id: number }) => (
+            render: () => (
                 <Popover>
-                    <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
+                    <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit scan</Button>
+                        {hasPermission(session, "change_scan") && <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit scan</Button>}
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/dashboard/organizations/1/scans/1/findings")}><ScanLine size={18} />View Findings</Button>
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
+                        {hasPermission(session, "delete_scan") && <Button variant="ghost" className="rounded-lg w-full justify-start"><Trash size={18} /> Delete</Button>}
                     </PopoverContent>
                 </Popover>
             ),
@@ -228,7 +231,7 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
                         </SelectContent>
                     </Select>
                 </div>
-                <Sheet open={isModalOpen}>
+                {hasPermission(session, "add_scan") && <Sheet open={isModalOpen}>
                     <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
                         <Button variant={"primary"} size="lg"><Plus size={20} />  Create scan</Button>
                     </SheetTrigger>
@@ -238,7 +241,7 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
                         </SheetHeader>
                         <CreateScanForm setIsModalOpen={setIsModalOpen} />
                     </SheetContent>
-                </Sheet>
+                </Sheet>}
             </div>
             <CustomTable data={filteredData} columns={columns} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)} />
         </div>

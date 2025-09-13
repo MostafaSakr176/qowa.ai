@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Ban, Download, Ellipsis, Building2, Plus, ScanLine, Search, SquarePen } from "lucide-react";
+import { ArrowLeft, Download, Ellipsis, Building2, Plus, ScanLine, Search, SquarePen, Trash } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +28,8 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
+import { useSession } from "next-auth/react";
+import { hasPermission } from "@/utils/permissions";
 
 // API response types
 type OrganizationApi = {
@@ -81,12 +83,12 @@ const deleteOrganization = async (id: number) => {
 };
 
 const OrganizationsList = () => {
+    const { data: session } = useSession();
     const [search, setSearch] = useState("");
     const [states, setStates] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editOrganization, setEditOrganization] = useState<OrganizationRow | null>(null);
     const [page, setPage] = useState(1);
-
     const router = useRouter();
 
     // Fetch organizations data
@@ -164,6 +166,57 @@ const OrganizationsList = () => {
         return data;
     }, [search, states, organizations]);
 
+    // CSV export helper
+    const handleExportCsv = () => {
+        if (!filteredData.length) return;
+        const headers = [
+            "ID",
+            "Name",
+            "Email",
+            "Country",
+            "Rank",
+            "Teams",
+            "State",
+            "Registration Date",
+            "Amount"
+        ];
+
+        const rows = filteredData.map((r, idx) => ([
+            idx + 1,
+            r.organizations.name,
+            r.organizations.mail,
+            r.country,
+            r.pest_organization,
+            r.teams,
+            r.states,
+            r.registerationDate.date + " " + r.registerationDate.time,
+            r.amount
+        ]));
+
+        const csv = [headers, ...rows]
+            .map(line =>
+                line
+                    .map(field => {
+                        if (field === null || field === undefined) return "";
+                        const val = String(field);
+                        return /[",\n]/.test(val) ? `"${val.replace(/"/g, '""')}"` : val;
+                    })
+                    .join(",")
+            )
+            .join("\n");
+
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const ts = new Date().toISOString().split("T")[0];
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `organizations_${ts}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    };
+
     const columns = [
         {
             key: "organizations",
@@ -217,7 +270,7 @@ const OrganizationsList = () => {
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button
+                        {hasPermission(session, "change_organization") && <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => {
@@ -226,28 +279,27 @@ const OrganizationsList = () => {
                             }}
                         >
                             <SquarePen size={18} /> Edit Organization
-                        </Button>
+                        </Button>}
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button>
-                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
+                        {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button> */}
+                        {hasPermission(session, "delete_organization") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
                             disabled={deleteMutation.isPending}
                         >
-                            Delete
-                        </Button>
+                           <Trash size={18} /> Delete
+                        </Button>}
                     </PopoverContent>
                 </Popover>
             ),
         },
     ];
 
-    if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error loading organizations.</div>;
 
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
-                <div className="grid grid-cols-2 gap-2 items-center">
+                <div className="grid grid-cols-3 gap-2 items-center">
                     <Input
                         placeholder="Search payments..."
                         value={search}
@@ -268,24 +320,35 @@ const OrganizationsList = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <Sheet open={isModalOpen}>
-                    <SheetTrigger asChild onClick={() => { setIsModalOpen(true); setEditOrganization(null); }}>
-                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create organization</Button>
-                    </SheetTrigger>
-                    <SheetContent showCloseButton={false}>
-                        <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4">
-                                <ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditOrganization(null); }} />
-                                {editOrganization ? "Edit Organization" : "Create Organization"}
-                            </SheetTitle>
-                        </SheetHeader>
-                        <CreateOrganizationForm
-                            setIsModalOpen={setIsModalOpen}
-                            refetch={refetch}
-                            editOrganization={editOrganization}
-                        />
-                    </SheetContent>
-                </Sheet>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleExportCsv}
+                        disabled={!filteredData.length || isLoading || isFetching}
+                        className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white"
+                    >
+                        Export CSV <Download size={16} className="mr-1" />
+                    </Button>
+                    {hasPermission(session, "add_organization") && <Sheet open={isModalOpen}>
+                        <SheetTrigger asChild onClick={() => { setIsModalOpen(true); setEditOrganization(null); }}>
+                            <Button variant={"primary"} size="lg"><Plus size={20} />  Create organization</Button>
+                        </SheetTrigger>
+                        <SheetContent showCloseButton={false}>
+                            <SheetHeader>
+                                <SheetTitle className="flex items-center gap-4">
+                                    <ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditOrganization(null); }} />
+                                    {editOrganization ? "Edit Organization" : "Create Organization"}
+                                </SheetTitle>
+                            </SheetHeader>
+                            <CreateOrganizationForm
+                                setIsModalOpen={setIsModalOpen}
+                                refetch={refetch}
+                                editOrganization={editOrganization}
+                            />
+                        </SheetContent>
+                    </Sheet>}
+                </div>
+
             </div>
             <CustomTable
                 data={filteredData}
