@@ -50,7 +50,7 @@ const editSchema = baseSchema.extend({
 async function updateEmployee(
   id: number,
   body: {
-    user: { email: string; name: string; password?: string };
+    user: { email?: string; name: string; password?: string };
   },
   accessToken: string | undefined
 ) {
@@ -74,7 +74,7 @@ async function updateEmployee(
 // Accept accessToken as an argument
 async function createEmployee(
   body: {
-    user: { first_name: string; last_name: string; email: string; password: string },
+    user: { first_name: string; last_name: string; email?: string; password: string },
     group_id: number,
     scan_ids?: number[]
   },
@@ -207,7 +207,7 @@ const CreateEmployeeForm = ({ setIsModalOpen , editUser , refetch }: { setIsModa
   // Create mutation (unchanged except removed schema dependency)
   const mutation = useMutation({
     mutationFn: async (body: {
-      user: { first_name: string; last_name: string; email: string; password: string },
+      user: { first_name: string; last_name: string; email?: string; password: string },
       group_id: number,
       scan_ids?: number[]
     }) => {
@@ -246,14 +246,14 @@ const CreateEmployeeForm = ({ setIsModalOpen , editUser , refetch }: { setIsModa
   });
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  function onSubmit(values:any) {
+  function onSubmit(values: any) {
     setErrorMsg(null);
 
     if (isEdit && editUser) {
-      const updateBody: { user: { email: string; name: string; password?: string } } = {
+      const updateBody: { user: { name: string; email: string; password?: string } } = {
         user: {
-          email: values.email,
           name: `${values.first_name} ${values.last_name}`.trim(),
+          email: values.email !== editUser.email ? values.email : editUser.email,
         }
       };
       if (values.password) {
