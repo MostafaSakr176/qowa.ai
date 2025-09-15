@@ -33,7 +33,8 @@ import {
 import { useRouter } from "@/i18n/navigation";
 import CreateScanForm from "./CreateForm";
 import { Badge } from "@/components/ui/badge";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import api from "@/lib/axiosClient";
 import { useSession } from "next-auth/react";
 import { hasPermission } from "@/utils/permissions";
@@ -42,6 +43,7 @@ type ScanApi = {
     id: number;
     title: string;
     status: string;
+    app_type: string;
     created_at: string;
     testers: { id: number; email: string; first_name: string; last_name: string }[];
     team_members: { id: number; email: string; first_name: string; last_name: string }[];
@@ -58,7 +60,7 @@ type ScansApiResponse = {
 type ScanRow = {
     id: number;
     title: string;
-    type: string;
+    app_type: string;
     status: string;
     progress: number;
     assign: string[];
@@ -82,14 +84,40 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editScanId, setEditScanId] = useState<number | null>(null);
+    const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const router = useRouter();
 
     // Fetch scans data
-    const { data, isLoading, isError } = useQuery<ScansApiResponse>({
+    const { data, isLoading, refetch, isError } = useQuery<ScansApiResponse>({
         queryKey: ["scans", organizationId],
         queryFn: () => fetchScans(organizationId),
     });
+
+    const deleteMutation = useMutation({
+        mutationFn: async (id: number) => {
+            setDeletingId(id);
+            await api.delete(`/scan/scans/${id}/`);
+        },
+        onSuccess: () => {
+            toast.success("Scan deleted successfully");
+            setDeletingId(null);
+            refetch();
+        },
+        onError: (err: unknown) => {
+            interface AxiosLike { response?: { data?: { detail?: string } }; message?: string }
+            const e = err as AxiosLike;
+            const message = e?.response?.data?.detail || e?.message || "Failed to delete scan";
+            toast.error(message);
+            setDeletingId(null);
+        }
+    });
+
+    const handleDelete = (id: number) => {
+        if (deletingId) return; // prevent double
+        deleteMutation.mutate(id);
+    }
 
     // Map API data to table format
     const scans: ScanRow[] = useMemo(() => {
@@ -97,7 +125,7 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
         return data.results.map((scan) => ({
             id: scan.id,
             title: scan.title,
-            type: "web", // Not provided by API, set default or map if available
+            app_type: scan.app_type, // Not provided by API, set default or map if available
             status: scan.status === "pending" ? "open" : scan.status, // Map API status if needed
             progress: scan.progress,
             assign: scan.testers.map(t => `${t.first_name[0] ?? ""}${t.last_name[0] ?? ""}`),
@@ -144,7 +172,7 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
             ),
         },
         {
-            key: "type",
+            key: "app_type",
             header: "Type",
         },
         {
@@ -191,20 +219,26 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
         {
             key: "actions",
             header: "",
-            render: () => (
+            render: (row: { id: number }) => (
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        {hasPermission(session, "change_scan") && <Button variant="ghost" className="rounded-lg w-full justify-start"><SquarePen size={18} /> Edit scan</Button>}
+                        {hasPermission(session, "change_scan") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => { setEditScanId(row.id); setIsModalOpen(true); }}><SquarePen size={18} /> Edit scan</Button>}
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/dashboard/organizations/1/scans/1/findings")}><ScanLine size={18} />View Findings</Button>
-                        {hasPermission(session, "delete_scan") && <Button variant="ghost" className="rounded-lg w-full justify-start"><Trash size={18} /> Delete</Button>}
+                        {hasPermission(session, "delete_scan") && <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start"
+                            disabled={deletingId === row.id && deleteMutation.isPending}
+                            onClick={() => handleDelete(row.id)}
+                        >
+                            <Trash size={18} /> {deletingId === row.id && deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                        </Button>}
                     </PopoverContent>
                 </Popover>
             ),
         },
     ];
 
-    if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error loading scans.</div>;
 
     return (
@@ -233,17 +267,17 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
                 </div>
                 {hasPermission(session, "add_scan") && <Sheet open={isModalOpen}>
                     <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
-                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create scan</Button>
+                        <Button variant={"primary"} size="lg" onClick={() => { setEditScanId(null); }}><Plus size={20} />  Create scan</Button>
                     </SheetTrigger>
                     <SheetContent showCloseButton={false}>
                         <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create scan</SheetTitle>
+                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditScanId(null); }} />  {editScanId ? 'Edit scan' : 'Create scan'}</SheetTitle>
                         </SheetHeader>
-                        <CreateScanForm setIsModalOpen={setIsModalOpen} />
+                        <CreateScanForm setIsModalOpen={setIsModalOpen} organizationId={organizationId} onCreated={() => { refetch(); setEditScanId(null); }} editScanId={editScanId} />
                     </SheetContent>
                 </Sheet>}
             </div>
-            <CustomTable data={filteredData} columns={columns} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)} />
+            <CustomTable data={filteredData} columns={columns} loading={isLoading} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)} />
         </div>
     );
 };
