@@ -38,8 +38,7 @@ const TwoStepVerification = () => {
     }, []);
 
     // 2. Fetch 2FA setup only when we have both session & email
-    useEffect(() => {
-        if (!session) return;            // wait for auth
+    useEffect(() => {// wait for auth
         if (!email) return;              // wait for email retrieval
         let cancelled = false;
 
