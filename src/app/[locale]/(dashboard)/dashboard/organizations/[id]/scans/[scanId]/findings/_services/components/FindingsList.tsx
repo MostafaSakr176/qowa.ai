@@ -54,7 +54,7 @@ export interface ScanFinding {
     steps_to_reproduce: string;
     impact: string;
     severity: "critical" | "high" | "medium" | "low";
-    status: "open" | "closed";
+    status: "open" | "closed" | "pending" | "finished";
     evidences: Evidence[];
     created_at: string;
     updated_at: string;
@@ -74,6 +74,8 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editFinding, setEditFinding] = useState<ScanFinding | null>(null);
+    const [viewFinding, setViewFinding] = useState<ScanFinding | null>(null);
+    const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
     const { data: session } = useSession();
     const [isExporting, setIsExporting] = useState(false);
 
@@ -141,7 +143,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
             const a = document.createElement('a');
             const now = new Date();
             a.href = url;
-            a.download = `findings_${scanId}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.csv`;
+            a.download = `findings_${scanId}_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -216,7 +218,13 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                         >
                             <SquarePen size={18} /> Edit Finding
                         </Button>}
-                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
+                        <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start"
+                            onClick={() => { setViewFinding(row); setIsViewSheetOpen(true); }}
+                        >
+                            <Download size={18} /> Export Report
+                        </Button>
                         {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button> */}
                         {hasPermission(session, "delete_organization") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
                             disabled={deleteMutation.isPending}
@@ -276,6 +284,70 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                             <CreateFindingForm finding={editFinding} setIsModalOpen={setIsModalOpen} scanId={scanId} refetch={() => { refetch(); setEditFinding(null); }} />
                         </SheetContent>
                     </Sheet>
+                    <Sheet open={isViewSheetOpen} onOpenChange={(open) => { if (!open) { setIsViewSheetOpen(false); setViewFinding(null); } }}>
+                        {/* Hidden trigger not needed since we open programmatically */}
+                        <SheetContent showCloseButton={false} side="right" className="w-full sm:max-w-[520px] overflow-y-auto">
+                            <SheetHeader >
+                                <SheetTitle className="flex items-center justify-between w-full">
+                                    <div className="flex items-center gap-2">
+                                        <ArrowLeft size={20} className="cursor-pointer" onClick={() => { setIsViewSheetOpen(false); setViewFinding(null); }} />
+                                        {viewFinding ? `Finding ID: ${viewFinding.id}` : 'Finding'}
+                                    </div>
+                                    {viewFinding && (
+                                        <Button variant="outline" size="sm" className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2" onClick={() => exportSingleFindingCsv(viewFinding)}>
+                                            {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+                                            Export CSV
+                                        </Button>
+                                    )}
+                                </SheetTitle>
+                            </SheetHeader>
+                            {viewFinding && (
+                                <div className="py-4 space-y-6">
+                                    <div className="flex items-center gap-3">
+                                        <Badge withDot variant={
+                                            viewFinding.severity === 'critical' ? 'failed' :
+                                                viewFinding.severity === 'high' ? 'failed' :
+                                                    viewFinding.severity === 'medium' ? 'pending' : 'success'
+                                        }>{viewFinding.severity}</Badge>
+                                        <Badge variant={viewFinding.status === 'open' ? 'pending' : 'success'} withDot>{viewFinding.status}</Badge>
+                                    </div>
+                                    <h2 className="text-xl font-bold">{viewFinding.title}</h2>
+                                    <section className="space-y-2">
+                                        <h3 className="font-bold text-lg text-[#36394A]">Description</h3>
+                                        <p className="text-sm whitespace-pre-line break-words">{viewFinding.description || '—'}</p>
+                                    </section>
+                                    <section className="space-y-2">
+                                        <h3 className="font-bold text-lg text-[#36394A]">Steps to produce</h3>
+                                        <div className="text-sm whitespace-pre-line break-words">
+                                            {viewFinding.steps_to_reproduce
+                                                ? <ol className="list-decimal ml-4 space-y-1">{viewFinding.steps_to_reproduce.split('\n').map((s, i) => (<li key={i}>{s}</li>))}</ol>
+                                                : '—'}
+                                        </div>
+                                    </section>
+                                    <section className="space-y-2">
+                                        <h3 className="font-bold text-lg text-[#36394A]">Impact</h3>
+                                        <p className="text-sm whitespace-pre-line break-words">{viewFinding.impact || '—'}</p>
+                                    </section>
+                                    <section className="space-y-2">
+                                        <h3 className="font-bold text-lg text-[#36394A]">Evidence / screenshots</h3>
+                                        <div className="space-y-3">
+                                            {viewFinding.evidences?.length ? viewFinding.evidences.map(ev => (
+                                                <div key={ev.id} className="border rounded-md p-3 text-xs flex flex-col gap-1">
+                                                    <span className="font-medium">{ev.description || 'Evidence'}</span>
+                                                    <a href={ev.file} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">Open file</a>
+                                                    <span className="text-muted-foreground">Uploaded: {new Date(ev.uploaded_at).toLocaleString()}</span>
+                                                </div>
+                                            )) : <p className="text-sm text-muted-foreground">No evidences.</p>}
+                                        </div>
+                                    </section>
+                                    <section className="space-y-2 text-xs text-muted-foreground">
+                                        <div>Created: {new Date(viewFinding.created_at).toLocaleString()}</div>
+                                        <div>Updated: {new Date(viewFinding.updated_at).toLocaleString()}</div>
+                                    </section>
+                                </div>
+                            )}
+                        </SheetContent>
+                    </Sheet>
                 </div>
             </div>
             <CustomTable data={filteredData} columns={columns} />
@@ -284,3 +356,39 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
 };
 
 export default FindingsList;
+
+// Helper to export single finding as CSV
+function exportSingleFindingCsv(f: ScanFinding) {
+    try {
+        const headers = [
+            'ID', 'Title', 'Severity', 'Status', 'Description', 'Steps', 'Impact', 'Evidences Count', 'Created At', 'Updated At'
+        ];
+        const csvEscape = (val: unknown) => {
+            if (val === null || val === undefined) return '""';
+            return '"' + String(val).replace(/"/g, '""') + '"';
+        };
+        const row = [
+            f.id,
+            f.title,
+            f.severity,
+            f.status,
+            f.description,
+            f.steps_to_reproduce,
+            f.impact,
+            f.evidences?.length || 0,
+            new Date(f.created_at).toISOString(),
+            new Date(f.updated_at).toISOString()
+        ].map(csvEscape).join(',');
+        const blob = new Blob(["\uFEFF" + headers.map(csvEscape).join(',') + '\r\n' + row], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `finding_${f.id}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Export single finding failed', e);
+    }
+}

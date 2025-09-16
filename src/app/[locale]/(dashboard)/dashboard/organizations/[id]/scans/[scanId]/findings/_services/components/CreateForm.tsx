@@ -40,7 +40,7 @@ export interface FindingForEdit {
   steps_to_reproduce: string;
   impact: string;
   severity: "critical" | "high" | "medium" | "low";
-  status: "open" | "closed";
+    status: "open" | "closed" | "pending" | "finished";
 }
 
 
