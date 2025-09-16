@@ -1,10 +1,9 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Download, Ellipsis, MoreHorizontal, Plus, ScanLine, Search, SquarePen, Trash, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Ellipsis, Plus, Search, SquarePen, Trash, Loader2 } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress"
 import {
     Select,
     SelectTrigger,
@@ -25,11 +24,6 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge";
 import { hasPermission } from "@/utils/permissions";
 import { useSession } from "next-auth/react";

@@ -33,7 +33,7 @@ const fetchFindings = async (scanId: string) => {
 };
 
 const ClientPage = ({ scanId }: { scanId: string }) => {
-    const { data: findingsData, isLoading, isError, error } = useQuery({
+    const { data: findingsData, isError, error } = useQuery({
         queryKey: ['scan-findings', scanId],
         queryFn: () => fetchFindings(scanId),
     });

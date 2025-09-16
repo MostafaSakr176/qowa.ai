@@ -30,7 +30,6 @@ const emptyStatus: StatusBreakdown = { open: 0, closed: 0 };
 const Statistics: React.FC<StatisticsProps> = ({ statisticsData }) => {
     const severity_breakdown = statisticsData?.severity_breakdown ?? emptySeverity;
     const status_breakdown = statisticsData?.status_breakdown ?? emptyStatus;
-    const total_findings = statisticsData?.total_findings ?? 0;
 
     // Prepare donut data (open vs closed)
     const donutSeries = [status_breakdown.open, status_breakdown.closed];
