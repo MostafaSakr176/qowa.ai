@@ -163,7 +163,7 @@ const Login = () => {
           </Button>
           <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-1">
                     <span className="text-secondary">
-                      Don&apos;t have an account? <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/register')}>Register</Button>
+                      Don&apos;t have an account? <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/signup')}>Register</Button>
                     </span>
                     <span className="text-secondary">
                       <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/forget-password')}>Forget Password?</Button>

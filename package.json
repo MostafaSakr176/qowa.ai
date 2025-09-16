@@ -42,6 +42,7 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.62.0",
     "react-hot-toast": "^2.6.0",
+    "react-to-print": "^3.1.1",
     "swiper": "^11.2.10",
     "tailwind-merge": "^3.3.1",
     "topojson": "^3.0.2",

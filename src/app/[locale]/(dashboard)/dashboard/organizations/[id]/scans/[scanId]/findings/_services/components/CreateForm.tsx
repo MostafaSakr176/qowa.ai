@@ -40,7 +40,7 @@ export interface FindingForEdit {
   steps_to_reproduce: string;
   impact: string;
   severity: "critical" | "high" | "medium" | "low";
-    status: "open" | "closed" | "pending" | "finished";
+  status: "open" | "closed" | "pending" | "finished";
 }
 
 
@@ -98,13 +98,18 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
       }
       if (!isEdit && 'evidences' in values) {
         (values.evidences as { file: File; description?: string }[]).forEach((ev, idx) => {
-          formData.append(`evidences[${idx}].file`, ev.file);
+          if (ev.file) formData.append(`evidences[${idx}].file`, ev.file, (ev.file as File).name);
           if (ev.description) formData.append(`evidences[${idx}].description`, ev.description);
         });
       }
+      if (process.env.NODE_ENV !== 'production') {
+        for (const pair of formData.entries()) {
+          console.log('FormData ->', pair[0], pair[1]);
+        }
+      }
       const res = isEdit
-        ? await api.patch(`/scan/findings/${finding?.id}/`, formData)
-        : await api.post("/scan/findings/", formData);
+        ? await api.patch(`/scan/findings/${finding?.id}/`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+        : await api.post("/scan/findings/", formData, { headers: { 'Content-Type': 'multipart/form-data' } });
       return res.data;
     },
     onSuccess: () => {
@@ -135,9 +140,13 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
   }
 
   return (
-    <div className='flex flex-col h-full overflow-y-auto justify-start items-center'>
+    <div className='flex flex-col h-full overflow-y-auto justify-start items-center'
+            style={{
+          scrollbarWidth: 'none',
+          scrollbarColor: '#0D0D12 #fff',
+        }}>
       <Form {...form}>
-  <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit((values) => onSubmit(values))}>
+        <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit((values) => onSubmit(values))}>
           <div className="space-y-4">
             <FormField
               name="title"
@@ -207,7 +216,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
             {isEdit && (
               <FormField
                 name="status"
-                
+
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
@@ -236,6 +245,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
                       <div key={idx} className="border rounded-md p-2 mb-2 flex flex-col gap-2">
                         <Input
                           type="file"
+                          name={`evidence-file-${idx}`}
                           label="File"
                           placeholder="Upload evidence"
                           onChange={e => {

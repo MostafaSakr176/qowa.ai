@@ -1,7 +1,7 @@
 "use client"
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Download, Ellipsis, Plus, Search, SquarePen, Trash, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Ellipsis, Plus, Search, SquarePen, Trash, Loader2, Printer } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -30,6 +30,8 @@ import { useSession } from "next-auth/react";
 import api from "@/lib/axiosClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import CreateFindingForm from "./CreateForm";
+import Image from "next/image";
+import { useReactToPrint } from "react-to-print";
 
 
 const statusOptions = [
@@ -78,6 +80,9 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
     const [isViewSheetOpen, setIsViewSheetOpen] = useState(false);
     const { data: session } = useSession();
     const [isExporting, setIsExporting] = useState(false);
+
+    const contentRef = useRef<HTMLDivElement>(null);
+    const reactToPrintFn = useReactToPrint({ contentRef, pageStyle: printPageStyle });
 
     const deleteMutation = useMutation({
         mutationFn: deleteFinding,
@@ -294,15 +299,22 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                                         {viewFinding ? `Finding ID: ${viewFinding.id}` : 'Finding'}
                                     </div>
                                     {viewFinding && (
-                                        <Button variant="outline" size="sm" className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2" onClick={() => exportSingleFindingCsv(viewFinding)}>
-                                            {isExporting ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
-                                            Export CSV
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
+                                            onClick={()=>reactToPrintFn?.()}
+                                        >
+                                            <Printer size={14} /> Export Report PDF
                                         </Button>
                                     )}
                                 </SheetTitle>
                             </SheetHeader>
                             {viewFinding && (
-                                <div className="py-4 space-y-6">
+                                <div className="py-4 space-y-6 print-findings-container" ref={contentRef} style={{
+                                    scrollbarWidth: 'none',
+                                    scrollbarColor: '#0D0D12 #fff',
+                                }}>
                                     <div className="flex items-center gap-3">
                                         <Badge withDot variant={
                                             viewFinding.severity === 'critical' ? 'failed' :
@@ -311,13 +323,18 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                                         }>{viewFinding.severity}</Badge>
                                         <Badge variant={viewFinding.status === 'open' ? 'pending' : 'success'} withDot>{viewFinding.status}</Badge>
                                     </div>
-                                    <h2 className="text-xl font-bold">{viewFinding.title}</h2>
+                                    <h2 className="text-xl font-bold print:mb-2">{viewFinding.title}</h2>
+                                    <div className="print-meta hidden print:block text-xs text-muted-foreground">
+                                        <div>ID: {viewFinding.id}</div>
+                                        <div>Severity: {viewFinding.severity} | Status: {viewFinding.status}</div>
+                                        <div>Generated: {new Date().toLocaleString()}</div>
+                                    </div>
                                     <section className="space-y-2">
-                                        <h3 className="font-bold text-lg text-[#36394A]">Description</h3>
+                                        <h3 className="font-bold text-lg text-[#36394A] print-section-title">Description</h3>
                                         <p className="text-sm whitespace-pre-line break-words">{viewFinding.description || '—'}</p>
                                     </section>
                                     <section className="space-y-2">
-                                        <h3 className="font-bold text-lg text-[#36394A]">Steps to produce</h3>
+                                        <h3 className="font-bold text-lg text-[#36394A] print-section-title">Steps to reproduce</h3>
                                         <div className="text-sm whitespace-pre-line break-words">
                                             {viewFinding.steps_to_reproduce
                                                 ? <ol className="list-decimal ml-4 space-y-1">{viewFinding.steps_to_reproduce.split('\n').map((s, i) => (<li key={i}>{s}</li>))}</ol>
@@ -325,17 +342,20 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                                         </div>
                                     </section>
                                     <section className="space-y-2">
-                                        <h3 className="font-bold text-lg text-[#36394A]">Impact</h3>
+                                        <h3 className="font-bold text-lg text-[#36394A] print-section-title">Impact</h3>
                                         <p className="text-sm whitespace-pre-line break-words">{viewFinding.impact || '—'}</p>
                                     </section>
                                     <section className="space-y-2">
-                                        <h3 className="font-bold text-lg text-[#36394A]">Evidence / screenshots</h3>
-                                        <div className="space-y-3">
+                                        <h3 className="font-bold text-lg text-[#36394A] print-section-title">Evidence / screenshots</h3>
+                                        <div className="space-y-6">
                                             {viewFinding.evidences?.length ? viewFinding.evidences.map(ev => (
-                                                <div key={ev.id} className="border rounded-md p-3 text-xs flex flex-col gap-1">
-                                                    <span className="font-medium">{ev.description || 'Evidence'}</span>
-                                                    <a href={ev.file} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">Open file</a>
-                                                    <span className="text-muted-foreground">Uploaded: {new Date(ev.uploaded_at).toLocaleString()}</span>
+                                                <div key={ev.id} className="print-evidence text-xs flex flex-col gap-2">
+                                                    <Image src={ev.file} alt={ev.description || 'Evidence'} width={1000} height={600} className="w-full h-auto rounded-md overflow-hidden border border-border bg-white" />
+                                                    <div className="flex flex-wrap gap-4 w-full text-[11px]">
+                                                        <span className="font-medium">{ev.description || 'Evidence'}</span>
+                                                        <span className="text-muted-foreground">Uploaded: {new Date(ev.uploaded_at).toLocaleString()}</span>
+                                                        <span className="text-muted-foreground break-all">File: {ev.file}</span>
+                                                    </div>
                                                 </div>
                                             )) : <p className="text-sm text-muted-foreground">No evidences.</p>}
                                         </div>
@@ -350,45 +370,190 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                     </Sheet>
                 </div>
             </div>
-            <CustomTable data={filteredData} columns={columns} />
+            <CustomTable data={filteredData} columns={columns} loading={isLoading} />
         </div>
     );
 };
 
 export default FindingsList;
 
-// Helper to export single finding as CSV
-function exportSingleFindingCsv(f: ScanFinding) {
-    try {
-        const headers = [
-            'ID', 'Title', 'Severity', 'Status', 'Description', 'Steps', 'Impact', 'Evidences Count', 'Created At', 'Updated At'
-        ];
-        const csvEscape = (val: unknown) => {
-            if (val === null || val === undefined) return '""';
-            return '"' + String(val).replace(/"/g, '""') + '"';
-        };
-        const row = [
-            f.id,
-            f.title,
-            f.severity,
-            f.status,
-            f.description,
-            f.steps_to_reproduce,
-            f.impact,
-            f.evidences?.length || 0,
-            new Date(f.created_at).toISOString(),
-            new Date(f.updated_at).toISOString()
-        ].map(csvEscape).join(',');
-        const blob = new Blob(["\uFEFF" + headers.map(csvEscape).join(',') + '\r\n' + row], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `finding_${f.id}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    } catch (e) {
-        console.error('Export single finding failed', e);
-    }
-}
+// Print styles injected by react-to-print pageStyle
+const printPageStyle = `
+ @page { size: A4 portrait; margin: 16mm; }
+ body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background:#ffffff; font-family: system-ui, Arial, sans-serif; }
+ .print-findings-container { color:#111827; font-size:11pt; }
+ .print-findings-container h2 { font-size:20pt; }
+ .print-section-title { page-break-after: avoid; border-bottom:1px solid #e5e7eb; padding-bottom:4px; }
+ .print-meta { margin-top:-4px; margin-bottom:8px; }
+ .print-evidence { page-break-inside: avoid; }
+ .print-evidence img { page-break-inside: avoid; background:#fafafa; }
+ ol { margin:0; padding-left:18px; }
+ .no-print { display:none !important; }
+`;
+
+// // Helper to export single finding as PDF
+// async function exportSingleFindingPdf(f: ScanFinding) {
+//     try {
+//         const jsPDFModule = await import('jspdf');
+//         const { jsPDF } = jsPDFModule;
+//         const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+//         const pageWidth = doc.internal.pageSize.getWidth();
+//         const margin = 40;
+//         let y = margin;
+
+//         const addWrappedText = (text: string, fontSize = 10, lineHeight = 14, bold = false) => {
+//             if (!text) return;
+//             doc.setFont('helvetica', bold ? 'bold' : 'normal');
+//             doc.setFontSize(fontSize);
+//             const maxWidth = pageWidth - margin * 2;
+//             const lines = doc.splitTextToSize(text, maxWidth);
+//             lines.forEach((line: string) => {
+//                 if (y + lineHeight > doc.internal.pageSize.getHeight() - margin) {
+//                     doc.addPage();
+//                     y = margin;
+//                 }
+//                 doc.text(line, margin, y);
+//                 y += lineHeight;
+//             });
+//             y += 4; // spacing after paragraph
+//         };
+
+//         // Header
+//         doc.setFont('helvetica', 'bold');
+//         doc.setFontSize(16);
+//         doc.text(`Finding #${f.id}: ${f.title}`, margin, y);
+//         y += 24;
+
+//         doc.setFontSize(10);
+//         doc.setFont('helvetica', 'normal');
+//         doc.text(`Severity: ${f.severity}`, margin, y);
+//         doc.text(`Status: ${f.status}`, margin + 140, y);
+//         y += 16;
+//         doc.text(`Created: ${new Date(f.created_at).toLocaleString()}`, margin, y);
+//         y += 14;
+//         doc.text(`Updated: ${new Date(f.updated_at).toLocaleString()}`, margin, y);
+//         y += 20;
+
+//         // Sections
+//         const section = (title: string, body: string) => {
+//             doc.setFont('helvetica', 'bold');
+//             doc.setFontSize(12);
+//             if (y + 20 > doc.internal.pageSize.getHeight() - margin) {
+//                 doc.addPage();
+//                 y = margin;
+//             }
+//             doc.text(title, margin, y);
+//             y += 18;
+//             doc.setFont('helvetica', 'normal');
+//             addWrappedText(body || '—');
+//             y += 4;
+//         };
+
+//         section('Description', f.description);
+//         section('Steps to Reproduce', f.steps_to_reproduce);
+//         section('Impact', f.impact);
+
+//         // Evidences
+//         doc.setFont('helvetica', 'bold');
+//         doc.setFontSize(12);
+//         if (y + 20 > doc.internal.pageSize.getHeight() - margin) {
+//             doc.addPage();
+//             y = margin;
+//         }
+//         doc.text(`Evidences (${f.evidences?.length || 0})`, margin, y);
+//         y += 18;
+//         doc.setFont('helvetica', 'normal');
+//         if (!f.evidences?.length) {
+//             addWrappedText('No evidences.');
+//         } else {
+//             for (const ev of f.evidences) {
+//                 try {
+//                     const dataUrl = await fetchImageAsDataURL(ev.file);
+//                     if (!dataUrl) {
+//                         addWrappedText(`(Unable to load evidence image: ${ev.file})`);
+//                         continue;
+//                     }
+//                     const imgProps = (doc as unknown as { getImageProperties: (d: string) => { width: number; height: number; fileType?: string } }).getImageProperties(dataUrl);
+//                     const maxImgWidth = pageWidth - margin * 2;
+//                     const scale = Math.min(1, maxImgWidth / imgProps.width);
+//                     const displayWidth = imgProps.width * scale;
+//                     const displayHeight = imgProps.height * scale;
+//                     if (y + displayHeight + 40 > doc.internal.pageSize.getHeight() - margin) {
+//                         doc.addPage();
+//                         y = margin;
+//                     }
+//                     // Determine format from data URL header
+//                     const formatMatch = /^data:image\/(png|jpeg|jpg)/i.exec(dataUrl);
+//                     const format = formatMatch ? (formatMatch[1] === 'jpg' ? 'JPEG' : formatMatch[1].toUpperCase()) : 'PNG';
+//                     doc.addImage(dataUrl, format, margin, y, displayWidth, displayHeight);
+//                     y += displayHeight + 6;
+//                     addWrappedText(`Description: ${ev.description || '—'}`);
+//                     addWrappedText(`Uploaded: ${new Date(ev.uploaded_at).toLocaleString()}`);
+//                     y += 6;
+//                 } catch {
+//                     addWrappedText(`(Failed to embed evidence image: ${ev.file})`);
+//                 }
+//             }
+//         }
+
+//         doc.save(`finding_${f.id}.pdf`);
+//     } catch {
+//         console.error('Export single finding PDF failed');
+//     }
+// }
+
+// // Fetch image and convert to data URL with CORS handling
+// async function fetchImageAsDataURL(originalUrl: string): Promise<string | null> {
+//     // Try https first, then fallback to original (maybe http)
+//     const candidateUrls = Array.from(new Set([
+//         originalUrl.startsWith('http://') ? originalUrl.replace('http://', 'https://') : originalUrl,
+//         originalUrl
+//     ]));
+
+//     const session = await getSession();
+//     const authHeader = session?.accessToken ? { Authorization: `Bearer ${session.accessToken}` } : {};
+
+//     for (const urlRaw of candidateUrls) {
+//         try {
+//             let url = urlRaw;
+//             if (url.startsWith('/')) url = `https://api.qowa.ai${url}`;
+//             const res = await api.get(url, {
+//                 responseType: 'blob',
+//                 headers: {
+//                     Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+//                 }
+//             });
+//             const blob: Blob = res.data;
+//             if (!blob.type.startsWith('image/')) continue;
+//             const dataUrl = await new Promise<string>((resolve, reject) => {
+//                 const reader = new FileReader();
+//                 reader.onload = () => resolve(reader.result as string);
+//                 reader.onerror = reject;
+//                 reader.readAsDataURL(blob);
+//             });
+//             return dataUrl;
+//         } catch {
+//             // try next candidate
+//         }
+//     }
+
+//     // Canvas fallback (may fail if no CORS)
+//     try {
+//         const img = new window.Image();
+//         img.crossOrigin = 'anonymous';
+//         img.src = originalUrl;
+//         await new Promise((resolve, reject) => {
+//             img.onload = resolve;
+//             img.onerror = reject;
+//         });
+//         const canvas = document.createElement('canvas');
+//         canvas.width = img.naturalWidth;
+//         canvas.height = img.naturalHeight;
+//         const ctx = canvas.getContext('2d');
+//         if (!ctx) return null;
+//         ctx.drawImage(img, 0, 0);
+//         return canvas.toDataURL('image/png');
+//     } catch {
+//         return null;
+//     }
+// }

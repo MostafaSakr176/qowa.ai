@@ -11,7 +11,7 @@ import {
 import { useRouter } from '@/i18n/navigation'
 import { useSession } from "next-auth/react";
 import toast from "react-hot-toast"
-import api from "@/lib/axiosClient";
+import { api } from "@/lib/ApiService";
 
 const TwoStepVerification = () => {
     const router = useRouter();
@@ -19,6 +19,7 @@ const TwoStepVerification = () => {
 
     const [loading, setLoading] = useState(true);
     const [setupData, setSetupData] = useState<null | {
+        token: string;
         otp_secret: string;
         otp_auth_url: string;
         qr_code_url: string;
@@ -29,52 +30,56 @@ const TwoStepVerification = () => {
     const [email, setEmail] = useState<string | null>(null)
 
 
-    // Fetch 2FA setup data on mount
+    // 1. Read email from localStorage once (client-side only)
     useEffect(() => {
-        // Get email from localStorage on mount (same as OTP page)
-        if (typeof window !== "undefined") {
-            const storedEmail = localStorage.getItem("signup_email")
-            setEmail(storedEmail)
-        }
+        if (typeof window === "undefined") return;
+        const storedEmail = localStorage.getItem("signup_email");
+        if (storedEmail) setEmail(storedEmail);
+    }, []);
+
+    // 2. Fetch 2FA setup only when we have both session & email
+    useEffect(() => {
+        if (!session) return;            // wait for auth
+        if (!email) return;              // wait for email retrieval
+        let cancelled = false;
 
         const fetchSetup = async () => {
             setLoading(true);
             try {
-                const res = await api.post(`core/2fa/setup/`, {
-                    email: email
-                });
-                // Ensure res is the expected object before setting state
+                const res = await api.post(`core/2fa/setup/`, { email });
                 if (
+                    !cancelled &&
                     res &&
                     typeof res === "object" &&
+                    "token" in res &&
                     "otp_secret" in res &&
                     "otp_auth_url" in res &&
                     "qr_code_url" in res &&
                     "qr_code_base64" in res
                 ) {
                     setSetupData(res as {
+                        token: string;
                         otp_secret: string;
                         otp_auth_url: string;
                         qr_code_url: string;
                         qr_code_base64: string;
                     });
-                } else {
-                    throw new Error("Invalid 2FA setup response from server");
                 }
             } catch (err: unknown) {
-                if (typeof err === "object" && err !== null && "message" in err) {
-                    toast.error((err as { message?: string }).message || "Failed to load 2FA setup");
-                } else {
-                    toast.error("Failed to load 2FA setup");
+                if (!cancelled) {
+                    if (typeof err === "object" && err !== null && "message" in err) {
+                        toast.error((err as { message?: string }).message || "Failed to load 2FA setup");
+                    } else {
+                        toast.error("Failed to load 2FA setup");
+                    }
                 }
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
         };
-        // Only fetch if authenticated
         fetchSetup();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [session]);
+        return () => { cancelled = true; };
+    }, [session, email]);
 
     const handleCopy = () => {
         if (setupData?.otp_secret) {
@@ -92,10 +97,10 @@ const TwoStepVerification = () => {
             // Use JSON body instead of FormData for API consistency and proper Content-Type
             await api.post(
                 "core/2fa/enable/",
-                { code: value, email: email },
+                { code: value, token: setupData.token },
             );
             toast.success("Two-factor authentication enabled!");
-            router.push("/dashboard");
+            router.push("/auth/login");
         } catch (err: unknown) {
             if (typeof err === "object" && err !== null && "message" in err) {
                 toast.error((err as { message?: string }).message || "Failed to enable 2FA");
@@ -132,6 +137,8 @@ const TwoStepVerification = () => {
             <div className="flex justify-center bg-[#F6F8FA] rounded-lg p-4 min-h-[220px]">
                 {loading ? (
                     <div className="text-center w-full">Loading QR code...</div>
+                ) : !email ? (
+                    <div className="text-center w-full text-red-500">Missing signup email. Please restart signup.</div>
                 ) : setupData?.qr_code_base64 ? (
                     <Image
                         src={setupData.qr_code_base64}
