@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Download, Ellipsis, Plus, ScanLine, Search, SquarePen } from "lucide-react";
+import { ArrowLeft, Download, Ellipsis, MoreHorizontal, Plus, ScanLine, Search, SquarePen, Trash, Loader2 } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress"
@@ -30,84 +30,13 @@ import {
     AvatarFallback,
     AvatarImage,
 } from "@/components/ui/avatar"
-import { useRouter } from "@/i18n/navigation";
-import CreateScanForm from "./CreateForm";
 import { Badge } from "@/components/ui/badge";
+import { hasPermission } from "@/utils/permissions";
+import { useSession } from "next-auth/react";
+import api from "@/lib/axiosClient";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import CreateFindingForm from "./CreateForm";
 
-const findings = [
-    {
-        id: 1,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Completed",
-        progress: 40,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 2,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Completed",
-        progress: 60,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 3,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Completed",
-        progress: 20,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 4,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Completed",
-        progress: 90,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 5,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Completed",
-        progress: 40,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 6,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Completed",
-        progress: 60,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 7,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Rejected",
-        progress: 20,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-    {
-        id: 8,
-        title: "The application is susceptible to mass account hijacking due to various vulnerabilities.",
-        type: "web",
-        status: "Open",
-        progress: 90,
-        assign: ["MS", "ND", "AW"],
-        startDate: { date: "June 28, 2023", time: "10:45PM" },
-    },
-];
 
 const statusOptions = [
     { value: "all", label: "All" },
@@ -116,106 +45,194 @@ const statusOptions = [
     { value: "Open", label: "Open" },
 ];
 
-const FindingsList = () => {
+export interface Evidence {
+    id: number;
+    description: string | null;
+    file: string;
+    uploaded_at: string;
+}
+
+export interface ScanFinding {
+    id: number;
+    scan: number;
+    title: string;
+    description: string;
+    steps_to_reproduce: string;
+    impact: string;
+    severity: "critical" | "high" | "medium" | "low";
+    status: "open" | "closed";
+    evidences: Evidence[];
+    created_at: string;
+    updated_at: string;
+}
+
+const deleteFinding = async (id: number) => {
+    await api.delete(`/scan/findings/${id}/`);
+};
+
+const fetchFindings = async (scanId: string) => {
+    const res = await api.get(`/scan/findings/?scan=${scanId}`);
+    return res.data || [];
+};
+
+const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: string }) => {
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editFinding, setEditFinding] = useState<ScanFinding | null>(null);
+    const { data: session } = useSession();
+    const [isExporting, setIsExporting] = useState(false);
 
-    const router = useRouter()
+    const deleteMutation = useMutation({
+        mutationFn: deleteFinding,
+        onSuccess: () => {
+            refetch();
+        },
+        onError: (error) => {
+            // Optionally: show error message
+            console.error(error);
+        }
+    });
+
+    const { isLoading, refetch, isFetching } = useQuery({
+        queryKey: ['scan-findings', scanId],
+        queryFn: () => fetchFindings(scanId),
+        initialData: { results: findings } // Use the passed findings as initial data
+    });
+
+
     // Filtered and sorted data
     const filteredData = useMemo(() => {
         let data = findings;
-
-        // Filter by search (scan name, mail, invoice, method type, etc.)
         if (search.trim() !== "") {
             const lower = search.toLowerCase();
-            data = data.filter((row) => {
-                return (
-                    row.title.toLowerCase().includes(lower) ||
-                    row.assign.map(ele => ele.toLowerCase().includes(lower))
-                );
-            });
+            data = data.filter((row) => row.title.toLowerCase().includes(lower));
         }
-
-        // Filter by status
         if (status !== "all") {
             data = data.filter((row) => row.status === status);
         }
-
-        // Sort by priority if selected (optional: you can sort, but here we just filter)
         return data;
-    }, [search, status]);
+    }, [search, status, findings]);
+
+    // CSV helper
+    function csvEscape(value: unknown) {
+        if (value === null || value === undefined) return "";
+        const str = String(value).replace(/"/g, '""');
+        return `"${str}"`;
+    }
+
+    function handleExportCsv() {
+        try {
+            setIsExporting(true);
+            if (!filteredData?.length) return;
+            const headers = [
+                "ID",
+                "Title",
+                "Severity",
+                "Status",
+                "Evidences Count",
+                "Created At"
+            ];
+            const rows = filteredData.map(r => [
+                r.id,
+                r.title,
+                r.severity,
+                r.status,
+                r.evidences?.length || 0,
+                new Date(r.created_at).toISOString()
+            ].map(csvEscape).join(','));
+            const csv = [headers.map(csvEscape).join(','), ...rows].join('\r\n');
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            a.href = url;
+            a.download = `findings_${scanId}_${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } finally {
+            setIsExporting(false);
+        }
+    }
 
     const columns = [
         {
-            key: "title",
-            header: "Title",
-            render: (row: { title: string }) => (
+            key: "id",
+            header: "ID",
+            render: (row: ScanFinding) => (
                 <p>
-                    {row.title.split(" ").slice(0, 7).join(" ")}
-                    {row.title.split(" ").length > 7 ? "..." : ""}
+                    #{row.id}
                 </p>
             ),
         },
         {
-            key: "type",
-            header: "Type",
+            key: "title",
+            header: "Title",
+            render: (row: ScanFinding) => (
+                <p>
+                    {row.title.split(" ").slice(0, 7).join(" ")}
+                    {row.title.split(" ")?.length > 7 ? "..." : ""}
+                </p>
+            ),
+        },
+        {
+            key: "severity",
+            header: "Severity",
+            render: (row: ScanFinding) => (
+                <Badge withDot variant={
+                    row.severity === "critical" ? "failed" :
+                        row.severity === "high" ? "failed" :
+                            row.severity === "medium" ? "pending" : "success"
+                }>{row.severity}</Badge>
+            ),
         },
         {
             key: "status",
             header: "Status",
-            render: (row: { status: string }) => (
-                <Badge withDot variant={row.status === "Rejected" ? "failed" : row.status === "Open" ? "pending":"success"}>{row.status}</Badge>
+            render: (row: ScanFinding) => (
+                <Badge withDot variant={row.status === "open" ? "pending" : "success"}>{row.status}</Badge>
             ),
         },
         {
-            key: "progress",
-            header: "Progress",
-            render: (row: { progress: number }) => (
-                <div className="flex items-center gap-2">
-                    <Progress value={row.progress} /> {`${row.progress}%`}
-                </div>
-            )
+            key: "evidences",
+            header: "Evidences",
+            render: (row: ScanFinding) => row.evidences?.length
         },
         {
-            key: "assign",
-            header: "Assign",
-            render: (row: { assign: string[] }) => (
-                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                    {row.assign.map((ele,idx) => (
-                        <Avatar key={idx}>
-                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                            <AvatarFallback>{ele}</AvatarFallback>
-                        </Avatar>
-                    ))}
-
-                </div>
-            )
-        },
-        {
-            key: "startDate",
-            header: "start date",
-            render: (row: { startDate: { date: string; time: string } }) => (
-                <div>
-                    <p className="text-sm text-[#070A0E]">{row.startDate.date}</p>
-                    <p className="text-sm text-[#4A4C4F]">{row.startDate.time}</p>
-                </div>
-            ),
+            key: "created_at",
+            header: "Created",
+            render: (row: ScanFinding) => new Date(row.created_at).toLocaleString()
         },
         {
             key: "actions",
-            header: "",
-            render: (row: { id: number }) => (
+            header: "Actions",
+            render: (row: ScanFinding) => (
                 <Popover>
-                    <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
+                    <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg"><SquarePen size={18} /> Edit scan</Button>
-                        <Button variant="ghost" className="rounded-lg" onClick={() => router.push("/dashboard/organizations/1/scans/1/findings")}><ScanLine size={18} />View Findings</Button>
-                        <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export Report</Button>
+                        {hasPermission(session, "change_organization") && <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start"
+                            onClick={() => {
+                                setEditFinding(row);
+                                setIsModalOpen(true);
+                            }}
+                        >
+                            <SquarePen size={18} /> Edit Finding
+                        </Button>}
+                        <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
+                        {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button> */}
+                        {hasPermission(session, "delete_organization") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
+                            disabled={deleteMutation.isPending}
+                        >
+                            <Trash size={18} /> Delete
+                        </Button>}
                     </PopoverContent>
                 </Popover>
             ),
-        },
+        }
     ];
 
     return (
@@ -234,7 +251,7 @@ const FindingsList = () => {
                             <SelectValue placeholder="Filter by status" />
                         </SelectTrigger>
                         <SelectContent>
-                            {statusOptions.map((opt) => (
+                            {statusOptions?.map((opt) => (
                                 <SelectItem key={opt.value} value={opt.value}>
                                     {opt.label}
                                 </SelectItem>
@@ -242,19 +259,32 @@ const FindingsList = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <Sheet open={isModalOpen}>
-                    <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
-                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create Finding</Button>
-                    </SheetTrigger>
-                    <SheetContent showCloseButton={false}>
-                        <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create Finding</SheetTitle>
-                        </SheetHeader>
-                        <CreateScanForm setIsModalOpen={setIsModalOpen} />
-                    </SheetContent>
-                </Sheet>
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleExportCsv}
+                        disabled={!filteredData?.length || isLoading || isFetching || isExporting}
+                        className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
+                    >
+                        {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                        {isExporting ? 'Exporting...' : 'Export CSV'}
+                    </Button>
+                    <Sheet open={isModalOpen}>
+                        <SheetTrigger asChild onClick={() => { setEditFinding(null); setIsModalOpen(true); }}>
+                            <Button variant={"primary"} size="lg"><Plus size={20} />  Create Finding</Button>
+                        </SheetTrigger>
+                        <SheetContent showCloseButton={false}>
+                            <SheetHeader>
+                                <SheetTitle className="flex items-center gap-4">
+                                    <ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditFinding(null); }} />  {editFinding ? 'Edit Finding' : 'Create Finding'}
+                                </SheetTitle>
+                            </SheetHeader>
+                            <CreateFindingForm finding={editFinding} setIsModalOpen={setIsModalOpen} scanId={scanId} refetch={() => { refetch(); setEditFinding(null); }} />
+                        </SheetContent>
+                    </Sheet>
+                </div>
             </div>
-            <CustomTable data={filteredData} columns={columns}  />
+            <CustomTable data={filteredData} columns={columns} />
         </div>
     );
 };

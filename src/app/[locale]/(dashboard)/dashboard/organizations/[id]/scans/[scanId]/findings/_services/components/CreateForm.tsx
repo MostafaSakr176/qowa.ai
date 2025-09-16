@@ -5,151 +5,219 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Building, Link, Loader2Icon, User, Mail } from 'lucide-react'
+import { Loader2Icon, Trash } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { useRouter } from "@/i18n/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-// Validation schema for CreateForm with suitable validation
-const formSchema = z.object({
-  first_name: z.string()
-    .min(2, { message: "First name must be at least 2 characters." })
-    .max(50, { message: "First name must be at most 50 characters." }),
-  last_name: z.string()
-    .min(2, { message: "Last name must be at least 2 characters." })
-    .max(50, { message: "Last name must be at most 50 characters." }),
-  organization_name: z.string()
-    .min(2, { message: "Organization name must be at least 2 characters." })
-    .max(100, { message: "Organization name must be at most 100 characters." }),
-  apps_number: z.string()
-    .refine(val => {
-      const num = Number(val)
-      return !isNaN(num) && num > 0 && Number.isInteger(num)
-    }, { message: "Please enter a valid number of apps (integer > 0)." }),
-  business_link: z.string()
-    .url({ message: "Please enter a valid URL." })
-    .max(200, { message: "URL must be at most 200 characters." }),
-  business_email: z.string()
-    .email({ message: "Please enter a valid business email address." }),
-  country: z.string(),
-})
 
-const CreateScanForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<React.SetStateAction<boolean>>}) => {
-  const router = useRouter()
+const evidenceSchema = z.object({
+  file: z.any().refine((file) => file instanceof File, { message: "File is required" }),
+  description: z.string().optional(),
+});
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      first_name: "",
-      last_name: "",
-      organization_name: "",
-      apps_number: "",
-      business_link: "",
-      business_email: "",
-      country: "",
-    },
+const baseSchema = z.object({
+  title: z.string().min(2, "Title is required"),
+  description: z.string().min(2, "Description is required"),
+  steps_to_reproduce: z.string().min(2, "Steps are required"),
+  impact: z.string().min(2, "Impact is required"),
+  severity: z.enum(["critical", "high", "medium", "low"]),
+});
+
+const createSchema = baseSchema.extend({
+  scan: z.string().min(1, "Scan is required"),
+  evidences: z.array(evidenceSchema).min(1, "At least one evidence is required"),
+});
+
+const editSchema = baseSchema.extend({
+  status: z.enum(["open", "closed"]).default("open"),
+});
+
+export interface FindingForEdit {
+  id: number;
+  scan: number;
+  title: string;
+  description: string;
+  steps_to_reproduce: string;
+  impact: string;
+  severity: "critical" | "high" | "medium" | "low";
+  status: "open" | "closed";
+}
+
+
+import api from '@/lib/axiosClient';
+import { useMutation } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+
+type CreateValues = z.infer<typeof createSchema>;
+type EditValues = z.infer<typeof editSchema>;
+type FormValues = CreateValues | EditValues;
+
+const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>; scanId: string; refetch: () => void; finding?: FindingForEdit | null }) => {
+  const isEdit = !!finding;
+  const activeSchema = isEdit ? editSchema : createSchema;
+
+  // Using any here due to union schema complexity with react-hook-form generics
+  // The runtime validation is enforced by zod; narrowing happens in submit
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const form = useForm<any>({
+    // Casting schema to any due to union create/edit differences
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(activeSchema as any),
+    defaultValues: (isEdit ? {
+      title: finding?.title ?? "",
+      description: finding?.description ?? "",
+      steps_to_reproduce: finding?.steps_to_reproduce ?? "",
+      impact: finding?.impact ?? "",
+      severity: finding?.severity ?? "high",
+      status: finding?.status ?? "open",
+    } : {
+      scan: scanId,
+      title: "",
+      description: "",
+      steps_to_reproduce: "",
+      impact: "",
+      severity: "high",
+      evidences: [{ file: undefined, description: "" }],
+    }) as FormValues,
     mode: "onTouched",
-  })
+  });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Remove confirmcountry before sending to backend
-    console.log(values)
-    router.push('/auth/2-step-verification')
+  const mutation = useMutation({
+    mutationFn: async (values: FormValues) => {
+      const formData = new FormData();
+      if (!isEdit && 'scan' in values) {
+        formData.append("scan", values.scan);
+      }
+      formData.append("title", values.title);
+      formData.append("description", values.description);
+      formData.append("steps_to_reproduce", values.steps_to_reproduce);
+      formData.append("impact", values.impact);
+      formData.append("severity", values.severity);
+      if (isEdit && 'status' in values) {
+        formData.append("status", values.status);
+      }
+      if (!isEdit && 'evidences' in values) {
+        (values.evidences as { file: File; description?: string }[]).forEach((ev, idx) => {
+          formData.append(`evidences[${idx}].file`, ev.file);
+          if (ev.description) formData.append(`evidences[${idx}].description`, ev.description);
+        });
+      }
+      const res = isEdit
+        ? await api.patch(`/scan/findings/${finding?.id}/`, formData)
+        : await api.post("/scan/findings/", formData);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success(isEdit ? "Finding updated successfully" : "Finding added successfully");
+      setIsModalOpen(false);
+      refetch();
+      form.reset();
+    },
+    onError: (err: unknown) => {
+      let message = isEdit ? "Failed to update finding" : "Failed to add finding";
+      if (typeof err === 'object' && err !== null) {
+        const maybeAxios = err as { response?: { data?: { detail?: string } } };
+        if (maybeAxios.response?.data?.detail) message = maybeAxios.response.data.detail;
+      }
+      if (message === (isEdit ? "Failed to update finding" : "Failed to add finding") && err instanceof Error && err.message) {
+        message = err.message;
+      }
+      toast.error(message);
+    },
+  });
+
+  function onSubmit(values: FormValues) {
+    mutation.mutate(values);
   }
 
-  // Cancel button handler that does not interact with the form state
   function handleCancel() {
-    setIsModalOpen(false)
+    setIsModalOpen(false);
   }
 
   return (
-    <>
-      <div className='flex flex-col h-full overflow-y-auto justify-start items-center'
-        style={{
-          scrollbarWidth: 'none',
-          scrollbarColor: '#0D0D12 #fff',
-        }}
-      >
-        <Form {...form}>
-          <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  name="first_name"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          label="First Name"
-                          placeholder="Enter your first name"
-                          icon={<User size={20} />}
-                          iconPosition="left"
-                          error={fieldState.error}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  name="last_name"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input
-                          type="text"
-                          label="Last Name"
-                          placeholder="Enter your last name"
-                          icon={<User size={20} />}
-                          iconPosition="left"
-                          error={fieldState.error}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+    <div className='flex flex-col h-full overflow-y-auto justify-start items-center'>
+      <Form {...form}>
+  <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit((values) => onSubmit(values))}>
+          <div className="space-y-4">
+            <FormField
+              name="title"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="text" label="Title" placeholder="Finding title" error={fieldState.error} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="description"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="text" label="Description" placeholder="Finding description" error={fieldState.error} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="steps_to_reproduce"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="text" label="Steps to Reproduce" placeholder="Steps to reproduce" error={fieldState.error} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="impact"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormControl>
+                    <Input type="text" label="Impact" placeholder="Impact" error={fieldState.error} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="severity"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormControl>
+                    <Select label="Severity" value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger error={fieldState.error}>
+                        <SelectValue placeholder="Select severity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="critical">Critical</SelectItem>
+                        <SelectItem value="high">High</SelectItem>
+                        <SelectItem value="medium">Medium</SelectItem>
+                        <SelectItem value="low">Low</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {isEdit && (
               <FormField
-                name="organization_name"
+                name="status"
+                
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input
-                        type="text"
-                        label="Organization Name"
-                        placeholder="Organization name"
-                        icon={<Building size={20} />}
-                        iconPosition="left"
-                        error={fieldState.error}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="apps_number"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        label="How many apps in the organization?"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
+                      <Select label="Status" value={field.value} onValueChange={field.onChange}>
                         <SelectTrigger error={fieldState.error}>
-                          <SelectValue placeholder="Select number of apps" />
+                          <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">1</SelectItem>
-                          <SelectItem value="2">2</SelectItem>
-                          <SelectItem value="3">3</SelectItem>
-                          <SelectItem value="4">4</SelectItem>
+                          <SelectItem value="open">Open</SelectItem>
+                          <SelectItem value="closed">Closed</SelectItem>
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -157,86 +225,61 @@ const CreateScanForm = ({setIsModalOpen}:{setIsModalOpen:React.Dispatch<React.Se
                   </FormItem>
                 )}
               />
+            )}
+            {!isEdit && (
               <FormField
-                name="business_link"
-                render={({ field, fieldState }) => (
+                name="evidences"
+                render={({ field }) => (
                   <FormItem>
-                    <FormControl>
-                      <Input
-                        type="url"
-                        label="Organization Website"
-                        placeholder="https://your-organization.com"
-                        icon={<Link size={20} />}
-                        iconPosition="left"
-                        error={fieldState.error}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
+                    <label className="block font-medium mb-1">Evidences</label>
+                    {field.value?.map((ev: { description: string }, idx: number) => (
+                      <div key={idx} className="border rounded-md p-2 mb-2 flex flex-col gap-2">
+                        <Input
+                          type="file"
+                          label="File"
+                          placeholder="Upload evidence"
+                          onChange={e => {
+                            const file = e.target.files?.[0];
+                            const evidences = [...field.value];
+                            evidences[idx].file = file;
+                            field.onChange(evidences);
+                          }}
+                          required
+                        />
+                        <Input type="text" label="Description" placeholder="Evidence description" value={ev.description || ""}
+                          onChange={e => {
+                            const evidences = [...field.value];
+                            evidences[idx].description = e.target.value;
+                            field.onChange(evidences);
+                          }} />
+                        <Button type="button" variant="destructive" onClick={() => {
+                          const evidences = field.value.filter((_: { file: File | undefined; description: string }, i: number) => i !== idx);
+                          field.onChange(evidences);
+                        }}><Trash size={18} /> Delete</Button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="outline" size="sm" onClick={() => field.onChange([...field.value, { file: undefined, description: "" }])}>Add Evidence</Button>
                   </FormItem>
                 )}
               />
-              <FormField
-                name="business_email"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input
-                        type="email"
-                        label="Business Email"
-                        placeholder="Enter your business email"
-                        icon={<Mail size={20} />}
-                        iconPosition="left"
-                        error={fieldState.error}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="country"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        label="Country"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger error={fieldState.error}>
-                          <SelectValue placeholder="Select Country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="egypt">Egypt</SelectItem>
-                          <SelectItem value="senegal">Senegal</SelectItem>
-                          <SelectItem value="france">France</SelectItem>
-                          <SelectItem value="qatar">Qatar</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
-              <Button
-                type="submit"
-                className="w-full"
-                variant="primary"
-                disabled={!form.formState.isValid || form.formState.isSubmitting}
-              >
-                Create {form.formState.isSubmitting && <Loader2Icon className="animate-spin" />}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </>
-  )
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
+            <Button
+              type="submit"
+              className="w-full"
+              variant="primary"
+              disabled={!form.formState.isValid || form.formState.isSubmitting || mutation.isPending}
+            >
+              {isEdit ? 'Save Changes' : 'Create'} {form.formState.isSubmitting || mutation.isPending ? <Loader2Icon className="animate-spin" /> : null}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
+  );
 }
 
-export default CreateScanForm
+
+export default CreateFindingForm

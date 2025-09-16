@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Ellipsis, Plus, ScanLine, Search, SquarePen, Trash } from "lucide-react";
+import { ArrowLeft, Download, Ellipsis, Plus, ScanLine, Search, SquarePen, Trash, Loader2 } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress"
@@ -86,11 +86,12 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editScanId, setEditScanId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const router = useRouter();
 
     // Fetch scans data
-    const { data, isLoading, refetch, isError } = useQuery<ScansApiResponse>({
+    const { data, isLoading, refetch, isFetching, isError } = useQuery<ScansApiResponse>({
         queryKey: ["scans", organizationId],
         queryFn: () => fetchScans(organizationId),
     });
@@ -160,6 +161,53 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
         return data;
     }, [search, status, scans]);
 
+    // CSV helpers
+    function csvEscape(value: unknown) {
+        if (value === null || value === undefined) return "";
+        const str = String(value).replace(/"/g, '""');
+        return `"${str}"`;
+    }
+
+    function handleExportCsv() {
+        try {
+            setIsExporting(true);
+            if (!filteredData.length) return;
+            const headers = [
+                "ID",
+                "Title",
+                "Type",
+                "Status",
+                "Progress %",
+                "Assigned Initials",
+                "Created Date",
+                "Created Time"
+            ];
+            const rows = filteredData.map(r => [
+                r.id,
+                r.title,
+                r.app_type,
+                r.status,
+                r.progress,
+                r.assign.join(' '),
+                r.startDate.date,
+                r.startDate.time
+            ].map(csvEscape).join(','));
+            const csv = [headers.map(csvEscape).join(','), ...rows].join('\r\n');
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const now = new Date();
+            a.href = url;
+            a.download = `scans_${organizationId}_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } finally {
+            setIsExporting(false);
+        }
+    }
+
     const columns = [
         {
             key: "title",
@@ -224,7 +272,7 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
                         {hasPermission(session, "change_scan") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => { setEditScanId(row.id); setIsModalOpen(true); }}><SquarePen size={18} /> Edit scan</Button>}
-                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/dashboard/organizations/1/scans/1/findings")}><ScanLine size={18} />View Findings</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push(`/dashboard/organizations/${organizationId}/scans/${row.id}/findings`)}><ScanLine size={18} />View Findings</Button>
                         {hasPermission(session, "delete_scan") && <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
@@ -265,19 +313,30 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
                         </SelectContent>
                     </Select>
                 </div>
-                {hasPermission(session, "add_scan") && <Sheet open={isModalOpen}>
-                    <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
-                        <Button variant={"primary"} size="lg" onClick={() => { setEditScanId(null); }}><Plus size={20} />  Create scan</Button>
-                    </SheetTrigger>
-                    <SheetContent showCloseButton={false}>
-                        <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditScanId(null); }} />  {editScanId ? 'Edit scan' : 'Create scan'}</SheetTitle>
-                        </SheetHeader>
-                        <CreateScanForm setIsModalOpen={setIsModalOpen} organizationId={organizationId} onCreated={() => { refetch(); setEditScanId(null); }} editScanId={editScanId} />
-                    </SheetContent>
-                </Sheet>}
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleExportCsv}
+                        disabled={!filteredData.length || isLoading || isFetching || isExporting}
+                        className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
+                    >
+                        {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
+                        {isExporting ? 'Exporting...' : 'Export CSV'}
+                    </Button>
+                    {hasPermission(session, "add_scan") && <Sheet open={isModalOpen}>
+                        <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
+                            <Button variant={"primary"} size="lg" onClick={() => { setEditScanId(null); }}><Plus size={20} />  Create scan</Button>
+                        </SheetTrigger>
+                        <SheetContent showCloseButton={false}>
+                            <SheetHeader>
+                                <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => { setIsModalOpen(false); setEditScanId(null); }} />  {editScanId ? 'Edit scan' : 'Create scan'}</SheetTitle>
+                            </SheetHeader>
+                            <CreateScanForm setIsModalOpen={setIsModalOpen} organizationId={organizationId} onCreated={() => { refetch(); setEditScanId(null); }} editScanId={editScanId} />
+                        </SheetContent>
+                    </Sheet>}
+                </div>
             </div>
-            <CustomTable data={filteredData} columns={columns} loading={isLoading} onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans/${row.id}/findings`)} />
+            <CustomTable data={filteredData} columns={columns} loading={isLoading} onRowClick={(row) => router.push(`/dashboard/organizations/${organizationId}/scans/${row.id}/findings`)} />
         </div>
     );
 };

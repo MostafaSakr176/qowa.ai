@@ -30,7 +30,7 @@ type CustomTableProps<T> = {
     // NEW (server-side pagination)
     serverSidePagination?: boolean;
     page?: number;             // controlled current page (1-based)
-    pageSize?: number;         // page size (if not provided falls back to rowsPerPage or data.length)
+    pageSize?: number;         // page size (if not provided falls back to rowsPerPage or data?.length)
     totalCount?: number;       // total items on server
     onPageChange?: (page: number) => void;
     loading?: boolean;
@@ -49,7 +49,7 @@ function getPageNumbers(current: number, total: number) {
         }
     }
 
-    for (let i = 0; i < range.length; i++) {
+    for (let i = 0; i < range?.length; i++) {
         if (last !== undefined) {
             if ((range[i] as number) - last === 2) {
                 rangeWithDots.push(last + 1);
@@ -87,7 +87,7 @@ function CustomTable<T extends { [key: string]: any }>({
     const initialServerPageSizeRef = useRef<number | null>(null);
     if (serverSidePagination) {
         if (initialServerPageSizeRef.current === null) {
-            // Latch first non-zero size (prefer explicit prop, fallback to rowsPerPage, then data.length)
+            // Latch first non-zero size (prefer explicit prop, fallback to rowsPerPage, then data?.length)
             const firstSize = (pageSize && pageSize > 0)
                 ? pageSize
                 : (rowsPerPage || 10);
@@ -106,7 +106,7 @@ function CustomTable<T extends { [key: string]: any }>({
     // Total items & total pages
     const totalItems = serverSidePagination
         ? (totalCount ?? 0)
-        : data.length;
+        : data?.length;
 
     const totalPages = Math.max(1, Math.ceil(totalItems / rowsPerPage));
 
@@ -114,7 +114,7 @@ function CustomTable<T extends { [key: string]: any }>({
     // Slice only for client-side pagination
     const startIdx = (effectivePage - 1) * effectivePageSize;
     const endIdx = startIdx + effectivePageSize;
-    const pageData = serverSidePagination ? data : data.slice(startIdx, endIdx);
+    const pageData = serverSidePagination ? data : data?.slice(startIdx, endIdx);
 
     const changePage = (p: number) => {
         if (p < 1 || p > totalPages) return;
@@ -134,7 +134,7 @@ function CustomTable<T extends { [key: string]: any }>({
 
     const pageDropdown = (
         <div className="flex items-center gap-1 text-xs text-gray-500">
-            <span>{data.length} / page</span>
+            <span>{data?.length} / page</span>
         </div>
     );
 
@@ -145,7 +145,7 @@ function CustomTable<T extends { [key: string]: any }>({
                     {caption && <TableCaption>{caption}</TableCaption>}
                     <TableHeader className="bg-[#ECEFF3] py-1 w-full">
                         <TableRow>
-                            {columns.map(col => (
+                            {columns?.map(col => (
                                 <TableHead key={col.key as string} className={col.className}>
                                     {col.header}
                                 </TableHead>
@@ -155,20 +155,20 @@ function CustomTable<T extends { [key: string]: any }>({
                     <TableBody className="w-full">
                         {loading ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length}>
+                                <TableCell colSpan={columns?.length}>
                                     <div className="py-6 text-center text-sm text-muted-foreground">
                                         <Loading />
                                     </div>
                                 </TableCell>
                             </TableRow>
-                        ) : pageData.length === 0 ? (
+                        ) : pageData?.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={columns.length}>
+                                <TableCell colSpan={columns?.length}>
                                     <div className="py-6 text-center text-sm text-muted-foreground">No data found.</div>
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            pageData.map((row, i) => (
+                            pageData?.map((row, i) => (
                                 <TableRow
                                     key={i}
                                     onClick={onRowClick ? (e) => {
@@ -177,7 +177,7 @@ function CustomTable<T extends { [key: string]: any }>({
                                     } : undefined}
                                     className={onRowClick ? "cursor-pointer hover:bg-[#F5F6FA] transition-colors" : undefined}
                                 >
-                                    {columns.map(col => (
+                                    {columns?.map(col => (
                                         <TableCell key={col.key as string} className={col.className ? col.className + " " : ""}>
                                             {col.render ? col.render(row) : row[col.key as keyof T]}
                                         </TableCell>
@@ -190,7 +190,7 @@ function CustomTable<T extends { [key: string]: any }>({
                         <TableFooter>
                             {renderFooterRow
                                 ? renderFooterRow(pageData)
-                                : <TableRow><TableCell colSpan={columns.length} /></TableRow>
+                                : <TableRow><TableCell colSpan={columns?.length} /></TableRow>
                             }
                         </TableFooter>
                     )}
@@ -215,7 +215,7 @@ function CustomTable<T extends { [key: string]: any }>({
                         className="px-2 py-1 rounded transition border border-transparent text-gray-400 hover:text-gray-700 disabled:opacity-50"
                         style={{ minWidth: 32 }}
                     >Prev</button>
-                    {pageNumbers.map((num, idx) =>
+                    {pageNumbers?.map((num, idx) =>
                         num === "..." ? (
                             <span key={`ellipsis-${idx}`} className="px-2 py-1 text-gray-400 select-none">...</span>
                         ) : (
