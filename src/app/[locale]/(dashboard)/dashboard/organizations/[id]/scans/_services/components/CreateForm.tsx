@@ -190,7 +190,7 @@ const CreateScanForm = ({
                 <FormField name="title" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="text" label="Title" placeholder="Scan Title" icon={<Hash size={20} />} iconPosition="left" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="text" label="Title" placeholder="Scan Title" icon={<Hash size={20} />} iconPosition="left" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -198,7 +198,7 @@ const CreateScanForm = ({
                 <FormField name="url" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="url" label="Target URL" placeholder="https://example.com" icon={<Link size={20} />} iconPosition="left" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="url" label="Target URL" placeholder="https://example.com" icon={<Link size={20} />} iconPosition="left" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -206,7 +206,7 @@ const CreateScanForm = ({
                 <FormField name="email_or_username" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="text" label="Email / Username" placeholder="user@example.com" icon={<Mail size={20} />} iconPosition="left" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="text" label="Email / Username" placeholder="user@example.com" icon={<Mail size={20} />} iconPosition="left" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -216,7 +216,7 @@ const CreateScanForm = ({
                 <FormField name="password" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="password" label="Password" placeholder="Password" icon={<Key size={20} />} iconPosition="left" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="password" label="Password" placeholder="Password" icon={<Key size={20} />} iconPosition="left" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -224,7 +224,7 @@ const CreateScanForm = ({
                 <FormField name="time_to_start" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="date" label="Start Date" placeholder="YYYY-MM-DD" icon={<Clock size={20} />} iconPosition="left" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="date" label="Start Date" placeholder="YYYY-MM-DD" icon={<Clock size={20} />} iconPosition="left" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -234,7 +234,7 @@ const CreateScanForm = ({
                 <FormField name="number_of_pages" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="number" label="Pages" placeholder="5" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="number" label="Pages" placeholder="5" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -242,7 +242,7 @@ const CreateScanForm = ({
                 <FormField name="how_many_endoints" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="number" label="Endpoints" placeholder="10" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="number" label="Endpoints" placeholder="10" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -250,7 +250,7 @@ const CreateScanForm = ({
                 <FormField name="port_number" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="number" label="Port" placeholder="3000" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="number" label="Port" placeholder="3000" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -260,7 +260,7 @@ const CreateScanForm = ({
                 <FormField name="ips_range" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="number" label="IPs Range" placeholder="30" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="number" label="IPs Range" placeholder="30" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -269,7 +269,7 @@ const CreateScanForm = ({
                   <FormItem>
                     <FormControl>
                       <Select label="App Type" value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-[#F8FAFB]">
                           <SelectValue placeholder="App Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -287,7 +287,7 @@ const CreateScanForm = ({
                   <FormItem>
                     <FormControl>
                       <Select label="Test Type" value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-[#F8FAFB]">
                           <SelectValue placeholder="Test Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -305,7 +305,7 @@ const CreateScanForm = ({
                   <FormItem>
                     <FormControl>
                       <Select label="IPs Type" value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-[#F8FAFB]">
                           <SelectValue placeholder="IPs Type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -320,7 +320,7 @@ const CreateScanForm = ({
                 <FormField name="comment" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Input type="text" label="Comment" placeholder="Optional comment" icon={<FileText size={20} />} iconPosition="left" error={fieldState.error} {...field} />
+                      <Input className="bg-[#F8FAFB]" type="text" label="Comment" placeholder="Optional comment" icon={<FileText size={20} />} iconPosition="left" error={fieldState.error} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

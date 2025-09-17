@@ -30,6 +30,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
 import { useSession } from "next-auth/react";
 import { hasPermission } from "@/utils/permissions";
+import Image from "next/image";
 
 // API response types
 type OrganizationApi = {
@@ -222,13 +223,11 @@ const OrganizationsList = () => {
             key: "organizations",
             header: "Organizations",
             render: (row: { organizations: { name: string; mail: string; logo: React.ReactNode } }) => (
-                <div className="flex items-center text-start gap-2">
-                    <span className="flex items-center justify-center h-8 w-8 rounded-full p-1 bg-primary text-white">
-                        {row.organizations.logo}
-                    </span>
-                    <div>
-                        <p className="text-sm text-[#070A0E]">{row.organizations.name}</p>
-                        <p className="text-sm text-[#4A4C4F]">{row.organizations.mail}</p>
+                <div className="flex items-center gap-1">
+                    <Image src={"/media/images/logos/organization logo.png"} alt={row.organizations?.name} width={30} height={30} />
+                    <div className="text-start">
+                        <p className="text-sm text-[#070A0E]">{row.organizations?.name}</p>
+                        <p className="text-xs text-[#4A4C4F]">{row.organizations?.mail}</p>
                     </div>
                 </div>
             ),

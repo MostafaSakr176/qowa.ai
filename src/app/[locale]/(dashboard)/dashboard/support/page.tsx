@@ -1,12 +1,12 @@
 import React from 'react'
 import SupportList from './_services/components/SupportList'
 
-const Team = () => {
+const Support = () => {
   return (
-    <div>
+    <div className='rounded-xl bg-[#F8F9FA] p-2'>
       <SupportList />
     </div>
   )
 }
 
-export default Team
+export default Support

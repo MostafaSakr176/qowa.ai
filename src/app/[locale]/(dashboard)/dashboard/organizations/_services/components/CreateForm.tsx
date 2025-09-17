@@ -220,7 +220,7 @@ const CreateOrganizationForm = ({
                         onValueChange={field.onChange}
                         disabled={clientsLoading || clientsError}
                       >
-                        <SelectTrigger error={fieldState.error}>
+                        <SelectTrigger error={fieldState.error} className="bg-[#F8FAFB]">
                           <SelectValue placeholder={clientsLoading ? "Loading clients..." : clientsError ? "Error loading clients" : "Select Client"} />
                         </SelectTrigger>
                         <SelectContent>
@@ -244,6 +244,7 @@ const CreateOrganizationForm = ({
                   <FormItem>
                     <FormControl>
                       <Input
+                      className="bg-[#F8FAFB]"
                         type="text"
                         label="Organization Name"
                         placeholder="Organization name"
@@ -267,7 +268,7 @@ const CreateOrganizationForm = ({
                         value={field.value}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger error={fieldState.error}>
+                        <SelectTrigger error={fieldState.error} className="bg-[#F8FAFB]">
                           <SelectValue placeholder="Select number of apps" />
                         </SelectTrigger>
                         <SelectContent>
@@ -288,6 +289,7 @@ const CreateOrganizationForm = ({
                   <FormItem>
                     <FormControl>
                       <Input
+                      className="bg-[#F8FAFB]"
                         type="url"
                         label="Organization Website"
                         placeholder="https://your-organization.com"
@@ -307,6 +309,7 @@ const CreateOrganizationForm = ({
                   <FormItem>
                     <FormControl>
                       <Input
+                      className="bg-[#F8FAFB]"
                         type="email"
                         label="Business Email"
                         placeholder="Enter your business email"
@@ -331,7 +334,7 @@ const CreateOrganizationForm = ({
                         onValueChange={field.onChange}
                         disabled={countriesLoading || countriesError}
                       >
-                        <SelectTrigger error={fieldState.error}>
+                        <SelectTrigger error={fieldState.error} className="bg-[#F8FAFB]">
                           <SelectValue placeholder={countriesLoading ? "Loading countries..." : countriesError ? "Error loading countries" : "Select Country"} />
                         </SelectTrigger>
                         <SelectContent>

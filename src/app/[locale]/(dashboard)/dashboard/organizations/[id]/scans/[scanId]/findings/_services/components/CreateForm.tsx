@@ -153,7 +153,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input type="text" label="Title" placeholder="Finding title" error={fieldState.error} {...field} />
+                    <Input className="bg-[#F8FAFB]" type="text" label="Title" placeholder="Finding title" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -164,7 +164,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input type="text" label="Description" placeholder="Finding description" error={fieldState.error} {...field} />
+                    <Input className="bg-[#F8FAFB]" type="text" label="Description" placeholder="Finding description" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -175,7 +175,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input type="text" label="Steps to Reproduce" placeholder="Steps to reproduce" error={fieldState.error} {...field} />
+                    <Input className="bg-[#F8FAFB]" type="text" label="Steps to Reproduce" placeholder="Steps to reproduce" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,7 +186,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input type="text" label="Impact" placeholder="Impact" error={fieldState.error} {...field} />
+                    <Input className="bg-[#F8FAFB]" type="text" label="Impact" placeholder="Impact" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -198,7 +198,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
                 <FormItem>
                   <FormControl>
                     <Select label="Severity" value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger error={fieldState.error}>
+                      <SelectTrigger className="bg-[#F8FAFB]" error={fieldState.error}>
                         <SelectValue placeholder="Select severity" />
                       </SelectTrigger>
                       <SelectContent>
@@ -221,7 +221,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
                   <FormItem>
                     <FormControl>
                       <Select label="Status" value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger error={fieldState.error}>
+                        <SelectTrigger className="bg-[#F8FAFB]" error={fieldState.error}>
                           <SelectValue placeholder="Select status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -244,6 +244,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
                     {field.value?.map((ev: { description: string }, idx: number) => (
                       <div key={idx} className="border rounded-md p-2 mb-2 flex flex-col gap-2">
                         <Input
+                        className="bg-[#F8FAFB]"
                           type="file"
                           name={`evidence-file-${idx}`}
                           label="File"
@@ -256,7 +257,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
                           }}
                           required
                         />
-                        <Input type="text" label="Description" placeholder="Evidence description" value={ev.description || ""}
+                        <Input className="bg-[#F8FAFB]" type="text" label="Description" placeholder="Evidence description" value={ev.description || ""}
                           onChange={e => {
                             const evidences = [...field.value];
                             evidences[idx].description = e.target.value;
