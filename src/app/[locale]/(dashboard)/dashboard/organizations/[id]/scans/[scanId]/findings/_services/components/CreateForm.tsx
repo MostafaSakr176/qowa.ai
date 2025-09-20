@@ -47,6 +47,7 @@ export interface FindingForEdit {
 import api from '@/lib/axiosClient';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { Textarea } from "@/components/ui/textarea"
 
 type CreateValues = z.infer<typeof createSchema>;
 type EditValues = z.infer<typeof editSchema>;
@@ -164,7 +165,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input className="bg-[#F8FAFB]" type="text" label="Description" placeholder="Finding description" error={fieldState.error} {...field} />
+                    <Textarea className="bg-[#F8FAFB]" label="Description" placeholder="Finding description" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -175,7 +176,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input className="bg-[#F8FAFB]" type="text" label="Steps to Reproduce" placeholder="Steps to reproduce" error={fieldState.error} {...field} />
+                    <Textarea className="bg-[#F8FAFB]" label="Steps to Reproduce" placeholder="Steps to reproduce" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,7 +187,7 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
               render={({ field, fieldState }) => (
                 <FormItem>
                   <FormControl>
-                    <Input className="bg-[#F8FAFB]" type="text" label="Impact" placeholder="Impact" error={fieldState.error} {...field} />
+                    <Textarea className="bg-[#F8FAFB]" label="Impact" placeholder="Impact" error={fieldState.error} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

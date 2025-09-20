@@ -243,15 +243,18 @@ const ScansList = ({ organizationId }: { organizationId: string }) => {
             key: "assign",
             header: "Assign",
             render: (row: { assign: string[] }) => (
-                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                    {row.assign.map((ele, idx) => (
-                        <Avatar key={idx}>
-                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                            <AvatarFallback>{ele}</AvatarFallback>
-                        </Avatar>
-                    ))}
-
-                </div>
+                row.assign && row.assign.length ? (
+                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                        {row.assign.map((ele, idx) => (
+                            <Avatar key={idx}>
+                                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                                <AvatarFallback>{ele}</AvatarFallback>
+                            </Avatar>
+                        ))}
+                    </div>
+                ) : (
+                    <span className="text-sm text-[#6B7280] italic">Not assigned</span>
+                )
             )
         },
         {

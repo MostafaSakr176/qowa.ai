@@ -12,6 +12,7 @@ import api from "@/lib/axiosClient"
 import toast from "react-hot-toast"
 import { useEffect, useState, useCallback } from "react"
 import Image from "next/image"
+import { Textarea } from "@/components/ui/textarea"
 
 // Validation schema for Create Ticket
 const formSchema = z.object({
@@ -266,8 +267,8 @@ const CreateTicketForm = ({ setIsModalOpen, editingTicket, onSuccess, onCancelEd
               <FormItem>
                 <FormControl>
                   <div>
-                    <label className="block mb-2 text-sm font-medium text-[#0D0D12]">Description</label>
-                    <textarea
+                    <Textarea
+                      label="Description"
                       className="w-full py-2 px-4 rounded-2xl border border-[#E5E7EB] bg-[#F8FAFB] text-gray-700 placeholder:text-[#9CA3AF] placeholder:text-base outline-none focus:border-[#C7C9D9] transition-colors disabled:bg-[#F3F4F6] disabled:cursor-not-allowed disabled:opacity-60"
                       rows={4}
                       placeholder="Describe the issue"

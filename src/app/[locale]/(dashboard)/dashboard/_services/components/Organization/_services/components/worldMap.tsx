@@ -12,17 +12,10 @@ type WorldAtlas = Topology<{
     countries: GeometryCollection;
 }>;
 
-const WorldMap: React.FC = () => {
+const WorldMap = ({organizations_by_country}:{organizations_by_country: Record<string, { label: string }>}) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const countriesRef = useRef<GeoJSON.Feature<GeoJSON.Geometry>[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
-
-    const customLabels: Record<string, { label: string }> = {
-        Thailand: { label: "11,320 visits" },
-        Egypt: { label: "5,200 visits" },
-        Germany: { label: "8,500 visits" },
-        Sweden: { label: "2,330 visits" },
-    };
 
     // Mount map only once
     useEffect(() => {
@@ -32,8 +25,8 @@ const WorldMap: React.FC = () => {
 
         const projection = d3
             .geoMercator()
-            .scale(150)
-            .translate([width / 2, height / 1.4]);
+            .scale(140)
+            .translate([width / 2, height / 1.6]);
 
         const path = d3.geoPath().projection(projection);
 
@@ -65,7 +58,7 @@ const WorldMap: React.FC = () => {
                 .attr("d", path as any)
                 .attr("fill", (d) => {
                     const name = d.properties?.name as string;
-                    return customLabels[name] ? "#007EF9" : "#D9D9D9"; // ✅ highlight on first render
+                    return organizations_by_country[name] ? "#007EF9" : "#D9D9D9"; // ✅ highlight on first render
                 })
                 .attr("stroke", "#fff")
                 .attr("stroke-width", 0.4)
@@ -74,7 +67,7 @@ const WorldMap: React.FC = () => {
                 })
                 .on("mouseout", function (_, d) {
                     const name = d.properties?.name as string;
-                    const hasLabel = !!customLabels[name];
+                    const hasLabel = !!organizations_by_country[name];
                     d3.select(this).attr("fill", hasLabel ? "#007EF9" : "#D9D9D9");
                 });
 
@@ -85,7 +78,7 @@ const WorldMap: React.FC = () => {
                 .data(
                     countries.filter((d) => {
                         const name = d.properties?.name as string;
-                        return name && customLabels[name];
+                        return name && organizations_by_country[name];
                     })
                 )
                 .join("g")
@@ -123,9 +116,9 @@ const WorldMap: React.FC = () => {
 
                     g.append("text")
                         .attr("x", x + 35)
-                        .attr("y", y + 30)
+                        .attr("y", y + 33)
                         .attr("font-size", "12px")
-                        .text(customLabels[d.properties?.name as string].label);
+                        .text(organizations_by_country[d.properties?.name as string].label);
                 });
         });
     }, []);
@@ -138,7 +131,7 @@ const WorldMap: React.FC = () => {
         svg.selectAll<SVGPathElement, GeoJSON.Feature<GeoJSON.Geometry>>(".country")
             .attr("fill", (d) => {
                 const name = d.properties?.name as string;
-                const hasLabel = !!customLabels[name];
+                const hasLabel = !!organizations_by_country[name];
                 const isSearched = search && name?.toLowerCase().includes(search);
                 if (isSearched) return "#007EF9";
                 if (hasLabel) return "#66B2FB";

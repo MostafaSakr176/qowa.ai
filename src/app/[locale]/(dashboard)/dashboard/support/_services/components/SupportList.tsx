@@ -33,6 +33,8 @@ import api from "@/lib/axiosClient";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
+import { hasPermission } from "@/utils/permissions";
+import { useSession } from "next-auth/react";
 
 type TicketFile = {
     id: number;
@@ -76,6 +78,7 @@ const statusOptions = [
 ];
 
 const SupportList = () => {
+    const {data:session} = useSession()
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -154,15 +157,18 @@ const SupportList = () => {
             key: "assigned_employee",
             header: "Assigned Employee",
             render: (row: { assigned_employee: string[] }) => (
-                <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                    {row?.assigned_employee?.map((ele, idx) => (
-                        <Avatar key={idx}>
-                            <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                            <AvatarFallback>{ele}</AvatarFallback>
-                        </Avatar>
-                    ))}
-
-                </div>
+                row?.assigned_employee?.length ? (
+                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
+                        {row.assigned_employee.map((ele, idx) => (
+                            <Avatar key={idx}>
+                                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                                <AvatarFallback>{ele}</AvatarFallback>
+                            </Avatar>
+                        ))}
+                    </div>
+                ) : (
+                    <span className="text-sm text-[#6B7280] italic">Not assigned</span>
+                )
             )
         },
         {
@@ -206,9 +212,9 @@ const SupportList = () => {
             header: "",
             render: (row: SupportTicket) => (
                 <Popover>
-                    <PopoverTrigger className="border-0"><Ellipsis size={20} onClick={() => console.log(row.id)} /></PopoverTrigger>
+                    <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg" onClick={() => { setEditingTicket(row); setIsModalOpen(true); }}><SquarePen size={18} /> Edit Ticket</Button>
+                        {hasPermission(session, "add_organization") && <Button variant="ghost" className="rounded-lg" onClick={() => { setEditingTicket(row); setIsModalOpen(true); }}><SquarePen size={18} /> Edit Ticket</Button>}
                         <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export</Button>
                         {/* <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Close</Button> */}
                         <Button

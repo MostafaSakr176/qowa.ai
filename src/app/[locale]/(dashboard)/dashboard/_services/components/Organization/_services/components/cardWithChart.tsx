@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 import React, { useEffect, useState, ReactNode } from 'react'
 
@@ -17,9 +18,37 @@ interface CardWithChartProps {
     chartName?: string;
     chartHeight?: number;
     chartWidth?: number;
+    // NEW: optional color if icon node doesn’t provide one
+    iconColor?: string;
 }
 
 const Chart = React.lazy(() => import("react-apexcharts"));
+
+// Helper: convert any color string to rgba with alpha
+function hexToRgba(hex: string, alpha: number) {
+    let c = hex.replace("#", "");
+    if (c.length === 3) c = c.split("").map(x => x + x).join("");
+    const num = parseInt(c, 16);
+    const r = (num >> 16) & 255;
+    const g = (num >> 8) & 255;
+    const b = num & 255;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+function anyColorToRgba(color: string, alpha: number) {
+    if (!color) return `rgba(67,56,202,${alpha})`; // default indigo
+    const c = color.trim();
+    if (c.startsWith("#")) return hexToRgba(c, alpha);
+    const rgb = c.match(/^rgb\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/i);
+    if (rgb) return `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})`;
+    const rgba = c.match(/^rgba\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*\)$/i);
+    if (rgba) return `rgba(${rgba[1]}, ${rgba[2]}, ${rgba[3]}, ${alpha})`;
+    const hsl = c.match(/^hsl\(\s*([\d.]+)\s*,\s*([\d.]+%)\s*,\s*([\d.]+%)\s*\)$/i);
+    if (hsl) return `hsla(${hsl[1]}, ${hsl[2]}, ${hsl[3]}, ${alpha})`;
+    const hsla = c.match(/^hsla\(\s*([\d.]+)\s*,\s*([\d.]+%)\s*,\s*([\d.]+%)\s*,\s*([\d.]+)\s*\)$/i);
+    if (hsla) return `hsla(${hsla[1]}, ${hsla[2]}, ${hsla[3]}, ${alpha})`;
+    // Fallback: use as-is; browser may handle with opacity via a wrapper style
+    return c;
+}
 
 const CardWithChart: React.FC<CardWithChartProps> = ({
     dataSet,
@@ -37,6 +66,7 @@ const CardWithChart: React.FC<CardWithChartProps> = ({
     chartName = "Customers",
     chartHeight = 80,
     chartWidth = 130,
+    iconColor, // NEW
 }) => {
     const [isClient, setIsClient] = useState(false);
 
@@ -47,6 +77,14 @@ const CardWithChart: React.FC<CardWithChartProps> = ({
     if (!isClient) {
         return <div className={className} />;
     }
+
+    // Resolve the icon color: prefer icon’s color prop, then iconColor prop, then first line color
+    const resolvedIconColor =
+        (React.isValidElement(icon) && (icon.props as any)?.color) ||
+        iconColor ||
+        (lineColors?.[0] ?? "#4CAF50");
+
+    const iconBg = anyColorToRgba(String(resolvedIconColor), 0.1);
 
     const options: ApexCharts.ApexOptions = {
         chart: {
@@ -88,8 +126,8 @@ const CardWithChart: React.FC<CardWithChartProps> = ({
     };
 
     // Accepts either a full ApexCharts series array or just data array
-    const series = Array.isArray(dataSet) && dataSet.length > 0 && typeof dataSet[0] === "object" && "data" in dataSet[0]
-        ? dataSet
+    const series = Array.isArray(dataSet) && dataSet.length > 0 && typeof (dataSet)[0] === "object" && "data" in (dataSet as any)[0]
+        ? (dataSet)
         : [
             {
                 name: chartName,
@@ -98,24 +136,26 @@ const CardWithChart: React.FC<CardWithChartProps> = ({
         ];
 
     return (
-        <div className={`rounded-xl shadow border border-[#E9ECEF] p-4 flex flex-col justify-between ${className || ""}`}>
+        <div className={`rounded-xl shadow border border-[#E9ECEF] p-3 flex flex-col justify-between ${className || ""}`}>
             <div className="flex items-center gap-3">
-                <div className={percentageBgClass + " rounded-full p-2"}>
+                {/* Icon background uses the icon color at 30% opacity */}
+                <div className="rounded-full p-2" style={{ backgroundColor: iconBg }}>
                     {icon ? (
                         icon
                     ) : (
+                        // default icon stays green; bg will derive from resolvedIconColor
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                            <circle cx="12" cy="12" r="12" fill="#E6F4EA" />
-                            <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1.5c-2.01 0-6 1.005-6 3v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1c0-1.995-3.99-3-6-3Z" fill="#4CAF50" />
+                            <circle cx="12" cy="12" r="12" fill={anyColorToRgba(String(resolvedIconColor), 0.3)} />
+                            <path d="M12 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm0 1.5c-2.01 0-6 1.005-6 3v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-1c0-1.995-3.99-3-6-3Z" fill={String(resolvedIconColor)} />
                         </svg>
                     )}
                 </div>
                 <span className="text-gray-500 font-medium text-lg">{title}</span>
             </div>
-            <div className="flex items-end justify-between">
+            <div className="flex items-end justify-between gap-2">
                 <div>
                     <div className="text-2xl font-bold text-gray-900">{value}</div>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center gap-1 mt-2">
                         <span className={`flex items-center gap-1 ${percentageBgClass} ${percentageColorClass} font-semibold px-1 py-1 rounded text-xs`}>
                             {percentageIcon ? (
                                 percentageIcon
@@ -126,12 +166,11 @@ const CardWithChart: React.FC<CardWithChartProps> = ({
                             )}
                             {percentage}
                         </span>
-                        <span className="text-gray-400 text-sm">{percentageLabel}</span>
+                        <span className="text-gray-400 text-xs">{percentageLabel}</span>
                     </div>
                     {subtitle && <div className="text-gray-400 text-xs mt-1">{subtitle}</div>}
                 </div>
                 <div className="w-30 h-20 flex items-end">
-                    {/* ApexCharts Line Chart */}
                     <Chart
                         options={options}
                         series={series}

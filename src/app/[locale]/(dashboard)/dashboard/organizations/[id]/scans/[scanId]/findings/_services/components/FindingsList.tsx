@@ -213,7 +213,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        {hasPermission(session, "change_organization") && <Button
+                        {hasPermission(session, "change_finding") && <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => {
@@ -223,15 +223,15 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                         >
                             <SquarePen size={18} /> Edit Finding
                         </Button>}
-                        <Button
+                        {hasPermission(session, "view_finding") && <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => { setViewFinding(row); setIsViewSheetOpen(true); }}
                         >
                             <Download size={18} /> Export Report
-                        </Button>
+                        </Button>}
                         {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button> */}
-                        {hasPermission(session, "delete_organization") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
+                        {hasPermission(session, "delete_finding") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
                             disabled={deleteMutation.isPending}
                         >
                             <Trash size={18} /> Delete
@@ -276,7 +276,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                         {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                         {isExporting ? 'Exporting...' : 'Export CSV'}
                     </Button>
-                    <Sheet open={isModalOpen}>
+                    {hasPermission(session, "add_finding") && <Sheet open={isModalOpen}>
                         <SheetTrigger asChild onClick={() => { setEditFinding(null); setIsModalOpen(true); }}>
                             <Button variant={"primary"} size="lg"><Plus size={20} />  Create Finding</Button>
                         </SheetTrigger>
@@ -288,8 +288,8 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                             </SheetHeader>
                             <CreateFindingForm finding={editFinding} setIsModalOpen={setIsModalOpen} scanId={scanId} refetch={() => { refetch(); setEditFinding(null); }} />
                         </SheetContent>
-                    </Sheet>
-                    <Sheet open={isViewSheetOpen} onOpenChange={(open) => { if (!open) { setIsViewSheetOpen(false); setViewFinding(null); } }}>
+                    </Sheet>}
+                    {hasPermission(session, "view_finding") && <Sheet open={isViewSheetOpen} onOpenChange={(open) => { if (!open) { setIsViewSheetOpen(false); setViewFinding(null); } }}>
                         {/* Hidden trigger not needed since we open programmatically */}
                         <SheetContent showCloseButton={false} side="right" className="w-full sm:max-w-[520px] overflow-y-auto">
                             <SheetHeader >
@@ -367,7 +367,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                                 </div>
                             )}
                         </SheetContent>
-                    </Sheet>
+                    </Sheet>}
                 </div>
             </div>
             <CustomTable data={filteredData} columns={columns} loading={isLoading} />

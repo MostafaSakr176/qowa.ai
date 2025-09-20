@@ -1,7 +1,7 @@
 import AnalyticCard from '@/components/dashboard/analytic-card'
 import React from 'react'
 import { Calendar, CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users } from "lucide-react";
-import RevenueChart from '@/components/dashboard/revenue-chart';
+import RevenueChart from '@/components/dashboard/scans-chart';
 import PaymentsTable from './_services/components/PaymentsTable';
 
 const Payments = () => {

@@ -288,7 +288,7 @@ const TeamList: React.FC = () => {
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        {hasPermission(session, "change_teammember") && <Sheet open={isModalOpen}>
+                        {hasPermission(session, "change_employee") && <Sheet open={isModalOpen}>
                             <SheetTrigger
                                 asChild
                                 onClick={() => {
@@ -321,7 +321,7 @@ const TeamList: React.FC = () => {
                         </Sheet>}
 
                         {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button> */}
-                        {hasPermission(session, "delete_teammember") && <Button
+                        {hasPermission(session, "delete_employee") && <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => handleDelete(row.id)}
@@ -373,7 +373,7 @@ const TeamList: React.FC = () => {
                         {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
                         {isExporting ? "Exporting..." : "Export CSV"}
                     </Button>
-                    {hasPermission(session, "add_teammember") && <Sheet open={isModalOpen}>
+                    {hasPermission(session, "add_employee") && <Sheet open={isModalOpen}>
                         <SheetTrigger
                             asChild
                             onClick={() => {
