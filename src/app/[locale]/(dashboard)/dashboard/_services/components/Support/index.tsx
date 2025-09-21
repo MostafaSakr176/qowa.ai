@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
 import AnalyticCard from "@/components/dashboard/analytic-card";
-import AreaChart from "@/components/dashboard/line-chart";
+// import AreaChart from "@/components/dashboard/line-chart";
 import { CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users, TicketCheck } from "lucide-react";
 import SupportTable from "./_services/components/PaymentsTable";
 
@@ -64,16 +64,16 @@ const Support = () => {
         total_support: 0,
     };
 
-    const tickets: Ticket[] = data?.results?.tickets ?? [];
+    const tickets: Ticket[] = useMemo(() => data?.results?.tickets ?? [], [data]);
     const count = data?.count ?? 0;
     const rowsPerPage = useMemo(() => (tickets?.length || 10), [tickets]);
     const totalPages = rowsPerPage ? Math.ceil(count / rowsPerPage) : 1;
 
     // Keep your chart (or wire it to another endpoint later)
-    const dataSet = useMemo(() => [
-        tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 3) * 25 + 20]),
-        tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 4) * 20 + 10]),
-    ], [tickets]);
+    // const dataSet = useMemo(() => [
+    //     tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 3) * 25 + 20]),
+    //     tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 4) * 20 + 10]),
+    // ], [tickets]);
 
     if (error) {
         return <div className="p-4 text-sm text-red-600">Failed to load support statistics.</div>;

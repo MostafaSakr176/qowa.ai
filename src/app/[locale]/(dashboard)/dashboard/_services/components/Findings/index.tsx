@@ -56,7 +56,10 @@ const Findings = () => {
     total_low: 0,
   }
 
-  const organizations: OrgRow[] = data?.results?.organizations ?? []
+  const organizations: OrgRow[] = useMemo(
+    () => data?.results?.organizations ?? [],
+    [data?.results?.organizations]
+  )
   const totalCount = data?.count ?? 0
   const rowsPerPage = useMemo(() => organizations.length || 10, [organizations])
   const totalPages = rowsPerPage ? Math.max(1, Math.ceil(totalCount / rowsPerPage)) : 1

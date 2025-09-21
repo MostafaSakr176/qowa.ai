@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { Ellipsis, Logs, Search, Download, Loader2 } from "lucide-react";
+import { Logs, Search, Download, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -28,20 +28,20 @@ interface FindingsTableProps {
 const FindingsTable: React.FC<FindingsTableProps> = ({
   organizations,
   loading = false,
-  page,
-  rowsPerPage,
-  totalCount,
-  totalPages,
-  onPageChange,
+  // page,
+  // rowsPerPage,
+  // totalCount,
+  // totalPages,
+  // onPageChange,
 }) => {
   const [search, setSearch] = useState("");
   const [isExporting, setIsExporting] = useState(false); // added
 
-  const computedTotalPages = useMemo(() => {
-    if (totalPages && totalPages > 0) return totalPages;
-    const rpp = rowsPerPage || 10;
-    return Math.max(1, Math.ceil((totalCount || 0) / rpp));
-  }, [rowsPerPage, totalCount, totalPages]);
+  // const computedTotalPages = useMemo(() => {
+  //   if (totalPages && totalPages > 0) return totalPages;
+  //   const rpp = rowsPerPage || 10;
+  //   return Math.max(1, Math.ceil((totalCount || 0) / rpp));
+  // }, [rowsPerPage, totalCount, totalPages]);
 
   // Client-side filtering on the current page
   const filteredData = useMemo(() => {

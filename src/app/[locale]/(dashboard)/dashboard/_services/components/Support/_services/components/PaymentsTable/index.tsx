@@ -87,7 +87,7 @@ const SupportTable: React.FC<SupportTableProps> = ({
   page,
   rowsPerPage,
   totalCount,
-  totalPages,
+  // totalPages,
   onPageChange,
 }) => {
   const [search, setSearch] = useState("");
@@ -95,11 +95,11 @@ const SupportTable: React.FC<SupportTableProps> = ({
   const [priority, setPriority] = useState("all");
   const [isExporting, setIsExporting] = useState(false); // added
 
-  const computedTotalPages = useMemo(() => {
-    if (totalPages && totalPages > 0) return totalPages;
-    const rpp = rowsPerPage || 10;
-    return Math.max(1, Math.ceil((totalCount || 0) / rpp));
-  }, [rowsPerPage, totalCount, totalPages]);
+  // const computedTotalPages = useMemo(() => {
+  //   if (totalPages && totalPages > 0) return totalPages;
+  //   const rpp = rowsPerPage || 10;
+  //   return Math.max(1, Math.ceil((totalCount || 0) / rpp));
+  // }, [rowsPerPage, totalCount, totalPages]);
 
   const filteredData = useMemo(() => {
     let data = tickets ?? [];
