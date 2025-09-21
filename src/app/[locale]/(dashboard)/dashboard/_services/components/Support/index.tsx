@@ -1,58 +1,117 @@
+"use client"
+
+import React, { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/axiosClient";
 import AnalyticCard from "@/components/dashboard/analytic-card";
 import AreaChart from "@/components/dashboard/line-chart";
-import { Calendar, CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users } from "lucide-react";
+import { CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users, TicketCheck } from "lucide-react";
 import SupportTable from "./_services/components/PaymentsTable";
 
-const Support = () => {
+type Ticket = {
+    id: string;
+    organization: { id: number; name: string; business_email: string };
+    assigned_employee: null | { id: number; name: string };
+    type: string;
+    status: string;
+    priority: string;
+    created_at: string;
+};
 
-    const dataSet = [
-        [
-            [new Date("01/01/2014").getTime(), 50],
-            [new Date("01/03/2014").getTime(), 70],
-            [new Date("01/05/2014").getTime(), 90],
-            [new Date("01/08/2014").getTime(), 50],
-            [new Date("01/11/2014").getTime(), 70],
-            [new Date("01/14/2014").getTime(), 90],
-            [new Date("01/16/2014").getTime(), 50],
-            [new Date("01/20/2014").getTime(), 70],
-            [new Date("01/22/2014").getTime(), 90],
-            [new Date("01/25/2014").getTime(), 50],
-            [new Date("01/26/2014").getTime(), 70],
-            [new Date("01/29/2014").getTime(), 90],
-        ],
-        [
-            [new Date("01/01/2014").getTime(), 20],
-            [new Date("01/02/2014").getTime(), 60],
-            [new Date("01/04/2014").getTime(), 40],
-            [new Date("01/06/2014").getTime(), 20],
-            [new Date("01/08/2014").getTime(), 70],
-            [new Date("01/09/2014").getTime(), 40],
-            [new Date("01/11/2014").getTime(), 90],
-            [new Date("01/13/2014").getTime(), 30],
-            [new Date("01/15/2014").getTime(), 40],
-            [new Date("01/18/2014").getTime(), 70],
-            [new Date("01/21/2014").getTime(), 90],
-            [new Date("01/22/2014").getTime(), 99],
-        ]
-    ];
+type Totals = {
+    total_requests: number;
+    total_complaint: number;
+    total_scan_issue: number;
+    total_payment_issue: number;
+    total_feedback: number;
+    total_open: number;
+    total_closed: number;
+    total_support: number;
+};
+
+type SupportOverviewCore = {
+    totals: Totals;
+    tickets: Ticket[];
+};
+
+type SupportOverviewResponse = {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: SupportOverviewCore;
+};
+
+const Support = () => {
+    const [page, setPage] = useState(1);
+
+    const { data, isLoading, isFetching, error } = useQuery<SupportOverviewResponse>({
+        queryKey: ["support-overview", page],
+        queryFn: async () => {
+            const res = await api.get(`/core/overview/support/?page=${page}`);
+            return res.data;
+        },
+        staleTime: 60_000,
+    });
+
+    const totals: Totals = data?.results?.totals ?? {
+        total_requests: 0,
+        total_complaint: 0,
+        total_scan_issue: 0,
+        total_payment_issue: 0,
+        total_feedback: 0,
+        total_open: 0,
+        total_closed: 0,
+        total_support: 0,
+    };
+
+    const tickets: Ticket[] = data?.results?.tickets ?? [];
+    const count = data?.count ?? 0;
+    const rowsPerPage = useMemo(() => (tickets?.length || 10), [tickets]);
+    const totalPages = rowsPerPage ? Math.ceil(count / rowsPerPage) : 1;
+
+    // Keep your chart (or wire it to another endpoint later)
+    const dataSet = useMemo(() => [
+        tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 3) * 25 + 20]),
+        tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 4) * 20 + 10]),
+    ], [tickets]);
+
+    if (error) {
+        return <div className="p-4 text-sm text-red-600">Failed to load support statistics.</div>;
+    }
 
     return (
         <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" >
-                <AnalyticCard title="Total Revenue" value="$62,302" icon={<CircleDollarSign size={25} />} />
-                <AnalyticCard title="All scans" value="50000" icon={<ScanLine size={25} />} />
-                <AnalyticCard title="Schedule Scans" value="200" icon={<Calendar size={25} />} />
-                <AnalyticCard title="Total Findings" value="50000" icon={<ShieldEllipsis size={25} />} />
-                <AnalyticCard title="Total Revenue" value="$62,302" icon={<Users size={25} />} />
-                <AnalyticCard title="All scans" value="50000" icon={<Users size={25} />} />
-                <AnalyticCard title="Schedule Scans" value="200" icon={<Hash size={25} />} />
-                <AnalyticCard title="Total Findings" value="50000" icon={<UserRoundCheck size={25} />} />
+            {/* Stats Cards (from totals) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <AnalyticCard title="Total Requests" value={(totals.total_requests ?? 0).toString()} icon={<TicketCheck size={25} />} />
+                <AnalyticCard title="Complaints" value={(totals.total_complaint ?? 0).toString()} icon={<Users size={25} />} />
+                <AnalyticCard title="Scan Issues" value={(totals.total_scan_issue ?? 0).toString()} icon={<ScanLine size={25} />} />
+                <AnalyticCard title="Payment Issues" value={(totals.total_payment_issue ?? 0).toString()} icon={<CircleDollarSign size={25} />} />
+                <AnalyticCard title="Feedback" value={(totals.total_feedback ?? 0).toString()} icon={<ShieldEllipsis size={25} />} />
+                <AnalyticCard title="Open Tickets" value={(totals.total_open ?? 0).toString()} icon={<Hash size={25} />} />
+                <AnalyticCard title="Closed Tickets" value={(totals.total_closed ?? 0).toString()} icon={<UserRoundCheck size={25} />} />
+                <AnalyticCard title="Support Agents" value={(totals.total_support ?? 0).toString()} icon={<Users size={25} />} />
             </div>
-            <AreaChart dataSet={dataSet} className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pt-4 pe-4" />
-            <SupportTable />
-        </div>
-    )
-}
 
-export default Support
+            {/* <AreaChart
+        dataSet={dataSet}
+        className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pt-4 pe-4"
+      /> */}
+
+            {/* Pass tickets and pagination props to the table */}
+            <div className="rounded-xl bg-[#F8F9FA] p-2">
+                <SupportTable
+                    tickets={tickets}
+                    loading={isLoading || isFetching}
+                    page={page}
+                    rowsPerPage={rowsPerPage}
+                    totalCount={count}
+                    totalPages={totalPages}
+                    onPageChange={setPage}
+                />
+            </div>
+        </div>
+    );
+};
+
+export default Support;
