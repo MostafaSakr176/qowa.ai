@@ -373,7 +373,7 @@ const OrganizationsList = () => {
                 onPageChange={(nextPage: number) => {
                     if (nextPage !== page) setPage(nextPage);
                 }}
-                loading={isLoading || isFetching}
+                loading={isLoading}
                 serverSidePagination
             />
         </div>
