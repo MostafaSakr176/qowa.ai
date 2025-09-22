@@ -45,6 +45,7 @@ type OrganizationApi = {
     team_members_count: number;
     rank: number;
     amount: number;
+    credit: number;
 };
 
 type OrganizationsApiResponse = {
@@ -66,11 +67,14 @@ type OrganizationRow = {
     pest_organization: number;
     teams: number;
     states: string;
+    number_of_apps: number;
     registerationDate: {
         date: string;
         time: string;
     };
     amount: string;
+    url: string;
+    credit: number;
 };
 
 // UPDATED: accept page param
@@ -123,12 +127,15 @@ const OrganizationsList = () => {
             country: org.country,
             pest_organization: org.rank,
             teams: org.team_members_count,
+            number_of_apps: org.number_of_apps,
             states: "subscribers", // You may want to map this from API if available
             registerationDate: {
                 date: new Date(org.created_at).toLocaleDateString(),
                 time: new Date(org.created_at).toLocaleTimeString(),
             },
+            url: org.url,
             amount: `$${org.amount}`,
+            credit: org.credit // Example: 10% of amount as credit
         }));
     }, [data]);
 
@@ -179,7 +186,8 @@ const OrganizationsList = () => {
             "Teams",
             "State",
             "Registration Date",
-            "Amount"
+            "Amount",
+            "Credits"
         ];
 
         const rows = filteredData.map((r, idx) => ([
@@ -191,7 +199,8 @@ const OrganizationsList = () => {
             r.teams,
             r.states,
             r.registerationDate.date + " " + r.registerationDate.time,
-            r.amount
+            r.amount,
+            r.credit
         ]));
 
         const csv = [headers, ...rows]
@@ -263,6 +272,10 @@ const OrganizationsList = () => {
             header: "Amount"
         },
         {
+            key: "credit",
+            header: "Credits"
+        },
+        {
             key: "actions",
             header: "",
             render: (row: OrganizationRow) => (
@@ -285,7 +298,7 @@ const OrganizationsList = () => {
                         {hasPermission(session, "delete_organization") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
                             disabled={deleteMutation.isPending}
                         >
-                           <Trash size={18} /> Delete
+                            <Trash size={18} /> Delete
                         </Button>}
                     </PopoverContent>
                 </Popover>

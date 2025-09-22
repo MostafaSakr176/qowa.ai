@@ -5,19 +5,20 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Building, Link, Loader2Icon, Mail } from 'lucide-react'
+import { Building, CreditCard, Link, Loader2Icon, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
 import Image from "next/image"
+import { useSession } from "next-auth/react"
 
 // Validation schema for CreateForm with suitable validation
 const formSchema = z.object({
   organization_name: z.string()
     .min(2, { message: "Organization name must be at least 2 characters." })
     .max(100, { message: "Organization name must be at most 100 characters." }),
-  apps_number: z.string()
+  number_of_apps: z.string()
     .refine(val => {
       const num = Number(val)
       return !isNaN(num) && num > 0 && Number.isInteger(num)
@@ -29,6 +30,13 @@ const formSchema = z.object({
     .email({ message: "Please enter a valid business email address." }),
   country: z.string(),
   client_id: z.string().min(1, { message: "Client is required." }),
+  // NEW: credit is optional (only sent for Super Admin). Validate when provided.
+  credit: z
+    .string()
+    .optional()
+    .refine((v) => v === undefined || v === "" || (!isNaN(Number(v)) && Number(v) >= 0), {
+      message: "Credit must be a non-negative number.",
+    }),
 })
 
 // Type for API body
@@ -39,6 +47,8 @@ type CreateOrganizationBody = {
   url: string;
   business_email: string;
   country: string;
+  // NEW: only included for Super Admin
+  credit?: number;
 };
 
 type OrganizationRow = {
@@ -52,11 +62,14 @@ type OrganizationRow = {
     pest_organization: number;
     teams: number;
     states: string;
+    number_of_apps: number;
     registerationDate: {
         date: string;
         time: string;
     };
     amount: string;
+    url: string;
+    credit: number;
 };
 
 type CreateOrganizationFormProps = {
@@ -102,23 +115,27 @@ const CreateOrganizationForm = ({
     refetch,
     editOrganization,
 }: CreateOrganizationFormProps) => {
+
+  const {data:session} = useSession()
     // Set default values based on editOrganization
     const defaultValues = editOrganization
         ? {
             organization_name: editOrganization.organizations.name,
-            apps_number: editOrganization.teams.toString(),
-            business_link: "", // You may want to pass the URL if available
+            business_link: editOrganization.url,
             business_email: editOrganization.organizations.mail,
             country: editOrganization.country,
             client_id: "", // unknown in edit context
+            credit: editOrganization.credit.toString(),
+            number_of_apps: editOrganization.number_of_apps.toString(),
         }
         : {
             organization_name: "",
-            apps_number: "",
             business_link: "",
             business_email: "",
             country: "",
             client_id: "",
+            credit: "",
+            number_of_apps:""
         };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -164,11 +181,16 @@ const CreateOrganizationForm = ({
     const payload: CreateOrganizationBody = {
       client_id: Number(values.client_id),
       name: values.organization_name,
-      number_of_apps: Number(values.apps_number),
+      number_of_apps: Number(values.number_of_apps),
       url: values.business_link,
       business_email: values.business_email,
       country: values.country,
+      // Add credit only for Super Admin
+      ...(session?.group?.name === "Super Admin" && values.credit !== undefined && values.credit !== ""
+        ? { credit: Number(values.credit) }
+        : {}),
     };
+
     if (editOrganization) {
       updateMutation.mutate(payload);
     } else {
@@ -259,7 +281,7 @@ const CreateOrganizationForm = ({
                 )}
               />
               <FormField
-                name="apps_number"
+                name="number_of_apps"
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
@@ -359,6 +381,29 @@ const CreateOrganizationForm = ({
                   </FormItem>
                 )}
               />
+              {/* Credit field stays visible only for Super Admin (unchanged) */}
+              {session?.group?.name === "Super Admin" && (
+                <FormField
+                  name="credit"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Input
+                          className="bg-[#F8FAFB]"
+                          type="number"
+                          label="Credit"
+                          placeholder="Enter credit amount"
+                          icon={<CreditCard size={20} />}
+                          iconPosition="left"
+                          error={fieldState.error}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Button type="button" variant="outline" onClick={handleCancel}>Cancel</Button>
