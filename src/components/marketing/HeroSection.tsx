@@ -46,7 +46,7 @@ export const HeroSection = () => {
         </div>
 
         {/* Main Heading */}
-        <h1 className="text-center text-[42px] md:text-[56px] xl:text-[72px] leading-tight font-semibold bg-gradient-to-b from-[#FFFFFF] via-[#FAF5FF] to-[#D7B9FC] bg-clip-text text-transparent">
+        <h1 className="text-center text-[32px] md:text-[56px] xl:text-[72px] leading-tight font-semibold bg-gradient-to-b from-[#FFFFFF] via-[#FAF5FF] to-[#D7B9FC] bg-clip-text text-transparent">
           Secure Your&nbsp;
           <span ref={typedEl} className="text-[#9440FF]" /> <br/>
           World with AI Defense
