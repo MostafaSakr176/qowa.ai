@@ -77,7 +77,7 @@ const Testimonials = () => {
         alt=""
         width={100}
         height={100}
-        className="w-xl absolute top-0 -left-[15%] transform z-2"
+        className="w-xl absolute top-0 -left-[15%] transform z-2 hidden md:block"
       />
       <Image
         src="/media/images/squars.svg"
