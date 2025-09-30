@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 
 const ServiceSection = () => {
   return (
-    <section className="max-w-7xl mx-auto px-4 flex flex-col justify-center items-center">
+    <section className="max-w-7xl mx-auto flex flex-col justify-center items-center">
       {/* Project Timeline Card */}
             <div
                 className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
