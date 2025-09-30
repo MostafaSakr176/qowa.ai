@@ -24,7 +24,7 @@ const ReadyForExperience = () => {
                     className="w-[90px] h-auto md:w-[120px] md:h-auto lg:w-[140px] lg:h-auto"
                 // Responsive logo size
                 />
-                <h3 className="text-4xl leading-10 md:text-6xl md:leading-16 font-bold mb-3 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
+                <h3 className="text-3xl leading-10 md:text-6xl md:leading-16 font-bold mb-3 bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
                     Ready to Transform <br />
                     Your Scheduling?
                 </h3>

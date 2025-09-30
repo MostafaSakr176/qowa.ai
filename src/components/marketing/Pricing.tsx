@@ -23,7 +23,7 @@ const Pricing = () => {
                 <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">FAQ</span>
 
             </div>
-            <h3 className="text-4xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
+            <h3 className="text-3xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
                 World with AI Defense
             </h3>
             <p className="text-white/70 text-lg mb-18 text-center max-w-3xl mx-auto">

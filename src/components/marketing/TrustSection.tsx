@@ -13,8 +13,8 @@ export default function TrustSection() {
     return (
         <section className='flex flex-col justify-center items-center gap-12 md:gap-8 mb-0'>
 
-            <div>
-                <h3 className="text-4xl leading-10 md:text-6xl md:leading-16 font-bold mb-3 text-center  bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
+            <div className='px-4 md:px-0'>
+                <h3 className="text-3xl leading-10 md:text-6xl md:leading-16 font-bold mb-3 text-center  bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
                     Robust Security for  <br />
                     Complete Peace of Mind
                 </h3>
@@ -23,7 +23,7 @@ export default function TrustSection() {
                 </p>
             </div>
 
-            <div className='w-2xl relative flex items-center justify-center'>
+            <div className='w-full md:w-2xl relative flex items-center justify-center px-4 md:px-0'>
                 {/* Animated shadow under the shield */}
                 <span
                     className="absolute left-1/2 bottom-1/5 -translate-x-1/2 w-30 h-4 rounded-[50%] pointer-events-none z-3 bg-[#0000004D]"

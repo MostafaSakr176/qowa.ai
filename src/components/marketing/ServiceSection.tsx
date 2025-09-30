@@ -23,7 +23,7 @@ const ServiceSection = () => {
                 <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">services</span>
 
             </div>
-      <h3 className="text-4xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
+      <h3 className="text-3xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
         Cybersecurity Services
       </h3>
       <p className="text-white/70 text-lg mb-14 text-center max-w-3xl mx-auto">
