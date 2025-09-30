@@ -56,7 +56,7 @@ export default function Card({ children, className = '' }: CardProps) {
       }}
     >
       <motion.div
-        className={`w-full h-full rounded-3xl backdrop-blur-lg border border-white/20 bg-gradient-to-br from-[#B5CFFF]/20 via-white/5 to-[#392BD8]/30 shadow-2xl p-4 md:p-6 ${className}`}
+        className={`w-full h-full rounded-3xl backdrop-blur-lg border border-white/20 bg-white/10 shadow-2xl p-4 md:p-6 ${className}`}
         style={{
           rotateX,
           rotateY,

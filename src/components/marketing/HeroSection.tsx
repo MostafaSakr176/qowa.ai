@@ -4,9 +4,8 @@ import Link from "next/link";
 import Typed from "typed.js";
 import Card from "@/components/ui/marketing/animated-card";
 import AnimatedCounter from "@/components/ui/marketing/animated-counter";
+import { ArrowRight } from "lucide-react";
 
-
-const ARROW_ICON_SRC = "/media/icons/arroe-right-solid.svg";
 const CLOUD_IMG_SRC = "/media/images/hero/cloud-img.svg";
 const LOCK_IMG_SRC = "/media/images/hero/lock-img.svg";
 const TYPED_STRINGS = ["Future", "Business"];
@@ -29,52 +28,62 @@ export const HeroSection = () => {
   }, []);
   return (
     <>
-      <section className="min-h-[80vh] lg:min-h-screen flex flex-col items-center justify-center gap-6">
+      <section className="min-h-[80vh] lg:min-h-[80vh] flex flex-col items-center justify-center gap-6">
         {/* Tagline Link */}
-        <Link
-          href="/dashboard"
-          className="text-white text-[12px] md:text-[14px]  flex items-center px-6 py-2 rounded-full bg-white/10 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.1)] hover:bg-white/20 transition-all duration-200"
+        <div
+          className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
           aria-label="Go to dashboard"
+          style={{
+            background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
+            backdropFilter: "blur(8px)",
+            boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
+            
+          }}
         >
-          Cyber Security
-        </Link>
+          <Image src="/media/icons/Sparkle.svg" alt="Rocket icon" width={20} height={20} />
+          <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">Your AI Security Assistant</span>
+          
+        </div>
 
         {/* Main Heading */}
-        <h1 className="text-white text-[32px] leading-8 md:text-[56px] md:leading-14 xl:text-[72px] xl:leading-18 2xl:text-[96px] 2xl:leading-24 font-semibold">
+        <h1 className="text-center text-[46px] md:text-[56px] xl:text-[72px] leading-tight font-semibold bg-gradient-to-b from-[#FFFFFF] via-[#FAF5FF] to-[#D7B9FC] bg-clip-text text-transparent">
           Secure Your&nbsp;
-          <span ref={typedEl} />
-        </h1>
-        <h1 className="text-[32px] leading-8 md:text-[56px] md:leading-14 xl:text-[72px] xl:leading-18 2xl:text-[96px] 2xl:leading-24 font-semibold bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
+          <span ref={typedEl} className="text-[#9440FF]" /> <br/>
           World with AI Defense
         </h1>
-        <p className="text-white max-w-4xl text-[14px] md:text-xl text-center">
+        {/* <p className="text-white max-w-4xl text-[14px] md:text-xl text-center">
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.
-        </p>
+        </p> */}
 
         {/* CTA Button */}
         <Link
           href="/dashboard"
-          className="mt-4 text-[#012C79] text-[16px] font-medium flex items-center gap-3 md:gap-6 px-8 py-3 rounded-full transition-all duration-200 hover:bg-white/20"
+          className="text-white text-[16px] font-medium flex items-center gap-3 px-8 py-4 rounded-full "
           style={{
-            background: "linear-gradient(180deg, #B5CFFF 0%, #FFFFFF 90%)",
-            border: "0.98px solid #5353533B",
-            boxShadow: "0px 0px 29.44px -4.91px #FFFFFFA3",
+            background: "linear-gradient(180deg, #9440FF 0%, #6505E0 100%)",
+            boxShadow: "inset 0px -14px 22.44px -12.09px #FFFFFFA3",
+            borderBottom: "solid 3px #6505E0",
           }}
           aria-label="Start your free trial"
         >
           Start Your Free Trial
-          <Image src={ARROW_ICON_SRC} alt="Arrow right icon" width={20} height={20} />
+          <ArrowRight size={20} />
         </Link>
       </section>
       {/* Cards Section */}
-      <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center md:pt-[10vh]">
+      <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
         {/* Cyber Shield Card */}
         <Card>
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-around h-full">
             <div className="flex justify-center">
               <button
                 type="button"
-                className="bg-gradient-to-t from-[#392BD8] to-[#0054CA] text-white px-8 py-3 rounded-full font-medium flex items-center gap-3"
+                          className="text-white text-[16px] font-medium flex items-center gap-3 px-8 py-4 rounded-full "
+          style={{
+            background: "linear-gradient(180deg, #9440FF 0%, #6505E0 100%)",
+            boxShadow: "inset 0px -14px 22.44px -12.09px #FFFFFFA3",
+            borderBottom: "solid 3px #6505E0",
+          }}
                 aria-label="Activate Free Shield"
               >
                 Activate Free Shield

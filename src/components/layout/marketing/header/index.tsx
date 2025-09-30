@@ -53,7 +53,7 @@ export default function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Image
-              src="/media/images/logos/Logo.webp"
+              src="/media/images/logos/Logo.svg"
               alt="Logo"
               width={120}
               height={80}

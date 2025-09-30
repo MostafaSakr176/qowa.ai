@@ -8,10 +8,22 @@ const ServiceSection = () => {
   return (
     <section className="max-w-7xl mx-auto px-4 flex flex-col justify-center items-center">
       {/* Project Timeline Card */}
-      <span className="text-white text-center inline-block text-[14px] px-4 py-2 mb-10 rounded-full bg-white/5 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.05)]">
-        Service
-      </span>
-      <h3 className="text-2xl leading-8 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
+            <div
+                className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
+                aria-label="Go to dashboard"
+                style={{
+                    background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
+                    backdropFilter: "blur(8px)",
+                    boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
+
+                }}
+            >
+                <Image src="/media/icons/Sparkle.svg" alt="Rocket icon" width={20} height={20} />
+
+                <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">services</span>
+
+            </div>
+      <h3 className="text-4xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
         Cybersecurity Services
       </h3>
       <p className="text-white/70 text-lg mb-14 text-center max-w-3xl mx-auto">
@@ -24,7 +36,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-2 row-span-2 h-full"
         >
-          <Card>
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h3 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
               <Timer />  Project Timeline
             </h3>
@@ -52,22 +64,29 @@ const ServiceSection = () => {
               <div className="absolute left-0 top-8 w-full h-28">
                 {/* Bar 1 */}
                 <div
-                  className="absolute left-[8%] top-2 h-8 bg-[#2B5CB8] rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
-                  style={{ width: '38%' }}
+                  className="absolute left-[8%] top-2 h-8 rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
+                  style={{
+                    width: '38%',
+                    background: "linear-gradient(180deg, #A566F5 0%, #9440FF 100%)"
+                  }}
                 >
                   Jan-Feb
                 </div>
                 {/* Bar 2 */}
                 <div
-                  className="absolute left-[30%] top-12 h-8 bg-[#3A7BFF] rounded-lg flex items-center px-2 text-white text-[10px] font-medium shadow-md"
-                  style={{ width: '55%' }}
+                  className="absolute left-[30%] top-12 h-8 rounded-lg flex items-center px-2 text-white text-[10px] font-medium shadow-md"
+                  style={{ width: '55%',
+                    background: "linear-gradient(180deg, #A566F5 0%, #9440FF 100%)"
+                   }}
                 >
                   Design / Development Apps
                 </div>
                 {/* Bar 3 */}
                 <div
-                  className="absolute left-[60%] top-24 h-8 bg-[#2B5CB8] rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
-                  style={{ width: '30%' }}
+                  className="absolute left-[60%] top-24 h-8 rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
+                  style={{ width: '30%',
+                    background: "linear-gradient(180deg, #A566F5 0%, #9440FF 100%)"
+                   }}
                 >
                   Mar-Jun
                 </div>
@@ -81,7 +100,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-1 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -95,7 +114,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-1 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -109,7 +128,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-1 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -123,7 +142,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-1 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -137,7 +156,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-2 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -151,7 +170,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-2 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -165,7 +184,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-2 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 
@@ -179,7 +198,7 @@ const ServiceSection = () => {
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-2 row-span-1"
         >
-          <Card>
+          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
             <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
               <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
 

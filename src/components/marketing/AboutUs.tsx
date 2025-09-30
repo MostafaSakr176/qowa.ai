@@ -9,10 +9,20 @@ import { Facebook } from 'lucide-react'
 export default function AboutUs() {
     return (
         <section className="px-4 max-w-7xl mx-auto flex flex-col justify-center items-center ">
-            <span className="text-white text-center inline-block text-[14px] px-4 py-2 mb-10 rounded-full bg-white/5 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.05)]">
-                About Us
-            </span>
-            <h3 className="text-2xl leading-8 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
+        <div
+          className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
+          aria-label="Go to dashboard"
+          style={{
+            background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
+            backdropFilter: "blur(8px)",
+            boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
+          }}
+        >
+          <Image src="/media/icons/Sparkle.svg" alt="Rocket icon" width={20} height={20} />
+          <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">About Us</span>
+          
+        </div>
+            <h3 className="text-4xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
                 System Analytics Real-Time Monitoring
             </h3>
             <p className="text-white/70 text-lg mb-14 text-center max-w-3xl mx-auto">
@@ -43,19 +53,19 @@ export default function AboutUs() {
                                       To add a shadow on hover and translate up by 10px instead of scaling,
                                       use `hover:-translate-y-2.5` (which is roughly 10px), `transform`, and `hover:shadow-2xl` (or similar).
                                     */}
-                                <div className="bg-white/10 rounded-3xl p-4 space-y-6 border-white/30 transition-all duration-400 transform hover:-translate-y-2.5 hover:shadow-2xl">
+                                <div className="rounded-3xl p-4 space-y-6 border border-white/30 transition-all duration-400 transform hover:-translate-y-2.5 hover:shadow-2xl">
                                     <div className="h-16 rounded flex items-end justify-between px-2">
                                         <Image src={'/media/images/hero/about-us/Line.svg'} alt='line' width={100} height={100} className='w-full' />
                                     </div>
                                     <h4 className="text-white text-[10px] md:text-[14px] flex items-center px-4 py-2 rounded-full bg-white/5 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.05)] w-full">Network Activity</h4>
                                 </div>
 
-                                <div className="bg-white/10 rounded-3xl p-4 space-y-6 border-white/30 transition-all duration-400 transform hover:-translate-y-2.5 hover:shadow-2xl">
+                                <div className="rounded-3xl p-4 space-y-6 border border-white/30 transition-all duration-400 transform hover:-translate-y-2.5 hover:shadow-2xl">
                                     <div className="h-16 rounded flex items-end justify-between px-2">
                                         {[20, 45, 30, 60, 40, 80, 35, 20, 45, 30, 60, 40, 80, 35, 20, 45, 30, 60, 40, 80, 35].map((height, index) => (
                                             <div
                                                 key={index}
-                                                className="bg-blue-400 rounded"
+                                                className="bg-[#560D9E] rounded"
                                                 style={{ height: `${height}%`, width: '4px' }}
                                             />
                                         ))}
@@ -144,9 +154,15 @@ export default function AboutUs() {
                             </div>
 
                             {/* Start Trial Button */}
-                            <button className="cursor-pointer w-full bg-gradient-to-t from-[#392BD8] to-[#0054CA] text-white px-8 py-3 rounded-full font-medium flex items-center justify-center gap-3">
+                            <button
+                                className="text-white text-[16px] font-medium text-center gap-3 px-8 py-3 rounded-full w-full"
+                                style={{
+                                    background: "linear-gradient(180deg, #9440FF 0%, #6505E0 100%)",
+                                    boxShadow: "inset 0px -14px 22.44px -12.09px #FFFFFFA3",
+                                    borderBottom: "solid 3px #6505E0",
+                                }}
+                            >
                                 Start Your Free Trial
-                                <Image src={'/media/images/hero/about-us/right-icon.svg'} alt='icon' width={20} height={20} />
                             </button>
                         </div>
                     </Card>
@@ -194,49 +210,49 @@ export default function AboutUs() {
                             {/* Social Media Icons Grid */}
                             <div className="flex gap-2">
                                 {/* Top Row */}
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
                             </div>
                             <div className="flex justify-end gap-2">
                                 {/* Bottom Row */}
                                 <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
-                                    <div
-                                        className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
-                                    >
-                                        <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
-                                    </div>
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
+                                <div
+                                    className="border border-white transition-all duration-200 hover:bg-white hover:shadow-[0_0_16px_4px_rgba(255,255,255,0.3)] rounded-lg p-3 w-12 h-12 flex justify-center items-center group"
+                                >
+                                    <div className="text-lg text-white group-hover:text-[#012C79] transition-colors duration-200"><Facebook /></div>
+                                </div>
                             </div>
                         </div>
                     </Card>

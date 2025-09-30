@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Mansalva&family=Outfit:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@100..800&display=swap');
 
 @import "tailwindcss";
 
@@ -6,11 +6,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
-*{
+* {
   box-sizing: border-box;
 }
+
 body {
-  font-family: "Inter", sans-serif;
+  font-family: "Anek Bangla", sans-serif;
 }
 
 .swiper {
@@ -115,20 +116,30 @@ body {
 }
 
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes gradientBG {
   0% {
-      background-position: 0% 50%;
+    background-position: 0% 50%;
   }
+
   50% {
-      background-position: 100% 50%;
+    background-position: 100% 50%;
   }
+
   100% {
-      background-position: 0% 50%;
+    background-position: 0% 50%;
   }
 }
 
@@ -243,14 +254,50 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
-.semi_chart .apexcharts-datalabels-group{
+.semi_chart .apexcharts-datalabels-group {
   transform: translateY(-20px);
 }
-.full_chart .apexcharts-datalabels-group{
+
+.full_chart .apexcharts-datalabels-group {
   transform: translateY(0px);
+}
+
+
+
+
+@keyframes floatY {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-24px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes shadowPulse {
+  0% {
+    opacity: 0.7;
+    transform: scaleX(1) scaleY(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleX(1.15) scaleY(1.2);
+  }
+
+  100% {
+    opacity: 0.7;
+    transform: scaleX(1) scaleY(1);
+  }
 }

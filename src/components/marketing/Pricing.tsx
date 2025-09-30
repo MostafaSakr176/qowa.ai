@@ -1,16 +1,29 @@
 import React from 'react'
 import Card from '../ui/marketing/animated-card'
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 
 
 const Pricing = () => {
     return (
         <section className="max-w-7xl mx-auto px-4 flex flex-col justify-center items-center">
             {/* Project Timeline Card */}
-            <span className="text-white text-center inline-block text-[14px] px-4 py-2 mb-10 rounded-full bg-white/5 border border-white/30 shadow-soft backdrop-blur-md [box-shadow:inset_0_2px_8px_0_rgba(256,256,256,0.05)]">
-                Plans that suits you!
-            </span>
-            <h3 className="text-2xl leading-8 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
+            <div
+                className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
+                aria-label="Go to dashboard"
+                style={{
+                    background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
+                    backdropFilter: "blur(8px)",
+                    boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
+
+                }}
+            >
+                <Image src="/media/icons/Sparkle.svg" alt="Rocket icon" width={20} height={20} />
+
+                <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">FAQ</span>
+
+            </div>
+            <h3 className="text-4xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[radial-gradient(70.71%_70.71%_at_50%_50%,_#FFFFFF_0%,_#B5CFFF_56%)] bg-clip-text text-transparent">
                 World with AI Defense
             </h3>
             <p className="text-white/70 text-lg mb-18 text-center max-w-3xl mx-auto">
