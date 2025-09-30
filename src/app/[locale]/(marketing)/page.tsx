@@ -5,7 +5,7 @@ import TrustSection from "@/components/marketing/TrustSection";
 import AboutUs from "@/components/marketing/AboutUs";
 import ServiceSection from "@/components/marketing/ServiceSection";
 import { HeroSection } from "@/components/marketing/HeroSection";
-import Pricing from "@/components/marketing/Pricing";
+// import Pricing from "@/components/marketing/Pricing";
 import Testimonials from "@/components/marketing/Testimonials";
 import FAQ from "@/components/marketing/FAQ";
 import ReadyForExperience from "@/components/marketing/ReadyForExperience";
