@@ -26,7 +26,7 @@ export default function TrustSection() {
             <div className='w-full md:w-2xl relative flex items-center justify-center px-4 md:px-0'>
                 {/* Animated shadow under the shield */}
                 <span
-                    className="absolute left-1/2 bottom-1/5 -translate-x-1/2 w-30 h-4 rounded-[50%] pointer-events-none z-3 bg-[#0000004D]"
+                    className="absolute left-1/2 bottom-1/5 -translate-x-1/2 w-15 h-2 md:w-30 md:h-4 rounded-[50%] pointer-events-none z-3 bg-[#0000004D]"
                     style={{
                         animation: "shadowPulse 2.5s ease-in-out infinite",
                     }}
@@ -43,7 +43,7 @@ export default function TrustSection() {
                         alt="Logo Contain"
                         width={100}
                         height={100}
-                        className="w-48"
+                        className="w-24 md:w-48"
                     />
                 </div>
                 <Image
