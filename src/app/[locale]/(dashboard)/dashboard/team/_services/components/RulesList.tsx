@@ -202,7 +202,7 @@ const RulesList: React.FC<RulesListProps> = ({
             </CardContent>
 
             <CardFooter className="pt-4">
-              <div className="w-full flex items-center justify-between pt-3">
+              <div className="w-full flex items-center justify-around pt-3">
                 <button
                   onClick={() => onDelete?.(role)}
                   className="inline-flex items-center gap-2 text-[#EF4444] hover:opacity-80"

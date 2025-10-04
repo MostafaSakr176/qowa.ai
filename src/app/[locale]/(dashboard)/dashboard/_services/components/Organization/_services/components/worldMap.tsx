@@ -58,17 +58,17 @@ const WorldMap = ({organizations_by_country}:{organizations_by_country: Record<s
                 .attr("d", path as any)
                 .attr("fill", (d) => {
                     const name = d.properties?.name as string;
-                    return organizations_by_country[name] ? "#007EF9" : "#D9D9D9"; // ✅ highlight on first render
+                    return organizations_by_country[name] ? "#7D00F9" : "#D9D9D9"; // ✅ highlight on first render
                 })
                 .attr("stroke", "#fff")
                 .attr("stroke-width", 0.4)
                 .on("mouseover", function () {
-                    d3.select(this).attr("fill", "#66B2FB");
+                    d3.select(this).attr("fill", "#B566FB");
                 })
                 .on("mouseout", function (_, d) {
                     const name = d.properties?.name as string;
                     const hasLabel = !!organizations_by_country[name];
-                    d3.select(this).attr("fill", hasLabel ? "#007EF9" : "#D9D9D9");
+                    d3.select(this).attr("fill", hasLabel ? "#7D00F9" : "#D9D9D9");
                 });
 
             // Add custom labels
@@ -103,7 +103,7 @@ const WorldMap = ({organizations_by_country}:{organizations_by_country: Record<s
                         .attr("width", 8)
                         .attr("height", 8)
                         .attr("rx", 6)
-                        .attr("fill", "#007EF9")
+                        .attr("fill", "#7D00F9")
                         .attr("borderRadius", "10px")
                         .attr("opacity", 1);
 
@@ -133,8 +133,8 @@ const WorldMap = ({organizations_by_country}:{organizations_by_country: Record<s
                 const name = d.properties?.name as string;
                 const hasLabel = !!organizations_by_country[name];
                 const isSearched = search && name?.toLowerCase().includes(search);
-                if (isSearched) return "#007EF9";
-                if (hasLabel) return "#66B2FB";
+                if (isSearched) return "#7D00F9";
+                if (hasLabel) return "#B566FB";
                 return "#D9D9D9";
             });
     }, [searchTerm]);
