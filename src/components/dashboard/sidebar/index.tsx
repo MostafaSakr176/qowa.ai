@@ -10,42 +10,42 @@ import { signOut } from 'next-auth/react';
 
 const navItems = [
   {
-    href: '/dashboard',
+    href: '/admin/dashboard',
     label: 'Dashboard',
     icon: <Home size={20} />,
   },
   {
-    href: '/dashboard/organizations',
+    href: '/admin/dashboard/organizations',
     label: 'Organizations',
     icon: <Users size={20} />,
   },
   {
-    href: '/dashboard/invoices',
+    href: '/admin/dashboard/invoices',
     label: 'Invoices',
     icon: <ReceiptText size={20} />,
   },
   // {
-  //   href: '/dashboard/ai-scan-configrations',
+  //   href: '/admin/dashboard/ai-scan-configrations',
   //   label: 'Ai scan configurations',
   //   icon: <ShieldUser size={20} />,
   // },
   {
-    href: '/dashboard/ai-scan-configrations',
+    href: '/admin/dashboard/ai-scan-configrations',
     label: 'Ai scan configrations',
     icon: <QrCode size={20} />,
   },
   {
-    href: '/dashboard/team',
+    href: '/admin/dashboard/team',
     label: 'Team',
     icon: <Users size={20} />,
   },
   {
-    href: '/dashboard/settings',
+    href: '/admin/dashboard/settings',
     label: 'Settings',
     icon: <Settings size={20} />,
   },
   {
-    href: '/dashboard/support',
+    href: '/admin/dashboard/support',
     label: 'Support',
     icon: <HeartHandshake size={20} />,
   },
@@ -63,7 +63,7 @@ function isActiveLink(pathname: string, locale: string, href: string) {
     path = path.slice(localePrefix.length);
     if (!path.startsWith('/')) path = '/' + path;
   }
-  // For other items, match exact or subpath (e.g. /dashboard/organizations or /dashboard/organizations/...)
+  // For other items, match exact or subpath (e.g. /admin/dashboard/organizations or /admin/dashboard/organizations/...)
   return path === href;
 }
 

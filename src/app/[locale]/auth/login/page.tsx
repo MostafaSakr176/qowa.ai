@@ -9,14 +9,13 @@ import { Loader2Icon, Lock, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useRouter } from "@/i18n/navigation"
 import { useTranslations } from 'next-intl';
-import { signIn } from "next-auth/react"
+import { getSession, signIn } from "next-auth/react"
 import toast from "react-hot-toast"
 import { useState } from "react"
 
 // ✅ shadcn components
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
-
 const formSchema = z.object({
   email: z.string()
     .min(5, { message: "Email must be at least 5 characters." })
@@ -33,7 +32,6 @@ const Login = () => {
   const [showOtpModal, setShowOtpModal] = useState(false)
   const [otp, setOtp] = useState("")
   const [userCreds, setUserCreds] = useState<{ email: string, password: string }>()
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
@@ -49,22 +47,20 @@ const Login = () => {
         password: values.password,
       })
 
-      // The error is not caused by this line, but by a problem with how `toast` is imported or used.
-      // The correct import for react-hot-toast is:
-      // import toast from "react-hot-toast"
-      // and you should use `toast.error("message")` as you do elsewhere.
-      // The error message suggests that `toast.error` is not a function, which usually means
-      // the import is broken or being mocked incorrectly by Turbopack.
-
-      // For debugging, you can log the response here:
-      console.log("Login response:", res);
-
       if (res?.error === "OTP_REQUIRED") {
         setUserCreds(values)
         setShowOtpModal(true)
       } else if (res?.ok) {
+        // NEW: Fetch and log the full session data after successful login
+        const sessionData = await getSession();
+        console.log("Full login response:", sessionData);
+        
         toast.success("Login successful")
-        router.push("/dashboard")
+        if (sessionData?.user?.role === "employee") {
+          router.push("/admin/dashboard")
+        } else {
+          router.push("/client/dashboard")
+        }
       } else {
         toast.error(res?.error || "Login failed")
       }
@@ -87,13 +83,21 @@ const Login = () => {
       redirect: false,
       email: userCreds.email,
       password: userCreds.password,
-      otp: otp, // 👈 نبعته هنا
+      otp: otp,
     })
 
     if (res?.ok) {
+      // NEW: Fetch and log the full session data after successful OTP verification
+      const sessionData = await getSession();
+      console.log("Full login response with OTP:", sessionData);
+      
       toast.success("Login successful")
       setShowOtpModal(false)
-      router.push("/dashboard")
+      if (sessionData?.user?.role === "employee") {
+        router.push("/admin/dashboard")
+      } else {
+        router.push("/client/dashboard")
+      }
     } else {
       toast.error(res?.error || "OTP verification failed")
     }
@@ -103,10 +107,10 @@ const Login = () => {
 
   return (
     <div className='flex flex-col justify-center items-center'>
-       <div className="w-full md:w-4/5 lg:w-3/5 space-y-2 mb-6"> 
-       <h2 className="text-3xl font-medium">{t("welcome")}</h2> 
-       <p className="text-[16px] font-normal text-[#6F6F6F]">Please login to your account</p> 
-       </div>
+      <div className="w-full md:w-4/5 lg:w-3/5 space-y-2 mb-6">
+        <h2 className="text-3xl font-medium">{t("welcome")}</h2>
+        <p className="text-[16px] font-normal text-[#6F6F6F]">Please login to your account</p>
+      </div>
       {/* Login Form */}
       <Form {...form}>
         <form
@@ -162,13 +166,13 @@ const Login = () => {
             )}
           </Button>
           <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-1">
-                    <span className="text-secondary">
-                      Don&apos;t have an account? <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/signup')}>Register</Button>
-                    </span>
-                    <span className="text-secondary">
-                      <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/forget-password')}>Forget Password?</Button>
-                    </span>
-                  </div>
+            <span className="text-secondary">
+              Don&apos;t have an account? <Button type="button" variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/signup')}>Register</Button>
+            </span>
+            <span className="text-secondary">
+              <Button type="button" variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/forget-password')}>Forget Password?</Button>
+            </span>
+          </div>
         </form>
       </Form>
 
@@ -195,6 +199,7 @@ const Login = () => {
               onClick={handleOtpSubmit}
               disabled={otp.length !== 6 || loading}
               className="w-full"
+              variant="primary"
             >
               {loading ? "Verifying..." : "Verify OTP"}
             </Button>

@@ -15,7 +15,7 @@ export default function middleware(req: NextRequest) {
 
 // ✅ Apply withAuth only on /dashboard
 export const config = {
-  matcher: ["/", "/dashboard/:path*"],
+  matcher: ["/", "/admin/dashboard/:path*","/client/dashboard/:path*"],
 }
 
 export const auth = withAuth(

@@ -157,8 +157,6 @@ export const authOptions: NextAuthOptions = {
 
           const data = await res.json();
 
-          console.log(data);
-          
           // Handle OTP requirement
           if (
             data?.errors?.non_field_errors?.[0] ===
@@ -175,13 +173,13 @@ export const authOptions: NextAuthOptions = {
           // Extract the first group from access_control.groups if available
           const group =
             data?.access_control &&
-            Array.isArray(data.access_control.groups) &&
-            data.access_control.groups.length > 0
+              Array.isArray(data.access_control.groups) &&
+              data.access_control.groups.length > 0
               ? data.access_control.groups[0]
               : undefined;
 
           return {
-            id: data?.user_id ?? "13",
+            id: data?.user_id ?? "",
             email: credentials?.email ?? "",
             role: data?.role,
             accessToken: data.tokens.access,
@@ -228,7 +226,7 @@ export const authOptions: NextAuthOptions = {
         return {
           ...token,
           accessToken: (user as any).accessToken,
-            refreshToken: (user as any).refreshToken,
+          refreshToken: (user as any).refreshToken,
           role: (user as any).role,
           group: (user as any).group,
           accessTokenExpires: Date.now() + 2 * 60 * 1000,

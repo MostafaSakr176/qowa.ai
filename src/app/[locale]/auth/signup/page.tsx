@@ -337,7 +337,7 @@ const SignUp = () => {
         </Form>
         <div className="flex flex-col lg:flex-row items-center justify-center w-full md:w-4/5 lg:w-3/5 gap-1">
           <span className="text-secondary">
-            Already have an account? <Button variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/login')}>Login</Button>
+            Already have an account? <Button type="button" variant="link" className="p-0 h-auto" onClick={() => router.push('/auth/login')}>Login</Button>
           </span>
         </div>
       </div>
