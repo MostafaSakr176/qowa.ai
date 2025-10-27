@@ -87,6 +87,7 @@ const TeamList: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
+    const [selectAll, setSelectAll] = useState(false);
     const [editUser, setEditUser] = useState<IRow | null>(null);
     const [isExporting, setIsExporting] = useState(false);
     const { data: session } = useSession();
@@ -94,6 +95,7 @@ const TeamList: React.FC = () => {
     // NEW: State for delete confirmation
     const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
     const [userToDelete, setUserToDelete] = useState<IRow | null>(null);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
     // Fetch teams data using react-query
     const {
@@ -164,6 +166,7 @@ const TeamList: React.FC = () => {
         if (deleteUserId) {
             setDeletingId(deleteUserId);
             deleteMutation.mutate(deleteUserId);
+            setDeleteConfirmText(""); // Reset input after delete
         }
     };
 
@@ -171,6 +174,25 @@ const TeamList: React.FC = () => {
     const handleCancelDelete = () => {
         setDeleteUserId(null);
         setUserToDelete(null);
+        setDeleteConfirmText(""); // Reset input
+    };
+
+    const handleSelectRow = (id: number, checked: boolean) => {
+        setSelectedRows(prev => {
+            const next = checked ? [...prev, id] : prev.filter(rowId => rowId !== id);
+            setSelectAll(next.length === tableData.length && tableData.length > 0);
+            return next;
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedRows(tableData.map(row => row.id));
+            setSelectAll(true);
+        } else {
+            setSelectedRows([]);
+            setSelectAll(false);
+        }
     };
 
     // Helper to safely wrap CSV values in quotes and escape existing quotes
@@ -183,7 +205,10 @@ const TeamList: React.FC = () => {
     const handleExportCsv = () => {
         try {
             setIsExporting(true);
-            if (!tableData.length) {
+            const dataToExport = selectedRows.length > 0
+                ? tableData.filter(row => selectedRows.includes(row.id))
+                : tableData;
+            if (!dataToExport.length) {
                 toast.error("No data to export");
                 return;
             }
@@ -199,7 +224,7 @@ const TeamList: React.FC = () => {
                 "2FA Enabled"
             ];
 
-            const rows = tableData.map((row, idx) => {
+            const rows = dataToExport.map((row, idx) => {
                 const created = formatDateTime(row.created_at);
                 const lastLogin = formatDateTime(row.last_login);
                 return [
@@ -215,12 +240,11 @@ const TeamList: React.FC = () => {
             });
 
             const csvContent = [headers.map(csvEscape).join(","), ...rows].join("\r\n");
-            // Add BOM for Excel UTF-8 compatibility
             const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
             const url = URL.createObjectURL(blob);
             const link = document.createElement("a");
             const now = new Date();
-            const fileName = `employees_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}.csv`;
+            const fileName = `employees_${selectedRows.length > 0 ? "selected_" : ""}${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}.csv`;
             link.href = url;
             link.setAttribute("download", fileName);
             document.body.appendChild(link);
@@ -243,27 +267,15 @@ const TeamList: React.FC = () => {
             key: "select",
             header: (
                 <Checkbox
-                    checked={selectedRows.length === tableData.length && tableData.length > 0}
-                    onCheckedChange={checked => {
-                        if (checked) {
-                            setSelectedRows(tableData.map(row => row.id));
-                        } else {
-                            setSelectedRows([]);
-                        }
-                    }}
+                    checked={selectAll}
+                    onCheckedChange={handleSelectAll}
                     aria-label="Select all rows"
                 />
             ),
             render: (row: IRow) => (
                 <Checkbox
                     checked={selectedRows.includes(row.id)}
-                    onCheckedChange={checked => {
-                        if (checked) {
-                            setSelectedRows(prev => [...prev, row.id]);
-                        } else {
-                            setSelectedRows(prev => prev.filter(id => id !== row.id));
-                        }
-                    }}
+                    onCheckedChange={checked => handleSelectRow(row.id, !!checked)}
                     aria-label={`Select row ${row.id}`}
                 />
             ),
@@ -397,6 +409,22 @@ const TeamList: React.FC = () => {
                     />
                 </div>
                 <div className="flex items-center gap-2">
+                    {selectedRows.length > 0 && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{selectedRows.length} selected</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedRows([]);
+                                    setSelectAll(false);
+                                }}
+                                className="h-auto p-1 text-xs"
+                            >
+                                Clear
+                            </Button>
+                        </div>
+                    )}
                     <Button
                         variant="outline"
                         onClick={handleExportCsv}
@@ -404,7 +432,9 @@ const TeamList: React.FC = () => {
                         className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
                     >
                         {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                        {isExporting ? "Exporting..." : "Export CSV"}
+                        {selectedRows.length > 0
+                            ? `Export Selected (${selectedRows.length})`
+                            : "Export All CSV"}
                     </Button>
                     {hasPermission(session, "add_employee") && <Sheet open={isModalOpen}>
                         <SheetTrigger
@@ -440,25 +470,39 @@ const TeamList: React.FC = () => {
             <CustomTable data={tableData} columns={columns} />
 
             {/* NEW: Delete Confirmation Dialog */}
-            <AlertDialog open={deleteUserId !== null} onOpenChange={(open) => !open && handleCancelDelete()}>
+            <AlertDialog open={deleteUserId !== null} onOpenChange={(open) => { if (!open) { handleCancelDelete(); setDeleteConfirmText(""); } }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete User</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong> ({userToDelete?.email})? 
-                            This action cannot be undone and will permanently remove the user from the system.
+                            Are you sure you want to delete <strong>{userToDelete?.first_name} {userToDelete?.last_name}</strong> ({userToDelete?.email})?<br />
+                            This action cannot be undone and will permanently remove the user from the system.<br /><br />
+                            <span className="text-destructive font-semibold">Type <b>delete</b> below to confirm:</span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <Input
+                        value={deleteConfirmText}
+                        onChange={e => setDeleteConfirmText(e.target.value)}
+                        placeholder='Type "delete" to confirm'
+                        className="mt-2"
+                        autoFocus
+                    />
                     <AlertDialogFooter>
-                        <AlertDialogCancel 
-                            onClick={handleCancelDelete} 
+                        <AlertDialogCancel
+                            onClick={() => {
+                                handleCancelDelete();
+                                setDeleteConfirmText("");
+                            }}
                             disabled={deleteMutation.isPending}
                         >
                             Cancel
                         </AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={handleConfirmDelete}
-                            disabled={deleteMutation.isPending}
+                        <AlertDialogAction
+                            onClick={() => {
+                                handleConfirmDelete();
+                                setDeleteConfirmText("");
+                            }}
+                            disabled={deleteMutation.isPending || deleteConfirmText.trim().toLowerCase() !== "delete"}
                             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
                         >
                             {deleteMutation.isPending ? "Deleting..." : "Delete User"}

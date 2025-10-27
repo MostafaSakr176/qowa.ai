@@ -45,6 +45,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox";
 
 type TicketFile = {
     id: number;
@@ -88,7 +89,7 @@ const statusOptions = [
 ];
 
 const SupportList = () => {
-    const {data:session} = useSession()
+    const { data: session } = useSession()
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -98,6 +99,9 @@ const SupportList = () => {
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [deleteTicketId, setDeleteTicketId] = useState<string | null>(null);
     const [ticketToDelete, setTicketToDelete] = useState<SupportTicket | null>(null);
+    const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+    const [selectAll, setSelectAll] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
     const pageSize = 10; // expected backend default page size
 
     const { data: ticketsData, isLoading, refetch } = useQuery<TicketsResponse>({
@@ -175,15 +179,102 @@ const SupportList = () => {
         if (deleteTicketId) {
             setDeletingId(deleteTicketId);
             deleteMutation.mutate(deleteTicketId);
+            setDeleteConfirmText(""); // Reset input after delete
         }
     };
 
     const handleCancelDelete = () => {
         setDeleteTicketId(null);
         setTicketToDelete(null);
+        setDeleteConfirmText(""); // Reset input
+    };
+
+    const handleSelectRow = (id: string, checked: boolean | string) => {
+        setSelectedRows(prev => {
+            const next = new Set(prev);
+            if (checked) next.add(id);
+            else next.delete(id);
+            setSelectAll(next.size === filteredData.length);
+            return next;
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedRows(new Set(filteredData.map(row => row.id)));
+            setSelectAll(true);
+        } else {
+            setSelectedRows(new Set());
+            setSelectAll(false);
+        }
+    };
+
+    const handleExportCsv = () => {
+        const dataToExport = selectedRows.size > 0
+            ? filteredData.filter(row => selectedRows.has(row.id))
+            : filteredData;
+        if (!dataToExport.length) return;
+        const headers = [
+            "ID",
+            "Type",
+            "Status",
+            "Priority",
+            "Organization",
+            "Business Email",
+            "Assigned Employees",
+            "Description",
+            "Created At"
+        ];
+        const rows = dataToExport.map(t => [
+            t.id,
+            t.type,
+            t.status,
+            t.priority,
+            t.organization?.name || "",
+            t.organization?.business_email || "",
+            t.assigned_employee.join(", "),
+            t.description || "",
+            t.created_at
+        ]);
+        const csv = [headers, ...rows]
+            .map(line =>
+                line
+                    .map(field => {
+                        if (field === null || field === undefined) return "";
+                        const val = String(field);
+                        return /[",\n]/.test(val) ? `"${val.replace(/"/g, '""')}"` : val;
+                    })
+                    .join(",")
+            )
+            .join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const ts = new Date().toISOString().split("T")[0];
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `support_tickets_${selectedRows.size > 0 ? "selected_" : ""}${ts}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     };
 
     const columns = [
+        {
+            key: "select",
+            header: <Checkbox
+                checked={selectAll}
+                onCheckedChange={handleSelectAll}
+                aria-label="Select all tickets"
+            />,
+            render: (row: SupportTicket) => (
+                <Checkbox
+                    checked={selectedRows.has(row.id)}
+                    onCheckedChange={(checked) => handleSelectRow(row.id, checked)}
+                    aria-label={`Select ticket #${row.id}`}
+                />
+            ),
+        },
         { key: "id", header: "ID", render: (row: SupportTicket) => <span className="font-medium">#{row.id}</span> },
         {
             key: "organization",
@@ -262,18 +353,22 @@ const SupportList = () => {
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
                         {hasPermission(session, "add_organization") && (
-                            <Button 
-                                variant="ghost" 
-                                className="rounded-lg w-full justify-start" 
-                                onClick={() => { 
-                                    setEditingTicket(row); 
-                                    setIsModalOpen(true); 
+                            <Button
+                                variant="ghost"
+                                className="rounded-lg w-full justify-start"
+                                onClick={() => {
+                                    setEditingTicket(row);
+                                    setIsModalOpen(true);
                                 }}
                             >
                                 <SquarePen size={18} /> Edit Ticket
                             </Button>
                         )}
-                        <Button variant="ghost" className="rounded-lg w-full justify-start">
+                        <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start"
+                            onClick={handleExportCsv}
+                        >
                             <Download size={18} /> Export
                         </Button>
                         <Button
@@ -289,7 +384,7 @@ const SupportList = () => {
             ),
         },
     ];
-    
+
     return (
         <div>
             <div className="flex items-center justify-between mb-4">
@@ -314,23 +409,57 @@ const SupportList = () => {
                         </SelectContent>
                     </Select>
                 </div>
-                <Sheet open={isModalOpen}>
-                    <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
-                        <Button variant={"primary"} size="lg"><Plus size={20} />  Create Ticket</Button>
-                    </SheetTrigger>
-                    <SheetContent showCloseButton={false}>
-                        <SheetHeader>
-                            <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create Ticket</SheetTitle>
-                        </SheetHeader>
-                        <CreateTicketForm
-                            setIsModalOpen={setIsModalOpen}
-                            editingTicket={editingTicket}
-                            onSuccess={() => { setEditingTicket(null); setIsModalOpen(false); refetch(); }}
-                            onCancelEdit={() => setEditingTicket(null)}
-                        />
-                    </SheetContent>
-                </Sheet>
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2">
+                        {selectedRows.size > 0 && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <span>{selectedRows.size} selected</span>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                        setSelectedRows(new Set());
+                                        setSelectAll(false);
+                                    }}
+                                    className="h-auto p-1 text-xs"
+                                >
+                                    Clear
+                                </Button>
+                            </div>
+                        )}
+                        <Button
+                            variant="outline"
+                            onClick={handleExportCsv}
+                            disabled={!filteredData.length || isLoading}
+                            className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
+                        >
+                            <Download size={16} />
+                            {selectedRows.size > 0
+                                ? `Export Selected (${selectedRows.size})`
+                                : 'Export All CSV'}
+                        </Button>
+                    </div>
+                    <Sheet open={isModalOpen}>
+                        <SheetTrigger asChild onClick={() => setIsModalOpen(true)}>
+                            <Button variant={"primary"} size="lg"><Plus size={20} />  Create Ticket</Button>
+                        </SheetTrigger>
+                        <SheetContent showCloseButton={false}>
+                            <SheetHeader>
+                                <SheetTitle className="flex items-center gap-4"><ArrowLeft size={20} onClick={() => setIsModalOpen(false)} />  Create Ticket</SheetTitle>
+                            </SheetHeader>
+                            <CreateTicketForm
+                                setIsModalOpen={setIsModalOpen}
+                                editingTicket={editingTicket}
+                                onSuccess={() => { setEditingTicket(null); setIsModalOpen(false); refetch(); }}
+                                onCancelEdit={() => setEditingTicket(null)}
+                            />
+                        </SheetContent>
+                    </Sheet>
+
+                </div>
+
             </div>
+
             <CustomTable
                 data={filteredData}
                 columns={columns}
@@ -344,26 +473,40 @@ const SupportList = () => {
             />
 
             {/* Delete Confirmation Dialog */}
-            <AlertDialog open={deleteTicketId !== null} onOpenChange={(open) => !open && handleCancelDelete()}>
+            <AlertDialog open={deleteTicketId !== null} onOpenChange={(open) => { if (!open) { handleCancelDelete(); setDeleteConfirmText(""); } }}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Support Ticket</AlertDialogTitle>
                         <AlertDialogDescription>
                             Are you sure you want to delete ticket <strong>#{ticketToDelete?.id}</strong> from{" "}
-                            <strong>{ticketToDelete?.organization?.name}</strong>? 
-                            This action cannot be undone and will permanently remove the ticket and all associated files.
+                            <strong>{ticketToDelete?.organization?.name}</strong>?<br />
+                            This action cannot be undone and will permanently remove the ticket and all associated files.<br /><br />
+                            <span className="text-destructive font-semibold">Type <b>delete</b> below to confirm:</span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <Input
+                        value={deleteConfirmText}
+                        onChange={e => setDeleteConfirmText(e.target.value)}
+                        placeholder='Type "delete" to confirm'
+                        className="mt-2"
+                        autoFocus
+                    />
                     <AlertDialogFooter>
-                        <AlertDialogCancel 
-                            onClick={handleCancelDelete} 
+                        <AlertDialogCancel
+                            onClick={() => {
+                                handleCancelDelete();
+                                setDeleteConfirmText("");
+                            }}
                             disabled={deleteMutation.isPending}
                         >
                             Cancel
                         </AlertDialogCancel>
-                        <AlertDialogAction 
-                            onClick={handleConfirmDelete}
-                            disabled={deleteMutation.isPending}
+                        <AlertDialogAction
+                            onClick={() => {
+                                handleConfirmDelete();
+                                setDeleteConfirmText("");
+                            }}
+                            disabled={deleteMutation.isPending || deleteConfirmText.trim().toLowerCase() !== "delete"}
                             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
                         >
                             {deleteMutation.isPending ? "Deleting..." : "Delete Ticket"}

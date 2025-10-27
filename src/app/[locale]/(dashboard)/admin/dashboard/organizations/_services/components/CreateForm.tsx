@@ -18,11 +18,8 @@ const formSchema = z.object({
   organization_name: z.string()
     .min(2, { message: "Organization name must be at least 2 characters." })
     .max(100, { message: "Organization name must be at most 100 characters." }),
-  number_of_apps: z.string()
-    .refine(val => {
-      const num = Number(val)
-      return !isNaN(num) && num > 0 && Number.isInteger(num)
-    }, { message: "Please enter a valid number of apps (integer > 0)." }),
+  number_of_apps: z.number()
+    .min(1, { message: "Please enter a valid number of apps (number > 0)." }),
   business_link: z.string()
     .url({ message: "Please enter a valid URL." })
     .max(200, { message: "URL must be at most 200 characters." }),
@@ -52,47 +49,47 @@ type CreateOrganizationBody = {
 };
 
 type OrganizationRow = {
-    id: number;
-    organizations: {
-        name: string;
-        mail: string;
-        logo: React.ReactNode;
-    };
-    country: string;
-    pest_organization: number;
-    teams: number;
-    states: string;
-    number_of_apps: number;
-    registerationDate: {
-        date: string;
-        time: string;
-    };
-    amount: string;
-    url: string;
-    credit: number;
+  id: number;
+  organizations: {
+    name: string;
+    mail: string;
+    logo: React.ReactNode;
+  };
+  country: string;
+  pest_organization: number;
+  teams: number;
+  states: string;
+  number_of_apps: number;
+  registerationDate: {
+    date: string;
+    time: string;
+  };
+  amount: string;
+  url: string;
+  credit: number;
 };
 
 type CreateOrganizationFormProps = {
-    setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    refetch: () => void;
-    editOrganization?: OrganizationRow | null;
+  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  refetch: () => void;
+  editOrganization?: OrganizationRow | null;
 };
 
 type Country = {
-    flag: string;
-    country: string;
-    code: string;
+  flag: string;
+  country: string;
+  code: string;
 };
 
 type CountriesResponse = {
-    success: boolean;
-    message: string;
-    data: Country[];
+  success: boolean;
+  message: string;
+  data: Country[];
 };
 
 const fetchCountries = async (): Promise<CountriesResponse> => {
-    const res = await api.get("/core/countries/");
-    return res.data;
+  const res = await api.get("/core/countries/");
+  return res.data;
 };
 
 // Types for clients
@@ -111,32 +108,32 @@ const fetchClients = async (): Promise<ClientsResponse> => {
 };
 
 const CreateOrganizationForm = ({
-    setIsModalOpen,
-    refetch,
-    editOrganization,
+  setIsModalOpen,
+  refetch,
+  editOrganization,
 }: CreateOrganizationFormProps) => {
 
-  const {data:session} = useSession()
-    // Set default values based on editOrganization
-    const defaultValues = editOrganization
-        ? {
-            organization_name: editOrganization.organizations.name,
-            business_link: editOrganization.url,
-            business_email: editOrganization.organizations.mail,
-            country: editOrganization.country,
-            client_id: "", // unknown in edit context
-            credit: editOrganization.credit.toString(),
-            number_of_apps: editOrganization.number_of_apps.toString(),
-        }
-        : {
-            organization_name: "",
-            business_link: "",
-            business_email: "",
-            country: "",
-            client_id: "",
-            credit: "",
-            number_of_apps:""
-        };
+  const { data: session } = useSession()
+  // Set default values based on editOrganization
+  const defaultValues = editOrganization
+    ? {
+      organization_name: editOrganization.organizations.name,
+      business_link: editOrganization.url,
+      business_email: editOrganization.organizations.mail,
+      country: editOrganization.country,
+      client_id: "", // unknown in edit context
+      credit: editOrganization.credit.toString(),
+      number_of_apps: editOrganization.number_of_apps,
+    }
+    : {
+      organization_name: "",
+      business_link: "",
+      business_email: "",
+      country: "",
+      client_id: "",
+      credit: "",
+      number_of_apps: 1
+    };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -205,8 +202,8 @@ const CreateOrganizationForm = ({
 
   // Fetch countries
   const { data: countriesData, isLoading: countriesLoading, isError: countriesError } = useQuery<CountriesResponse>({
-      queryKey: ["countries"],
-      queryFn: fetchCountries,
+    queryKey: ["countries"],
+    queryFn: fetchCountries,
   });
 
   // Clients query
@@ -221,15 +218,14 @@ const CreateOrganizationForm = ({
 
   return (
     <>
-      <div className='flex flex-col h-full overflow-y-auto justify-start items-center'
-        style={{
-          scrollbarWidth: 'none',
-          scrollbarColor: '#0D0D12 #fff',
-        }}
+      <div className='flex flex-col overflow-hidden justify-start items-center'
       >
         <Form {...form}>
           <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="space-y-4">
+            <div className="space-y-4 h-full overflow-y-auto" style={{
+              scrollbarWidth: 'none',
+              scrollbarColor: '#0D0D12 #fff',
+            }}>
               {/* Client Select Field */}
               <FormField
                 name="client_id"
@@ -266,7 +262,7 @@ const CreateOrganizationForm = ({
                   <FormItem>
                     <FormControl>
                       <Input
-                      className="bg-[#F8FAFB]"
+                        className="bg-[#F8FAFB]"
                         type="text"
                         label="Organization Name"
                         placeholder="Organization name"
@@ -285,21 +281,16 @@ const CreateOrganizationForm = ({
                 render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
-                      <Select
-                        label="How many apps in the organization?"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger error={fieldState.error} className="bg-[#F8FAFB]">
-                          <SelectValue placeholder="Select number of apps" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1</SelectItem>
-                          <SelectItem value="2">2</SelectItem>
-                          <SelectItem value="3">3</SelectItem>
-                          <SelectItem value="4">4</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Input
+                        className="bg-[#F8FAFB]"
+                        type="number"
+                        label="Number of Applications"
+                        placeholder="Enter number of applications"
+                        icon={<Building size={20} />}
+                        iconPosition="left"
+                        error={fieldState.error}
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -311,7 +302,7 @@ const CreateOrganizationForm = ({
                   <FormItem>
                     <FormControl>
                       <Input
-                      className="bg-[#F8FAFB]"
+                        className="bg-[#F8FAFB]"
                         type="url"
                         label="Organization Website"
                         placeholder="https://your-organization.com"
@@ -331,7 +322,7 @@ const CreateOrganizationForm = ({
                   <FormItem>
                     <FormControl>
                       <Input
-                      className="bg-[#F8FAFB]"
+                        className="bg-[#F8FAFB]"
                         type="email"
                         label="Business Email"
                         placeholder="Enter your business email"

@@ -39,21 +39,21 @@ const ClientPage = ({ scanId }: { scanId: string }) => {
     });
 
     console.log(findingsData);
-    
+
 
     if (isError) return <div>Error: {error?.message}</div>;
 
     return (
-            <div className='grid grid-cols-5 items-start gap-4'>
-                <div className='col-span-4'>
-                    <div className='rounded-xl bg-[#F8F9FA] p-2'>
-                        <FindingsList findings={findingsData?.results} scanId={scanId} />
-                    </div>
-                </div>
-                <div className='col-span-1 space-y-4'>
-                    <Statistics statisticsData={findingsData?.statistics} />
+        <div className='grid grid-cols-5 items-start gap-4'>
+            <div className='col-span-4'>
+                <div className='rounded-xl bg-[#F8F9FA] p-2'>
+                    <FindingsList findings={findingsData?.results} scanId={scanId} />
                 </div>
             </div>
+            <div className='col-span-1 space-y-4'>
+                <Statistics statisticsData={findingsData?.statistics} />
+            </div>
+        </div>
     );
 }
 

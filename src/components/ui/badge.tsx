@@ -14,13 +14,13 @@ const badgeVariants = cva(
         secondary:
           "border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         destructive:
-          "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "border-transparent bg-[#C4320A]/10 text-[#C4320A] focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         // Custom status variants
-        pending: "bg-amber-500/10 text-amber-500 border-amber-100",
-        success: "bg-emerald-700/10 text-emerald-700 border-emerald-100",
-        failed: "bg-red-800/10 text-red-800 border-red-100",
+        pending: "bg-[#F79009]/10 text-[#F79009] border-transparent",
+        success: "bg-[#027A48]/10 text-[#027A48] border-emerald-100",
+        failed: "bg-[#B42318]/10 text-[#B42318] border-transparent",
       },
       withDot: {
         true: "pl-2", // add left padding if dot is present
@@ -63,9 +63,10 @@ function getDotColorClass(variant: string | undefined, dotColor: string | undefi
       return "bg-red-800";
     default:
       // fallback to variant
-      if (variant === "success") return "bg-emerald-700";
-      if (variant === "pending") return "bg-amber-500";
-      if (variant === "failed") return "bg-red-800";
+      if (variant === "success") return "bg-[#027A48]";
+      if (variant === "pending") return "bg-[#F79009]";
+      if (variant === "destructive") return "bg-[#C4320A]";
+      if (variant === "failed") return "bg-[#B42318]";
       return "bg-gray-400";
   }
 }

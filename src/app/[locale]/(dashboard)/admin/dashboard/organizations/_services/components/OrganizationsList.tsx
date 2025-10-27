@@ -41,6 +41,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
 
 // API response types
 type OrganizationApi = {
@@ -87,6 +88,24 @@ type OrganizationRow = {
     credit: number;
 };
 
+type Country = {
+    flag: string;
+    country: string;
+    code: string;
+};
+
+type CountriesResponse = {
+    success: boolean;
+    message: string;
+    data: Country[];
+};
+
+const fetchCountries = async (): Promise<CountriesResponse> => {
+    const res = await api.get("/core/countries/");
+    return res.data;
+};
+
+
 // UPDATED: accept page param
 const fetchOrganizations = async (page: number): Promise<OrganizationsApiResponse> => {
     const res = await api.get(`/client/organizations/?page=${page}`);
@@ -100,13 +119,22 @@ const deleteOrganization = async (id: number) => {
 const OrganizationsList = () => {
     const { data: session } = useSession();
     const [search, setSearch] = useState("");
-    const [states, setStates] = useState("all");
+    const [country, setCountry] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editOrganization, setEditOrganization] = useState<OrganizationRow | null>(null);
     const [page, setPage] = useState(1);
     const [deleteOrgId, setDeleteOrgId] = useState<number | null>(null);
     const [orgToDelete, setOrgToDelete] = useState<OrganizationRow | null>(null);
+    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+    const [selectAll, setSelectAll] = useState(false);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
     const router = useRouter();
+
+    // Fetch countries
+    const { data: countriesData, isLoading: countriesLoading, isError: countriesError } = useQuery<CountriesResponse>({
+        queryKey: ["countries"],
+        queryFn: fetchCountries,
+    });
 
     // Fetch organizations data
     // UPDATED: include page in queryKey & queryFn, keepPreviousData for smooth pagination
@@ -180,32 +208,25 @@ const OrganizationsList = () => {
             });
         }
 
-        // Filter by status
-        if (states !== "all") {
-            data = data.filter((row) => row.states === states);
+        // Filter by country
+        if (country) {
+            data = data.filter((row) => row.country === country);
         }
 
         // Sort by priority if selected (optional: you can sort, but here we just filter)
         return data;
-    }, [search, states, organizations]);
+    }, [search, country, organizations]);
 
     // CSV export helper
     const handleExportCsv = () => {
-        if (!filteredData.length) return;
+        const dataToExport = selectedRows.size > 0
+            ? filteredData.filter(row => selectedRows.has(row.id))
+            : filteredData;
+        if (!dataToExport.length) return;
         const headers = [
-            "ID",
-            "Name",
-            "Email",
-            "Country",
-            "Rank",
-            "Teams",
-            "State",
-            "Registration Date",
-            "Amount",
-            "Credits"
+            "ID", "Name", "Email", "Country", "Rank", "Teams", "State", "Registration Date", "Amount", "Credits"
         ];
-
-        const rows = filteredData.map((r, idx) => ([
+        const rows = dataToExport.map((r, idx) => ([
             idx + 1,
             r.organizations.name,
             r.organizations.mail,
@@ -217,7 +238,6 @@ const OrganizationsList = () => {
             r.amount,
             r.credit
         ]));
-
         const csv = [headers, ...rows]
             .map(line =>
                 line
@@ -229,13 +249,12 @@ const OrganizationsList = () => {
                     .join(",")
             )
             .join("\n");
-
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
         const url = URL.createObjectURL(blob);
         const ts = new Date().toISOString().split("T")[0];
         const link = document.createElement("a");
         link.href = url;
-        link.download = `organizations_${ts}.csv`;
+        link.download = `organizations_${selectedRows.size > 0 ? "selected_" : ""}${ts}.csv`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -250,15 +269,54 @@ const OrganizationsList = () => {
     const handleConfirmDelete = () => {
         if (deleteOrgId) {
             deleteMutation.mutate(deleteOrgId);
+            setDeleteConfirmText(""); // Reset input after delete
         }
     };
 
     const handleCancelDelete = () => {
         setDeleteOrgId(null);
         setOrgToDelete(null);
+        setDeleteConfirmText(""); // Reset input
+    };
+
+    const handleSelectRow = (id: number, checked: boolean) => {
+        setSelectedRows(prev => {
+            const next = new Set(prev);
+            if (checked) next.add(id);
+            else next.delete(id);
+            setSelectAll(next.size === filteredData.length);
+            return next;
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedRows(new Set(filteredData.map(row => row.id)));
+            setSelectAll(true);
+        } else {
+            setSelectedRows(new Set());
+            setSelectAll(false);
+        }
     };
 
     const columns = [
+        {
+            key: "select",
+            header: (
+                <Checkbox
+                    checked={selectAll}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all rows"
+                />
+            ),
+            render: (row: OrganizationRow) => (
+                <Checkbox
+                    checked={selectedRows.has(row.id)}
+                    onCheckedChange={checked => handleSelectRow(row.id, !!checked)}
+                    aria-label={`Select row ${row.id}`}
+                />
+            ),
+        },
         {
             key: "organizations",
             header: "Organizations",
@@ -283,10 +341,6 @@ const OrganizationsList = () => {
         {
             key: "teams",
             header: "Teams"
-        },
-        {
-            key: "states",
-            header: "States"
         },
         {
             key: "registerationDate",
@@ -325,9 +379,9 @@ const OrganizationsList = () => {
                         </Button>}
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push("/admin/dashboard/organizations/1/scans")}><ScanLine size={18} />View Scans</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start"><Download size={18} /> Export Report</Button>
-                        {hasPermission(session, "delete_organization") && <Button 
-                            variant="ghost" 
-                            className="rounded-lg w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50" 
+                        {hasPermission(session, "delete_organization") && <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                             onClick={() => handleDeleteClick(row)}
                             disabled={deleteMutation.isPending}
                         >
@@ -346,33 +400,61 @@ const OrganizationsList = () => {
             <div className="flex items-center justify-between mb-4">
                 <div className="grid grid-cols-3 gap-2 items-center">
                     <Input
-                        placeholder="Search payments..."
+                        placeholder="Search organizations..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         icon={<Search size={20} />}
                         iconPosition="right"
                     />
-                    <Select value={states} onValueChange={setStates}>
-                        <SelectTrigger className="w-full md:w-48">
-                            <SelectValue placeholder="Filter by status" />
+                    <Select value={country} onValueChange={setCountry}>
+                        <SelectTrigger className="bg-[#fff]">
+                            <SelectValue placeholder={countriesLoading ? "Loading countries..." : countriesError ? "Error loading countries" : "Select Country"} />
                         </SelectTrigger>
                         <SelectContent>
-                            {statesOptions.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                    {opt.label}
+                            {countriesLoading && (
+                                <div className="px-4 py-2 text-muted-foreground">Loading...</div>
+                            )}
+                            {countriesError && (
+                                <div className="px-4 py-2 text-destructive">Error loading countries</div>
+                            )}
+                            {countriesData?.data?.map((c, idx) => (
+                                <SelectItem key={idx} value={c.country}>
+                                    <span className="flex items-center gap-2">
+                                        <Image src={c.flag} alt={c.country} width={16} height={16} className="w-4 h-4" />
+                                        {c.country}
+                                    </span>
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
                 <div className="flex items-center gap-2">
+                    {selectedRows.size > 0 && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{selectedRows.size} selected</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedRows(new Set());
+                                    setSelectAll(false);
+                                }}
+                                className="h-auto p-1 text-xs"
+                            >
+                                Clear
+                            </Button>
+                        </div>
+                    )}
                     <Button
                         variant="outline"
                         onClick={handleExportCsv}
                         disabled={!filteredData.length || isLoading || isFetching}
                         className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white"
                     >
-                        Export CSV <Download size={16} className="mr-1" />
+                        {selectedRows.size > 0
+                            ? `Export Selected (${selectedRows.size})`
+                            : "Export All CSV"}
+                        <Download size={16} className="ml-1" />
                     </Button>
                     {hasPermission(session, "add_organization") && <Sheet open={isModalOpen}>
                         <SheetTrigger asChild onClick={() => { setIsModalOpen(true); setEditOrganization(null); }}>
@@ -398,7 +480,7 @@ const OrganizationsList = () => {
             <CustomTable
                 data={filteredData}
                 columns={columns}
-                onRowClick={(row) => router.push(`/dashboard/organizations/${row.id}/scans`)}
+                onRowClick={(row) => router.push(`/admin/dashboard/organizations/${row.id}/scans`)}
                 // NEW pagination props (adapt to your CustomTable API)
                 page={page}
                 pageSize={pageSize}
@@ -408,6 +490,11 @@ const OrganizationsList = () => {
                 }}
                 loading={isLoading}
                 serverSidePagination
+            // NEW row selection props
+            // selectedRows={selectedRows}
+            // onSelectRow={handleSelectRow}
+            // onSelectAll={handleSelectAll}
+            // selectAll={selectAll}
             />
 
             {/* Delete Confirmation Dialog */}
@@ -416,17 +503,24 @@ const OrganizationsList = () => {
                     <AlertDialogHeader>
                         <AlertDialogTitle>Delete Organization</AlertDialogTitle>
                         <AlertDialogDescription>
-                            Are you sure you want to delete <strong>{orgToDelete?.organizations.name}</strong>? 
-                            This action cannot be undone and will permanently remove the organization and all associated data.
+                            Are you sure you want to delete <strong>{orgToDelete?.organizations.name}</strong>?<br />
+                            This action cannot be undone and will permanently remove the organization and all associated data.<br /><br />
+                            <span className="text-destructive font-semibold">Type <b>delete</b> below to confirm:</span>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <Input
+                        value={deleteConfirmText}
+                        onChange={e => setDeleteConfirmText(e.target.value)}
+                        placeholder='Type "delete" to confirm'
+                        autoFocus
+                    />
                     <AlertDialogFooter>
                         <AlertDialogCancel onClick={handleCancelDelete} disabled={deleteMutation.isPending}>
                             Cancel
                         </AlertDialogCancel>
-                        <AlertDialogAction 
+                        <AlertDialogAction
                             onClick={handleConfirmDelete}
-                            disabled={deleteMutation.isPending}
+                            disabled={deleteMutation.isPending || deleteConfirmText.trim().toLowerCase() !== "delete"}
                             className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
                         >
                             {deleteMutation.isPending ? "Deleting..." : "Delete"}

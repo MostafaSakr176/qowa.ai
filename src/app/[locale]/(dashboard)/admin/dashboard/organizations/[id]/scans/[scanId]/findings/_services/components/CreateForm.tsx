@@ -141,14 +141,14 @@ const CreateFindingForm = ({ setIsModalOpen, scanId, refetch, finding }: { setIs
   }
 
   return (
-    <div className='flex flex-col h-full overflow-y-auto justify-start items-center'
-            style={{
-          scrollbarWidth: 'none',
-          scrollbarColor: '#0D0D12 #fff',
-        }}>
-      <Form {...form}>
-        <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit((values) => onSubmit(values))}>
-          <div className="space-y-4">
+      <div className='flex flex-col overflow-hidden justify-start items-center'
+      >
+        <Form {...form}>
+          <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+            <div className="space-y-4 h-full overflow-y-auto" style={{
+              scrollbarWidth: 'none',
+              scrollbarColor: '#0D0D12 #fff',
+            }}>
             <FormField
               name="title"
               render={({ field, fieldState }) => (

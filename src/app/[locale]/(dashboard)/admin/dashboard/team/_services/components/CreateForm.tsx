@@ -293,15 +293,14 @@ const CreateEmployeeForm = ({ setIsModalOpen , editUser , refetch }: { setIsModa
 
   return (
     <>
-      <div className='flex flex-col h-full overflow-y-auto justify-start items-center'
-        style={{
-          scrollbarWidth: 'none',
-          scrollbarColor: '#0D0D12 #fff',
-        }}
+      <div className='flex flex-col overflow-hidden justify-start items-center'
       >
         <Form {...form}>
           <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="space-y-4">
+            <div className="space-y-4 h-full overflow-y-auto" style={{
+              scrollbarWidth: 'none',
+              scrollbarColor: '#0D0D12 #fff',
+            }}>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   name="first_name"

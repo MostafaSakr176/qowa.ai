@@ -3,11 +3,12 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { ChevronRight, KeyRound, Link, Locate, Lock, Mail, User, Loader2 } from 'lucide-react'
+import { ChevronRight, KeyRound, Locate, Lock, Mail, User, Loader2, Link2 } from 'lucide-react'
 import React, { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import api from '@/lib/axiosClient'
 import toast from 'react-hot-toast'
+import { Link } from '@/i18n/navigation'
 
 interface UserProfile {
   id: number;
@@ -63,7 +64,7 @@ const Settings = () => {
     },
     onError: (error: Error) => {
       const errorMessage = error?.message ||
-                         "Failed to update profile. Please try again.";
+        "Failed to update profile. Please try again.";
       toast.error(errorMessage);
     },
   });
@@ -125,7 +126,7 @@ const Settings = () => {
                   {firstName.charAt(0).toUpperCase()}{lastName.charAt(0).toUpperCase()}
                 </span>
               </div>
-            </div> 
+            </div>
             {profileData?.group_name && (
               <div className="ml-4 flex items-center gap-2">
                 <span className="block text-sm text-muted-foreground mb-1">Role</span>
@@ -136,50 +137,50 @@ const Settings = () => {
             )}
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 items-end gap-4">
-            <Input 
-              className='bg-accent' 
-              label="First Name" 
-              placeholder='Input your name' 
-              icon={<User size={20} />} 
-              iconPosition='left' 
+            <Input
+              className='bg-accent'
+              label="First Name"
+              placeholder='Input your name'
+              icon={<User size={20} />}
+              iconPosition='left'
               type='text'
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               disabled={updateProfileMutation.isPending}
             />
-            <Input 
-              className='bg-accent' 
-              label="Last Name" 
-              type='text' 
+            <Input
+              className='bg-accent'
+              label="Last Name"
+              type='text'
               placeholder='Input your Last name'
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               disabled={updateProfileMutation.isPending}
             />
-            <Input 
-              className='bg-accent' 
-              label="Email" 
-              placeholder='Input your email' 
-              icon={<Mail size={20} />} 
-              iconPosition='left' 
+            <Input
+              className='bg-accent'
+              label="Email"
+              placeholder='Input your email'
+              icon={<Mail size={20} />}
+              iconPosition='left'
               type='email'
               value={email}
               disabled
               title="Email cannot be changed"
             />
-            <Input 
-              className='bg-accent' 
-              label="Password" 
-              placeholder='••••••••' 
-              icon={<Lock size={20} />} 
-              iconPosition='left' 
+            <Input
+              className='bg-accent'
+              label="Password"
+              placeholder='••••••••'
+              icon={<Lock size={20} />}
+              iconPosition='left'
               type='password'
               disabled
               title="Use 'Set Password' button below to change password"
             />
             <div className="col-span-2 flex justify-end gap-3 mt-4">
-              <Button 
-                type="button" 
+              <Button
+                type="button"
                 variant="outline"
                 onClick={() => {
                   setFirstName(profileData?.user.first_name || "");
@@ -189,7 +190,7 @@ const Settings = () => {
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={updateProfileMutation.isPending}
                 className="bg-gradient-to-r from-[#8B5CF6] to-[#7C3AED] hover:opacity-90 text-white"
@@ -216,7 +217,7 @@ const Settings = () => {
         <div className="col-span-3">
           <form className="grid grid-cols-1 md:grid-cols-2 items-end gap-4">
             <Input className='bg-accent' label="Name" placeholder='Organization name' icon={<User size={20} />} iconPosition='left' type='text' />
-            <Input className='bg-accent' label="Link URL Organization" type='url' placeholder='Input your Link URL Organization' icon={<Link size={20} />} iconPosition='left' />
+            <Input className='bg-accent' label="Link URL Organization" type='url' placeholder='Input your Link URL Organization' icon={<Link2 size={20} />} iconPosition='left' />
             <div className='col-span-2'>
               <Input className='bg-accent' label="Organization address" placeholder='ex. Asia / Bandung' icon={<Locate size={20} />} iconPosition='left' type='text' />
             </div>
@@ -240,11 +241,16 @@ const Settings = () => {
               </div>
             </div>
             <div>
-              <Switch 
+              <Link href="/auth/2-step-verification">
+                <Button variant="outline" size="sm" className='rounded-md'>
+                  {is2FAEnabled ? "Disable 2FA" : "Enable 2FA"} <ChevronRight size={18} strokeWidth="2px" />
+                </Button>
+              </Link>
+              {/* <Switch
                 checked={is2FAEnabled}
                 disabled
                 title="2FA settings will be available soon"
-              />
+              /> */}
             </div>
           </div>
           {/* Password */}

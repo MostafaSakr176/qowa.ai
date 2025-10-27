@@ -27,15 +27,18 @@ const TwoStepVerification = () => {
     }>(null);
     const [enabling, setEnabling] = useState(false);
     const [copySuccess, setCopySuccess] = useState(false);
-    const [email, setEmail] = useState<string | null>(null)
+    const [email, setEmail] = useState<string | null>(null);
 
-
-    // 1. Read email from localStorage once (client-side only)
+    // 1. Get email from session or localStorage
     useEffect(() => {
         if (typeof window === "undefined") return;
-        const storedEmail = localStorage.getItem("signup_email");
-        if (storedEmail) setEmail(storedEmail);
-    }, []);
+        if (session?.user?.email) {
+            setEmail(session.user.email);
+        } else {
+            const storedEmail = localStorage.getItem("signup_email");
+            if (storedEmail) setEmail(storedEmail);
+        }
+    }, [session]);
 
     // 2. Fetch 2FA setup only when we have both session & email
     useEffect(() => {// wait for auth
@@ -99,7 +102,13 @@ const TwoStepVerification = () => {
                 { code: value, token: setupData.token },
             );
             toast.success("Two-factor authentication enabled!");
-            router.push("/auth/login");
+            if (session?.user?.role === "employee") {
+                router.push("/admin/dashboard/settings");
+            }else if(session?.user?.role === "client"){
+                router.push("/client/dashboard/settings");
+            } else {
+                router.push("/auth/login");
+            }
         } catch (err: unknown) {
             if (typeof err === "object" && err !== null && "message" in err) {
                 toast.error((err as { message?: string }).message || "Failed to enable 2FA");

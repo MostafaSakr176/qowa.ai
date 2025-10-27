@@ -4,11 +4,11 @@ import { Link, usePathname } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
-import { HeartHandshake, Home, PanelLeftOpen, PanelRightOpen, QrCode, ReceiptText, Settings, Users } from 'lucide-react';
+import { HeartHandshake, Home, PanelLeftOpen, PanelRightOpen, QrCode, ReceiptText, Scan, Settings, Users } from 'lucide-react';
 import { useLocale } from 'next-intl'
-import { signOut } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
-const navItems = [
+const adminNavItems = [
   {
     href: '/admin/dashboard',
     label: 'Dashboard',
@@ -24,11 +24,6 @@ const navItems = [
     label: 'Invoices',
     icon: <ReceiptText size={20} />,
   },
-  // {
-  //   href: '/admin/dashboard/ai-scan-configrations',
-  //   label: 'Ai scan configurations',
-  //   icon: <ShieldUser size={20} />,
-  // },
   {
     href: '/admin/dashboard/ai-scan-configrations',
     label: 'Ai scan configrations',
@@ -46,6 +41,34 @@ const navItems = [
   },
   {
     href: '/admin/dashboard/support',
+    label: 'Support',
+    icon: <HeartHandshake size={20} />,
+  },
+]
+
+const clientNavItems = [
+  {
+    href: '/client/dashboard',
+    label: 'Dashboard',
+    icon: <Home size={20} />,
+  },
+  {
+    href: '/client/dashboard/scans',
+    label: 'Scans',
+    icon: <Scan size={20} />,
+  },
+  {
+    href: '/client/dashboard/team',
+    label: 'Team',
+    icon: <Users size={20} />,
+  },
+  {
+    href: '/client/dashboard/settings',
+    label: 'Settings',
+    icon: <Settings size={20} />,
+  },
+  {
+    href: '/client/dashboard/support',
     label: 'Support',
     icon: <HeartHandshake size={20} />,
   },
@@ -70,7 +93,8 @@ function isActiveLink(pathname: string, locale: string, href: string) {
 const SideBar = () => {
   const [sidebarOpen, setSidebarOpen] = React.useState(true)
   const pathname = usePathname();
-  const Locale = useLocale()
+  const Locale = useLocale();
+  const { data: session } = useSession();
 
   return (
     <TooltipProvider>
@@ -101,7 +125,7 @@ const SideBar = () => {
         </div>
         <nav className="mt-8 flex-1">
           <div className="px-2 space-y-2 flex flex-col">
-            {navItems.map((item) => {
+            {(session?.user.role === 'client' ? clientNavItems : adminNavItems).map((item) => {
               const active = isActiveLink(pathname, Locale, item.href);
               return (
                 <Tooltip key={item.href}>
