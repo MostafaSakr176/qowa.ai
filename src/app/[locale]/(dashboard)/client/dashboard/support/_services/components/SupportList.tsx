@@ -1,7 +1,7 @@
 "use client"
 import React, { useMemo, useState } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
-import { ArrowLeft, Download, Ellipsis, Plus, Search, SquarePen, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Search } from "lucide-react";
 // Chadcn UI components
 import { Input } from "@/components/ui/input";
 import {
@@ -11,11 +11,6 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover"
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import CreateTicketForm from "./CreateForm";
@@ -26,15 +21,8 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-// import { useRouter } from "@/i18n/navigation";
-import toast from "react-hot-toast";
-import { formatDateTime } from "@/utils/formateDate";
 import api from "@/lib/axiosClient";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Image from "next/image";
-import { hasPermission } from "@/utils/permissions";
-import { useSession } from "next-auth/react";
+import { useQuery } from "@tanstack/react-query";
 
 type TicketFile = {
     id: number;
@@ -84,7 +72,6 @@ const SupportList = () => {
     const [page, setPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [editingTicket, setEditingTicket] = useState<SupportTicket | null>(null);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
     const pageSize = 10; // expected backend default page size
 
     const { data: ticketsData, isLoading, refetch } = useQuery<TicketsResponse>({
@@ -147,64 +134,7 @@ const SupportList = () => {
                 <Badge withDot variant={statusToVariant(row.status)}>{row.status}</Badge>
             )
         },
-
-        // {
-        //     key: "created_at",
-        //     header: "Registration date",
-        //     render: (row: SupportTicket) => {
-        //         const dt = formatDateTime(row.created_at);
-        //         return (
-        //             <div>
-        //                 <p className="text-sm text-[#070A0E]">{dt.date}</p>
-        //                 <p className="text-xs text-[#4A4C4F]">{dt.time}</p>
-        //             </div>
-        //         );
-        //     }
-        // },
-        // {
-        //     key: "actions",
-        //     header: "",
-        //     render: (row: SupportTicket) => (
-        //         <Popover>
-        //             <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
-        //             <PopoverContent className="flex flex-col items-start p-2" align="end">
-        //                 {hasPermission(session, "add_organization") && <Button variant="ghost" className="rounded-lg" onClick={() => { setEditingTicket(row); setIsModalOpen(true); }}><SquarePen size={18} /> Edit Ticket</Button>}
-        //                 <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export</Button>
-        //                 {/* <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Close</Button> */}
-        //                 <Button
-        //                     variant="ghost"
-        //                     className="rounded-lg text-red-600 hover:text-red-700"
-        //                     disabled={deletingId === row.id}
-        //                     onClick={() => handleDelete(row.id)}
-        //                 >
-        //                     {deletingId === row.id ? <span className="flex items-center gap-2"><LoaderSpinner /> Deleting...</span> : <><Trash2 size={18} /> Delete</>}
-        //                 </Button>
-        //             </PopoverContent>
-        //         </Popover>
-        //     ),
-        // },
     ];
-
-    const deleteMutation = useMutation({
-        mutationFn: async (id: string) => {
-            await api.delete(`/support/tickets/${id}/`);
-        },
-        onSuccess: (_data, id) => {
-            toast.success(`Ticket #${id} deleted`);
-            refetch()
-        },
-        onError: (_err, id) => {
-            toast.error(`Failed to delete ticket #${id}`);
-        },
-        onSettled: () => setDeletingId(null)
-    });
-
-    function handleDelete(id: string) {
-        setDeletingId(id);
-        deleteMutation.mutate(id);
-    }
-
-    const LoaderSpinner = () => <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />;
 
     return (
         <div>
