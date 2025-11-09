@@ -23,32 +23,32 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 
 // Organization interfaces
-interface Organization {
-  id: number;
-  name: string;
-  country: string;
-  number_of_apps: number;
-  url: string;
-  business_email: string;
-  created_at: string;
-  scans_count: number;
-  team_members_count: number;
-  rank: number;
-  amount: number;
-  credit: number;
-}
+// interface Organization {
+//   id: number;
+//   name: string;
+//   country: string;
+//   number_of_apps: number;
+//   url: string;
+//   business_email: string;
+//   created_at: string;
+//   scans_count: number;
+//   team_members_count: number;
+//   rank: number;
+//   amount: number;
+//   credit: number;
+// }
 
-interface OrganizationsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Organization[];
-}
+// interface OrganizationsResponse {
+//   count: number;
+//   next: string | null;
+//   previous: string | null;
+//   results: Organization[];
+// }
 
 // Schemas (password required only on create)
 const baseSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  organization: z.string().min(1, { message: "Please select an organization" }), // Add this
+  // organization: z.string().min(1, { message: "Please select an organization" }), // Add this
   number_of_ips: z.string().regex(/^\d+$/, { message: "Enter a valid number" }),
   ips_range: z.string().regex(/^\d+$/, { message: "Enter a valid number" }),
   port_number: z.string().regex(/^\d+$/, { message: "Enter a valid port" }),
@@ -88,21 +88,21 @@ const CreateInfraScanForm = ({
 
   type FormValues = z.infer<typeof baseSchema> | z.infer<typeof editSchema>;
 
-  // Add organizations query
-  const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
-    queryKey: ['organizations'],
-    queryFn: async () => {
-      const res = await api.get('/client/organizations/');
-      return res.data;
-    },
-    staleTime: 300_000, // 5 minutes
-  });
+  // // Add organizations query
+  // const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
+  //   queryKey: ['organizations'],
+  //   queryFn: async () => {
+  //     const res = await api.get('/client/organizations/');
+  //     return res.data;
+  //   },
+  //   staleTime: 300_000, // 5 minutes
+  // });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(isEdit ? editSchema : baseSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       title: "",
-      organization: "", // Add this
+      // organization: "", // Add this
       number_of_ips: "",
       ips_range: "",
       port_number: "",
@@ -129,7 +129,7 @@ const CreateInfraScanForm = ({
     if (isEdit && scanDetail) {
       form.reset({
         title: scanDetail.title || "",
-        organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
+        // organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
         number_of_ips: String(scanDetail.number_of_ips ?? ""),
         ips_range: String(scanDetail.ips_range ?? ""),
         port_number: String(scanDetail.port_number ?? ""),
@@ -148,7 +148,7 @@ const CreateInfraScanForm = ({
     }
     const formdata = new FormData();
     formdata.append("title", values.title);
-    formdata.append("organization", values.organization); // Add this
+    // formdata.append("organization", values.organization); // Add this
     formdata.append("number_of_ips", values.number_of_ips);
     formdata.append("ips_range", values.ips_range);
     formdata.append("port_number", values.port_number);
@@ -192,7 +192,7 @@ const CreateInfraScanForm = ({
         }}
       >
         <div className="w-full flex justify-start mb-4">
-          <Image src="/media/images/client/infra.png" alt="Create web scan" width={60} height={60} />
+          <Image src="/media/images/client/infrastructure.png" alt="Create web scan" width={60} height={60} />
         </div>
         <Form {...form}>
           <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
@@ -208,7 +208,7 @@ const CreateInfraScanForm = ({
                 )} />
 
                 {/* Organization Select Field - Add this */}
-                <FormField name="organization" render={({ field }) => (
+                {/* <FormField name="organization" render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Select
@@ -231,7 +231,7 @@ const CreateInfraScanForm = ({
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )} /> */}
 
                 <FormField name="ips_type" render={({ field, fieldState }) => (
                   <FormItem>

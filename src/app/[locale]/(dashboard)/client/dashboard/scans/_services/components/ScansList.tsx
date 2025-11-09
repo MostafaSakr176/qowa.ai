@@ -43,6 +43,16 @@ import CreateMobileScanForm from "./CreateMobileForm";
 import CreateInfraScanForm from "./CreateInfraForm";
 import CreateApiScanForm from "./CreateApiForm";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type ScanApi = {
     id: number;
@@ -94,7 +104,10 @@ const ScansList = () => {
     const [editScanId, setEditScanId] = useState<number | null>(null);
     const [deletingId, setDeletingId] = useState<number | null>(null);
     const [isExporting, setIsExporting] = useState(false);
-    
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [scanToDelete, setScanToDelete] = useState<ScanRow | null>(null);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
     // Add these new states for row selection
     const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
     const [selectAll, setSelectAll] = useState(false);
@@ -127,9 +140,28 @@ const ScansList = () => {
     });
 
     const handleDelete = (id: number) => {
-        if (deletingId) return; // prevent double
-        deleteMutation.mutate(id);
-    }
+        const scan = scans.find(s => s.id === id);
+        setScanToDelete(scan || null);
+        setDeleteDialogOpen(true);
+        setDeleteConfirmText("");
+    };
+
+    // Confirm delete function
+    const confirmDelete = () => {
+        if (scanToDelete) {
+            deleteMutation.mutate(scanToDelete.id);
+            setDeleteDialogOpen(false);
+            setScanToDelete(null);
+            setDeleteConfirmText("");
+        }
+    };
+
+    // Cancel delete function
+    const cancelDelete = () => {
+        setDeleteDialogOpen(false);
+        setScanToDelete(null);
+        setDeleteConfirmText("");
+    };
 
     // Map API data to table format
     const scans: ScanRow[] = useMemo(() => {
@@ -206,12 +238,12 @@ const ScansList = () => {
     function handleExportCsv() {
         try {
             setIsExporting(true);
-            
+
             // Determine which data to export
-            const dataToExport = selectedRows.size > 0 
+            const dataToExport = selectedRows.size > 0
                 ? filteredData.filter(row => selectedRows.has(row.id))
                 : filteredData;
-            
+
             if (!dataToExport.length) {
                 toast.error("No data to export");
                 return;
@@ -227,7 +259,7 @@ const ScansList = () => {
                 "Created Date",
                 "Created Time"
             ];
-            
+
             const rows = dataToExport.map(r => [
                 r.id,
                 r.title,
@@ -238,7 +270,7 @@ const ScansList = () => {
                 r.startDate.date,
                 r.startDate.time
             ].map(csvEscape).join(','));
-            
+
             const csv = [headers.map(csvEscape).join(','), ...rows].join('\r\n');
             const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
@@ -250,7 +282,7 @@ const ScansList = () => {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-            
+
             toast.success(`Exported ${dataToExport.length} scan${dataToExport.length !== 1 ? 's' : ''}`);
         } finally {
             setIsExporting(false);
@@ -343,11 +375,17 @@ const ScansList = () => {
         {
             key: "actions",
             header: "",
-            render: (row: { id: number }) => (
+            render: (row: { id: number, app_type: string }) => (
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => { setEditScanId(row.id); }}><SquarePen size={18} /> Edit scan</Button>
+                        <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => {
+                            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+                            if (row.app_type === 'web') { setIsWebModalOpen(true); setEditScanId(row.id); }
+                            if (row.app_type === 'mobile') { setIsMobileModalOpen(true); setEditScanId(row.id); }
+                            if (row.app_type === 'infrastructure') { setIsInfraModalOpen(true); setEditScanId(row.id); }
+                            if (row.app_type === 'api') { setIsApiModalOpen(true); setEditScanId(row.id); }
+                        }}><SquarePen size={18} /> Edit scan</Button>
                         <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => router.push(`/dashboard/scans/${row.id}/findings`)}><ScanLine size={18} />View Findings</Button>
                         <Button
                             variant="ghost"
@@ -489,25 +527,60 @@ const ScansList = () => {
                         className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
                     >
                         {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                        {selectedRows.size > 0 
-                            ? `Export Selected (${selectedRows.size})` 
+                        {selectedRows.size > 0
+                            ? `Export Selected (${selectedRows.size})`
                             : isExporting ? 'Exporting...' : 'Export All CSV'
                         }
                     </Button>
                 </div>
             </div>
-            <CustomTable 
-                data={filteredData} 
-                columns={columns} 
-                loading={isLoading} 
+            <CustomTable
+                data={filteredData}
+                columns={columns}
+                loading={isLoading}
                 onRowClick={(row) => {
                     // Prevent navigation when clicking on checkbox
                     if ((event?.target as HTMLElement)?.closest('[role="checkbox"]')) {
                         return;
                     }
-                    router.push(`/dashboard/scans/${row.id}/findings`);
-                }} 
+                    router.push(`/client/dashboard/scans/${row.id}/findings`);
+                }}
             />
+
+            {/* Chadcn AlertDialog for delete confirmation */}
+            <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Confirm Delete</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete scan <strong>{scanToDelete?.title}</strong>?<br />
+                            This action cannot be undone.<br /><br />
+                            <span className="text-destructive font-semibold">Type <b>delete</b> below to confirm:</span>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <Input
+                        value={deleteConfirmText}
+                        onChange={e => setDeleteConfirmText(e.target.value)}
+                        placeholder='Type "delete" to confirm'
+                        autoFocus
+                    />
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            onClick={cancelDelete}
+                            disabled={deleteMutation.isPending}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmDelete}
+                            disabled={deleteMutation.isPending || deleteConfirmText.trim().toLowerCase() !== "delete"}
+                            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                            {deleteMutation.isPending ? "Deleting..." : "Delete"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

@@ -32,7 +32,18 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import CreateFindingForm from "./CreateForm";
 import Image from "next/image";
 import { useReactToPrint } from "react-to-print";
-
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import toast from "react-hot-toast";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const statusOptions = [
     { value: "all", label: "All" },
@@ -81,19 +92,49 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
     const { data: session } = useSession();
     const [isExporting, setIsExporting] = useState(false);
 
+    // NEW: State for delete confirmation
+    const [deleteFindingId, setDeleteFindingId] = useState<number | null>(null);
+    const [findingToDelete, setFindingToDelete] = useState<ScanFinding | null>(null);
+    const [deleteConfirmText, setDeleteConfirmText] = useState("");
+
     const contentRef = useRef<HTMLDivElement>(null);
     const reactToPrintFn = useReactToPrint({ contentRef, pageStyle: printPageStyle });
 
+    // Updated delete mutation
     const deleteMutation = useMutation({
         mutationFn: deleteFinding,
         onSuccess: () => {
+            toast.success("Finding deleted successfully");
+            setDeleteFindingId(null);
+            setFindingToDelete(null);
             refetch();
         },
         onError: (error) => {
-            // Optionally: show error message
             console.error(error);
+            toast.error("Failed to delete finding");
+            setDeleteFindingId(null);
+            setFindingToDelete(null);
         }
     });
+
+    // NEW: Handle delete click (opens confirmation dialog)
+    const handleDeleteClick = (finding: ScanFinding) => {
+        setFindingToDelete(finding);
+        setDeleteFindingId(finding.id);
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteFindingId(null);
+        setFindingToDelete(null);
+        setDeleteConfirmText(""); // Reset input
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteFindingId) {
+            deleteMutation.mutate(deleteFindingId);
+            setDeleteConfirmText(""); // Reset input after delete
+        }
+    };
 
     const { isLoading, refetch, isFetching } = useQuery({
         queryKey: ['scan-findings', scanId],
@@ -125,7 +166,10 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
     function handleExportCsv() {
         try {
             setIsExporting(true);
-            if (!filteredData?.length) return;
+            const dataToExport = selectedRows.size > 0
+                ? filteredData.filter(row => selectedRows.has(row.id))
+                : filteredData;
+            if (!dataToExport?.length) return;
             const headers = [
                 "ID",
                 "Title",
@@ -134,7 +178,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                 "Evidences Count",
                 "Created At"
             ];
-            const rows = filteredData.map(r => [
+            const rows = dataToExport.map(r => [
                 r.id,
                 r.title,
                 r.severity,
@@ -148,7 +192,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
             const a = document.createElement('a');
             const now = new Date();
             a.href = url;
-            a.download = `findings_${scanId}_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.csv`;
+            a.download = `findings_${selectedRows.size > 0 ? "selected_" : ""}${scanId}_${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -158,13 +202,55 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
         }
     }
 
-    const columns = [
+
+
+    const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+    const [selectAll, setSelectAll] = useState(false);
+
+    const handleSelectRow = (id: number, checked: boolean) => {
+        setSelectedRows(prev => {
+            const next = new Set(prev);
+            if (checked) next.add(id);
+            else next.delete(id);
+            setSelectAll(next.size === filteredData.length);
+            return next;
+        });
+    };
+
+    const handleSelectAll = (checked: boolean) => {
+        if (checked) {
+            setSelectedRows(new Set(filteredData.map(row => row.id)));
+            setSelectAll(true);
+        } else {
+            setSelectedRows(new Set());
+            setSelectAll(false);
+        }
+    };
+
+        const columns = [
+        {
+            key: "select",
+            header: (
+                <Checkbox
+                    checked={selectAll}
+                    onCheckedChange={handleSelectAll}
+                    aria-label="Select all findings"
+                />
+            ),
+            render: (row: ScanFinding) => (
+                <Checkbox
+                    checked={selectedRows.has(row.id)}
+                    onCheckedChange={checked => handleSelectRow(row.id, !!checked)}
+                    aria-label={`Select finding ${row.id}`}
+                />
+            ),
+        },
         {
             key: "id",
             header: "ID",
             render: (row: ScanFinding) => (
                 <p>
-                    #{row.id}
+                    FND-{row.id}
                 </p>
             ),
         },
@@ -182,9 +268,9 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
             key: "severity",
             header: "Severity",
             render: (row: ScanFinding) => (
-                <Badge withDot variant={
+                <Badge withDot  variant={
                     row.severity === "critical" ? "failed" :
-                        row.severity === "high" ? "failed" :
+                        row.severity === "high" ? "destructive" :
                             row.severity === "medium" ? "pending" : "success"
                 }>{row.severity}</Badge>
             ),
@@ -213,7 +299,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                 <Popover>
                     <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
                     <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        {hasPermission(session, "change_finding") && <Button
+                         <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => {
@@ -222,20 +308,29 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                             }}
                         >
                             <SquarePen size={18} /> Edit Finding
-                        </Button>}
-                        {hasPermission(session, "view_finding") && <Button
+                        </Button>
+                        <Button
                             variant="ghost"
                             className="rounded-lg w-full justify-start"
                             onClick={() => { setViewFinding(row); setIsViewSheetOpen(true); }}
                         >
                             <Download size={18} /> Export Report
-                        </Button>}
-                        {/* <Button variant="ghost" className="rounded-lg w-full justify-start"><Ban size={18} /> Block</Button> */}
-                        {hasPermission(session, "delete_finding") && <Button variant="ghost" className="rounded-lg w-full justify-start" onClick={() => deleteMutation.mutate(row.id)}
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            className="rounded-lg w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={() => handleDeleteClick(row)}
                             disabled={deleteMutation.isPending}
                         >
-                            <Trash size={18} /> Delete
-                        </Button>}
+                            <Trash size={18} />
+                            {deleteMutation.isPending && deleteFindingId === row.id ? (
+                                <span className="flex items-center gap-2 ml-1">
+                                    <Loader2 className="animate-spin" size={16} /> Deleting...
+                                </span>
+                            ) : (
+                                "Delete"
+                            )}
+                        </Button>
                     </PopoverContent>
                 </Popover>
             ),
@@ -247,7 +342,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
             <div className="flex items-center justify-between mb-4">
                 <div className="grid grid-cols-2 gap-2 items-center">
                     <Input
-                        placeholder="Search payments..."
+                        placeholder="Search findings..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         icon={<Search size={20} />}
@@ -267,6 +362,22 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                     </Select>
                 </div>
                 <div className="flex items-center gap-2">
+                    {selectedRows.size > 0 && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <span>{selectedRows.size} selected</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                    setSelectedRows(new Set());
+                                    setSelectAll(false);
+                                }}
+                                className="h-auto p-1 text-xs"
+                            >
+                                Clear
+                            </Button>
+                        </div>
+                    )}
                     <Button
                         variant="outline"
                         onClick={handleExportCsv}
@@ -274,9 +385,11 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                         className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
                     >
                         {isExporting ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
-                        {isExporting ? 'Exporting...' : 'Export CSV'}
+                        {selectedRows.size > 0
+                            ? `Export Selected (${selectedRows.size})`
+                            : 'Export All CSV'}
                     </Button>
-                    {hasPermission(session, "add_finding") && <Sheet open={isModalOpen}>
+                    <Sheet open={isModalOpen}>
                         <SheetTrigger asChild onClick={() => { setEditFinding(null); setIsModalOpen(true); }}>
                             <Button variant={"primary"} size="lg"><Plus size={20} />  Create Finding</Button>
                         </SheetTrigger>
@@ -288,8 +401,8 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                             </SheetHeader>
                             <CreateFindingForm finding={editFinding} setIsModalOpen={setIsModalOpen} scanId={scanId} refetch={() => { refetch(); setEditFinding(null); }} />
                         </SheetContent>
-                    </Sheet>}
-                    {hasPermission(session, "view_finding") && <Sheet open={isViewSheetOpen} onOpenChange={(open) => { if (!open) { setIsViewSheetOpen(false); setViewFinding(null); } }}>
+                    </Sheet>
+                     <Sheet open={isViewSheetOpen} onOpenChange={(open) => { if (!open) { setIsViewSheetOpen(false); setViewFinding(null); } }}>
                         {/* Hidden trigger not needed since we open programmatically */}
                         <SheetContent showCloseButton={false} side="right" className="w-full sm:max-w-[520px] overflow-y-auto">
                             <SheetHeader >
@@ -303,7 +416,7 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                                             variant="outline"
                                             size="sm"
                                             className="whitespace-nowrap border-primary text-primary hover:bg-primary hover:text-white flex items-center gap-2"
-                                            onClick={()=>reactToPrintFn?.()}
+                                            onClick={() => reactToPrintFn?.()}
                                         >
                                             <Printer size={14} /> Export Report PDF
                                         </Button>
@@ -367,10 +480,52 @@ const FindingsList = ({ findings, scanId }: { findings: ScanFinding[], scanId: s
                                 </div>
                             )}
                         </SheetContent>
-                    </Sheet>}
+                    </Sheet>
                 </div>
             </div>
             <CustomTable data={filteredData} columns={columns} loading={isLoading} />
+
+            {/* NEW: Delete Confirmation Dialog */}
+            <AlertDialog open={deleteFindingId !== null} onOpenChange={(open) => { if (!open) handleCancelDelete(); }}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Finding</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete the finding <strong>&quot;{findingToDelete?.title}&quot;</strong>?<br />
+                            This action cannot be undone and will permanently remove the finding and all associated evidence files.<br /><br />
+                            <span className="text-destructive font-semibold">Type <b>delete</b> below to confirm:</span>
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <Input
+                        value={deleteConfirmText}
+                        onChange={e => setDeleteConfirmText(e.target.value)}
+                        placeholder='Type "delete" to confirm'
+                        className="mt-2"
+                        autoFocus
+                    />
+                    <AlertDialogFooter>
+                        <AlertDialogCancel
+                            onClick={() => {
+                                handleCancelDelete();
+                                setDeleteConfirmText("");
+                            }}
+                            disabled={deleteMutation.isPending}
+                        >
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={() => {
+                                handleConfirmDelete();
+                                setDeleteConfirmText("");
+                            }}
+                            disabled={deleteMutation.isPending || deleteConfirmText.trim().toLowerCase() !== "delete"}
+                            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                            {deleteMutation.isPending ? "Deleting..." : "Delete Finding"}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 };

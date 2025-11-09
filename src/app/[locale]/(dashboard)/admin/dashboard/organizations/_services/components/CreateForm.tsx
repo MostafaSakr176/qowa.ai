@@ -12,6 +12,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
 import Image from "next/image"
 import { useSession } from "next-auth/react"
+import { useRouter } from "@/i18n/navigation"
 
 // Validation schema for CreateForm with suitable validation
 const formSchema = z.object({
@@ -26,7 +27,7 @@ const formSchema = z.object({
   business_email: z.string()
     .email({ message: "Please enter a valid business email address." }),
   country: z.string(),
-  client_id: z.string().min(1, { message: "Client is required." }),
+  client_id: z.string().optional(), // <-- make optional
   // NEW: credit is optional (only sent for Super Admin). Validate when provided.
   credit: z
     .string()
@@ -70,8 +71,8 @@ type OrganizationRow = {
 };
 
 type CreateOrganizationFormProps = {
-  setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  refetch: () => void;
+  setIsModalOpen?: React.Dispatch<React.SetStateAction<boolean>>;
+  refetch?: () => void;
   editOrganization?: OrganizationRow | null;
 };
 
@@ -113,7 +114,8 @@ const CreateOrganizationForm = ({
   editOrganization,
 }: CreateOrganizationFormProps) => {
 
-  const { data: session } = useSession()
+  const { data: session } = useSession();
+  const router = useRouter();
   // Set default values based on editOrganization
   const defaultValues = editOrganization
     ? {
@@ -147,9 +149,11 @@ const CreateOrganizationForm = ({
       return res.data;
     },
     onSuccess: () => {
-      setIsModalOpen(false);
+      setIsModalOpen?.(false);
       form.reset();
-      refetch();
+      refetch?.();
+      setIsModalOpen?.(false);
+      router.refresh();
     },
     onError: (error) => {
       // Optionally: show error message
@@ -165,9 +169,9 @@ const CreateOrganizationForm = ({
       return res.data;
     },
     onSuccess: () => {
-      setIsModalOpen(false);
+      setIsModalOpen?.(false);
       form.reset();
-      refetch();
+      refetch?.();
     },
     onError: (error) => {
       console.error(error);
@@ -197,7 +201,7 @@ const CreateOrganizationForm = ({
 
   // Cancel button handler that does not interact with the form state
   function handleCancel() {
-    setIsModalOpen(false)
+    setIsModalOpen?.(false)
   }
 
   // Fetch countries
@@ -227,35 +231,37 @@ const CreateOrganizationForm = ({
               scrollbarColor: '#0D0D12 #fff',
             }}>
               {/* Client Select Field */}
-              <FormField
-                name="client_id"
-                render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        label="Owaner"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={clientsLoading || clientsError}
-                      >
-                        <SelectTrigger error={fieldState.error} className="bg-[#F8FAFB]">
-                          <SelectValue placeholder={clientsLoading ? "Loading clients..." : clientsError ? "Error loading clients" : "Select Client"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {clientsLoading && <div className="px-4 py-2 text-muted-foreground text-sm">Loading...</div>}
-                          {clientsError && <div className="px-4 py-2 text-destructive text-sm">Error loading clients</div>}
-                          {clientsData?.results.map(c => (
-                            <SelectItem key={c.id} value={String(c.id)}>
-                              {c.user.first_name} {c.user.last_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!editOrganization && (
+                <FormField
+                  name="client_id"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Select
+                          label="Owaner"
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          disabled={clientsLoading || clientsError}
+                        >
+                          <SelectTrigger error={fieldState.error} className="bg-[#F8FAFB]">
+                            <SelectValue placeholder={clientsLoading ? "Loading clients..." : clientsError ? "Error loading clients" : "Select Client"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {clientsLoading && <div className="px-4 py-2 text-muted-foreground text-sm">Loading...</div>}
+                            {clientsError && <div className="px-4 py-2 text-destructive text-sm">Error loading clients</div>}
+                            {clientsData?.results.map(c => (
+                              <SelectItem key={c.id} value={String(c.id)}>
+                                {c.user.first_name} {c.user.last_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
               <FormField
                 name="organization_name"
                 render={({ field, fieldState }) => (

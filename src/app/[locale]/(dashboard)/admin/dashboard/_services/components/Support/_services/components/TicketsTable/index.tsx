@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 
 type Ticket = {
   id: string;
-  organization: { id: number; name: string; business_email: string };
+  organization: { id: number; name: string; business_email: string; country?: string };
   assigned_employee: null | { id: number; name: string } | string;
   type: string;
   status: string;
@@ -24,7 +24,7 @@ type Ticket = {
   created_at: string;
 };
 
-interface SupportTableProps {
+interface TicketsTableProps {
   tickets: Ticket[];
   loading?: boolean;
   page: number;
@@ -81,7 +81,7 @@ const priorityToVariant = (priority?: string) => {
   }
 };
 
-const SupportTable: React.FC<SupportTableProps> = ({
+const TicketsTable: React.FC<TicketsTableProps> = ({
   tickets,
   loading = false,
   page,
@@ -127,6 +127,7 @@ const SupportTable: React.FC<SupportTableProps> = ({
     if (status !== "all") {
       data = data.filter((t) => (t.status || "").toLowerCase() === status);
     }
+
     if (priority !== "all") {
       data = data.filter((t) => (t.priority || "").toLowerCase() === priority);
     }
@@ -330,4 +331,4 @@ const SupportTable: React.FC<SupportTableProps> = ({
   );
 };
 
-export default SupportTable;
+export default TicketsTable;

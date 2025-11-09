@@ -13,7 +13,7 @@ import { useQuery } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 import api from "@/lib/axiosClient"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
+// import { Checkbox } from "@/components/ui/checkbox"
 import Image from "next/image"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
@@ -179,9 +179,9 @@ const CreateScanForm = ({
 
 
   // Cancel button handler that does not interact with the form state
-  function handleCancel() {
-    setIsModalOpen(false)
-  }
+  // function handleCancel() {
+  //   setIsModalOpen(false)
+  // }
 
   // Update the file handlers to filter only APK and IPA files
   const onApkFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

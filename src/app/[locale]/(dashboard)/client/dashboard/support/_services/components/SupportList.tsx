@@ -78,7 +78,6 @@ const statusOptions = [
 ];
 
 const SupportList = () => {
-    const {data:session} = useSession()
     const [search, setSearch] = useState("");
     const [status, setStatus] = useState("all");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,62 +128,8 @@ const SupportList = () => {
         return "failed";
     };
 
-    const priorityToVariant = (p: string): "pending" | "success" | "failed" => {
-        const v = (p || "").toLowerCase();
-        if (v === "high" || v === "urgent" || v === "critical") return "failed"; // red
-        if (v === "medium") return "pending"; // amber
-        return "success"; // low or default -> green
-    };
-
     const columns = [
-        { key: "id", header: "ID", render: (row: SupportTicket) => <span className="font-medium">#{row.id}</span> },
-        {
-            key: "organization",
-            header: "Organization",
-            render: (row: SupportTicket) => (
-                <div className="flex items-center gap-1">
-                    <Image src={"/media/images/logos/organization logo.png"} alt={row.organization?.name} width={30} height={30} />
-                    <div className="text-start">
-                        <p className="text-sm text-[#070A0E]">{row.organization?.name}</p>
-                        <p className="text-xs text-[#4A4C4F]">{row.organization?.business_email}</p>
-                    </div>
-                </div>
-
-            )
-        },
-        { key: "type", header: "Type" },
-        {
-            key: "assigned_employee",
-            header: "Assigned Employee",
-            render: (row: { assigned_employee: string[] }) => (
-                row?.assigned_employee?.length ? (
-                    <div className="*:data-[slot=avatar]:ring-background flex -space-x-2 *:data-[slot=avatar]:ring-2 *:data-[slot=avatar]:grayscale">
-                        {row.assigned_employee.map((ele, idx) => (
-                            <Avatar key={idx}>
-                                <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                                <AvatarFallback>{ele}</AvatarFallback>
-                            </Avatar>
-                        ))}
-                    </div>
-                ) : (
-                    <span className="text-sm text-[#6B7280] italic">Not assigned</span>
-                )
-            )
-        },
-        {
-            key: "status",
-            header: "Status",
-            render: (row: SupportTicket) => (
-                <Badge withDot variant={statusToVariant(row.status)}>{row.status}</Badge>
-            )
-        },
-        {
-            key: "priority",
-            header: "Priority",
-            render: (row: SupportTicket) => (
-                <Badge withDot variant={priorityToVariant(row.priority)}>{row.priority}</Badge>
-            )
-        },
+        { key: "id", header: "Issue ID", render: (row: SupportTicket) => <span className="font-medium">ID: {row.id}</span> },
         {
             key: "description",
             header: "Description",
@@ -194,41 +139,50 @@ const SupportList = () => {
                 </span>
             )
         },
+        { key: "type", header: "Type" },
         {
-            key: "created_at",
-            header: "Registration date",
-            render: (row: SupportTicket) => {
-                const dt = formatDateTime(row.created_at);
-                return (
-                    <div>
-                        <p className="text-sm text-[#070A0E]">{dt.date}</p>
-                        <p className="text-xs text-[#4A4C4F]">{dt.time}</p>
-                    </div>
-                );
-            }
-        },
-        {
-            key: "actions",
-            header: "",
+            key: "status",
+            header: "Status",
             render: (row: SupportTicket) => (
-                <Popover>
-                    <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
-                    <PopoverContent className="flex flex-col items-start p-2" align="end">
-                        {hasPermission(session, "add_organization") && <Button variant="ghost" className="rounded-lg" onClick={() => { setEditingTicket(row); setIsModalOpen(true); }}><SquarePen size={18} /> Edit Ticket</Button>}
-                        <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export</Button>
-                        {/* <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Close</Button> */}
-                        <Button
-                            variant="ghost"
-                            className="rounded-lg text-red-600 hover:text-red-700"
-                            disabled={deletingId === row.id}
-                            onClick={() => handleDelete(row.id)}
-                        >
-                            {deletingId === row.id ? <span className="flex items-center gap-2"><LoaderSpinner /> Deleting...</span> : <><Trash2 size={18} /> Delete</>}
-                        </Button>
-                    </PopoverContent>
-                </Popover>
-            ),
+                <Badge withDot variant={statusToVariant(row.status)}>{row.status}</Badge>
+            )
         },
+
+        // {
+        //     key: "created_at",
+        //     header: "Registration date",
+        //     render: (row: SupportTicket) => {
+        //         const dt = formatDateTime(row.created_at);
+        //         return (
+        //             <div>
+        //                 <p className="text-sm text-[#070A0E]">{dt.date}</p>
+        //                 <p className="text-xs text-[#4A4C4F]">{dt.time}</p>
+        //             </div>
+        //         );
+        //     }
+        // },
+        // {
+        //     key: "actions",
+        //     header: "",
+        //     render: (row: SupportTicket) => (
+        //         <Popover>
+        //             <PopoverTrigger className="border-0"><Ellipsis size={20} /></PopoverTrigger>
+        //             <PopoverContent className="flex flex-col items-start p-2" align="end">
+        //                 {hasPermission(session, "add_organization") && <Button variant="ghost" className="rounded-lg" onClick={() => { setEditingTicket(row); setIsModalOpen(true); }}><SquarePen size={18} /> Edit Ticket</Button>}
+        //                 <Button variant="ghost" className="rounded-lg"><Download size={18} /> Export</Button>
+        //                 {/* <Button variant="ghost" className="rounded-lg"><Ban size={18} /> Close</Button> */}
+        //                 <Button
+        //                     variant="ghost"
+        //                     className="rounded-lg text-red-600 hover:text-red-700"
+        //                     disabled={deletingId === row.id}
+        //                     onClick={() => handleDelete(row.id)}
+        //                 >
+        //                     {deletingId === row.id ? <span className="flex items-center gap-2"><LoaderSpinner /> Deleting...</span> : <><Trash2 size={18} /> Delete</>}
+        //                 </Button>
+        //             </PopoverContent>
+        //         </Popover>
+        //     ),
+        // },
     ];
 
     const deleteMutation = useMutation({

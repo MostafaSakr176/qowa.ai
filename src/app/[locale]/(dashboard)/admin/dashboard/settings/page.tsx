@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
+// import { Switch } from '@/components/ui/switch'
 import { ChevronRight, KeyRound, Locate, Lock, Mail, User, Loader2, Link2 } from 'lucide-react'
 import React, { useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'

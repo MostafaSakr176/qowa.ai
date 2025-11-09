@@ -129,7 +129,7 @@ export default function DonutChart({
     return (
         <div id="chart" className={`relative ${className || ""} ${chartStyle === "semi"? "semi_chart":"full_chart"}`}>
             {legend && showLegend && (
-                <div className="flex justify-around gap-6 p-6">
+                <div className="flex justify-around gap-6 p-6 pb-2">
                     {labels.map((label, idx) => (
                         <div key={label} className="flex flex-col items-start space-x-2">
                             <div className="flex items-center space-x-2">
@@ -142,7 +142,7 @@ export default function DonutChart({
                                         backgroundColor: colors[idx] || DEFAULT_COLORS[idx % DEFAULT_COLORS.length],
                                     }}
                                 />
-                                <span className="text-lg text-neutral-950 font-medium">{label}</span>
+                                <span className="text-base text-neutral-950 font-medium">{label}</span>
                             </div>
                             <span className="text-xl text-neutral-700 font-semibold">
                                 {series[idx]}

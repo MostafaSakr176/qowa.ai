@@ -4,13 +4,12 @@ import React, { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axiosClient";
 import AnalyticCard from "@/components/dashboard/analytic-card";
-// import AreaChart from "@/components/dashboard/line-chart";
 import { CircleDollarSign, Hash, ScanLine, ShieldEllipsis, UserRoundCheck, Users, TicketCheck } from "lucide-react";
-import SupportTable from "./_services/components/PaymentsTable";
+import TicketsTable from "./_services/components/TicketsTable";
 
 type Ticket = {
     id: string;
-    organization: { id: number; name: string; business_email: string };
+    organization: { id: number; name: string; business_email: string; country: string };
     assigned_employee: null | { id: number; name: string };
     type: string;
     status: string;
@@ -44,6 +43,7 @@ type SupportOverviewResponse = {
 const Support = () => {
     const [page, setPage] = useState(1);
 
+    // Fetch support analytics
     const { data, isLoading, isFetching, error } = useQuery<SupportOverviewResponse>({
         queryKey: ["support-overview", page],
         queryFn: async () => {
@@ -69,12 +69,6 @@ const Support = () => {
     const rowsPerPage = useMemo(() => (tickets?.length || 10), [tickets]);
     const totalPages = rowsPerPage ? Math.ceil(count / rowsPerPage) : 1;
 
-    // Keep your chart (or wire it to another endpoint later)
-    // const dataSet = useMemo(() => [
-    //     tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 3) * 25 + 20]),
-    //     tickets.slice(0, 12).map((t, i) => [new Date(t.created_at).getTime(), (i % 4) * 20 + 10]),
-    // ], [tickets]);
-
     if (error) {
         return <div className="p-4 text-sm text-red-600">Failed to load support statistics.</div>;
     }
@@ -83,25 +77,20 @@ const Support = () => {
         <div className="space-y-6">
             {/* Stats Cards (from totals) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <AnalyticCard title="Total Requests" value={(totals.total_requests ?? 0).toString()} icon={<TicketCheck size={25} />} />
-                <AnalyticCard title="Complaints" value={(totals.total_complaint ?? 0).toString()} icon={<Users size={25} />} />
-                <AnalyticCard title="Scan Issues" value={(totals.total_scan_issue ?? 0).toString()} icon={<ScanLine size={25} />} />
-                <AnalyticCard title="Payment Issues" value={(totals.total_payment_issue ?? 0).toString()} icon={<CircleDollarSign size={25} />} />
-                <AnalyticCard title="Feedback" value={(totals.total_feedback ?? 0).toString()} icon={<ShieldEllipsis size={25} />} />
-                <AnalyticCard title="Open Tickets" value={(totals.total_open ?? 0).toString()} icon={<Hash size={25} />} />
-                <AnalyticCard title="Closed Tickets" value={(totals.total_closed ?? 0).toString()} icon={<UserRoundCheck size={25} />} />
-                <AnalyticCard title="Support Agents" value={(totals.total_support ?? 0).toString()} icon={<Users size={25} />} />
+                <AnalyticCard title="Total Requests" value={totals.total_requests?.toString()} icon={<TicketCheck size={25} />} />
+                <AnalyticCard title="Complaints" value={totals.total_complaint?.toString()} icon={<Users size={25} />} />
+                <AnalyticCard title="Scan Issues" value={totals.total_scan_issue?.toString()} icon={<ScanLine size={25} />} />
+                <AnalyticCard title="Payment Issues" value={totals.total_payment_issue?.toString()} icon={<CircleDollarSign size={25} />} />
+                <AnalyticCard title="Feedback" value={totals.total_feedback?.toString()} icon={<ShieldEllipsis size={25} />} />
+                <AnalyticCard title="Open Tickets" value={totals.total_open?.toString()} icon={<Hash size={25} />} />
+                <AnalyticCard title="Closed Tickets" value={totals.total_closed?.toString()} icon={<UserRoundCheck size={25} />} />
+                <AnalyticCard title="Support Agents" value={totals.total_support?.toString()} icon={<Users size={25} />} />
             </div>
 
-            {/* <AreaChart
-        dataSet={dataSet}
-        className="bg-white rounded-xl shadow-xl shadow-[#0A0D1408] border border-[#E9ECEF] pt-4 pe-4"
-      /> */}
-
-            {/* Pass tickets and pagination props to the table */}
+            {/* Tickets Table */}
             <div className="rounded-xl bg-[#F8F9FA] p-2">
-                <SupportTable
-                    tickets={tickets}
+                <TicketsTable
+                    tickets={data?.results?.tickets ?? []}
                     loading={isLoading || isFetching}
                     page={page}
                     rowsPerPage={rowsPerPage}
@@ -114,4 +103,4 @@ const Support = () => {
     );
 };
 
-export default Support;
+export default Support

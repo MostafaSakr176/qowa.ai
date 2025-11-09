@@ -2,56 +2,31 @@
 import React, { useState, useMemo } from "react";
 import CustomTable from "@/components/dashboard/CustomTable";
 import { Ellipsis, Building2, Search } from "lucide-react";
-
-// Chadcn UI components
 import { Input } from "@/components/ui/input";
 
-const reports = [
-  {
-    id: 1,
+
+interface Organization {
+  organization_name: string;
+  business_email: string;
+  num_apks: number;
+  num_ipas: number;
+  num_postman: number;
+}
+
+// Helper to map API organizations to table rows
+function mapOrganizationsToRows(organizations: Organization[]) {
+  return organizations.map((org, idx) => ({
+    id: idx + 1,
     organizations: {
-      name: "StellarTech sakr",
-      mail: "stellartech@uimiye.com",
+      name: org.organization_name,
+      mail: org.business_email,
       logo: <Building2 size={20} />,
     },
-total:27000,
-    open: 267400,
-    closed: 267400,
-  },
-  {
-    id: 2,
-    organizations: {
-      name: "StellarTech sakr",
-      mail: "stellartech@uimiye.com",
-      logo: <Building2 size={20} />,
-    },
-total:27000,
-    open: 267400,
-    closed: 267400,
-  },
-  {
-    id: 3,
-    organizations: {
-      name: "StellarTech sakr",
-      mail: "stellartech@uimiye.com",
-      logo: <Building2 size={20} />,
-    },
-total:27000,
-    open: 267400,
-    closed: 267400,
-  },
-  {
-    id: 4,
-    organizations: {
-      name: "StellarTech sakr",
-      mail: "stellartech@uimiye.com",
-      logo: <Building2 size={20} />,
-    },
-total:27000,
-    open: 267400,
-    closed: 267400,
-  }
-];
+    total: org.num_apks + org.num_ipas + org.num_postman,
+    open: org.num_apks,      // You can adjust these fields as needed
+    closed: org.num_postman, // You can adjust these fields as needed
+  }));
+}
 
 const columns = [
   {
@@ -71,33 +46,28 @@ const columns = [
   },
   {
     key: "total",
-    header: "Total Findings",
+    header: "Total Reports",
   },
   {
     key: "open",
-    header: "Open",
+    header: "APK Reports",
   },
   {
     key: "closed",
-    header: "Close",
-  },
-  {
-    key: "actions",
-    header: "",
-    render: (row: { id: number }) => (
-      <Ellipsis size={20} onClick={() => console.log(row.id)} />
-    ),
-  },
+    header: "Postman Reports",
+  }
 ];
 
-const FindingsTable = () => {
+const OrganizationsTable = ({ organizations, loading }: { organizations: Organization[]; loading: boolean }) => {
   const [search, setSearch] = useState("");
+
+  // Map API organizations to table rows
+  const mappedRows = useMemo(() => mapOrganizationsToRows(organizations), [organizations]);
 
   // Filtered and sorted data
   const filteredData = useMemo(() => {
-    let data = reports;
+    let data = mappedRows;
 
-    // Filter by search (organization name, mail, invoice, method type, etc.)
     if (search.trim() !== "") {
       const lower = search.toLowerCase();
       data = data.filter((row) => {
@@ -108,25 +78,23 @@ const FindingsTable = () => {
       });
     }
 
-    // Sort by status if selected (optional: you can sort, but here we just filter)
     return data;
-  }, [search]);
+  }, [search, mappedRows]);
 
   return (
     <div>
       <div className="grid grid-cols-4 gap-2 mb-4 items-center">
         <Input
-          placeholder="Search payments..."
+          placeholder="Search organizations..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           icon={<Search size={20} />}
           iconPosition="right"
         />
-
       </div>
-      <CustomTable data={filteredData} columns={columns} />
+      <CustomTable data={filteredData} columns={columns} loading={loading} />
     </div>
   );
 };
 
-export default FindingsTable;
+export default OrganizationsTable;

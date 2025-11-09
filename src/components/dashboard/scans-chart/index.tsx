@@ -98,7 +98,7 @@ const ScansChart: React.FC<ScansChartProps> = ({
       }
     },
     legend: {
-      show: true,
+      show: false,
       position: "top",
       horizontalAlign: "left",
     },
@@ -114,9 +114,9 @@ const ScansChart: React.FC<ScansChartProps> = ({
     <div className="rounded-xl bg-[#F8F9FA] p-2">
       <div className="flex items-center justify-between px-4 pb-2">
         <h5 className="text-lg font-medium">Scan Intensity</h5>
-        <div className="w-48">
+        <div className="w-40">
           <Select defaultValue="this_month">
-            <SelectTrigger>
+            <SelectTrigger className="py-1 text-sm rounded-md bg-transparent">
               <SelectValue placeholder="Range" />
             </SelectTrigger>
             <SelectContent>
@@ -129,7 +129,7 @@ const ScansChart: React.FC<ScansChartProps> = ({
       </div>
 
       <div className={`${className}`}>
-        <div className="grid grid-cols-1 md:grid-cols-3 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3">
           <div className="flex items-center border-e border-[#E9ECEF] px-6 min-w-[220px]">
             <div className="flex-shrink-0 mr-4">
               <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#EEF2FF]">

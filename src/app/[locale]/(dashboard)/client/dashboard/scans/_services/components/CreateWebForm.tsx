@@ -21,32 +21,32 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 
 // Add organization interfaces at the top of the file
-interface Organization {
-  id: number;
-  name: string;
-  country: string;
-  number_of_apps: number;
-  url: string;
-  business_email: string;
-  created_at: string;
-  scans_count: number;
-  team_members_count: number;
-  rank: number;
-  amount: number;
-  credit: number;
-}
+// interface Organization {
+//   id: number;
+//   name: string;
+//   country: string;
+//   number_of_apps: number;
+//   url: string;
+//   business_email: string;
+//   created_at: string;
+//   scans_count: number;
+//   team_members_count: number;
+//   rank: number;
+//   amount: number;
+//   credit: number;
+// }
 
-interface OrganizationsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Organization[];
-}
+// interface OrganizationsResponse {
+//   count: number;
+//   next: string | null;
+//   previous: string | null;
+//   results: Organization[];
+// }
 
 // Schemas (password required only on create)
 const baseSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  organization: z.string().min(1, { message: "Please select an organization" }), // Add this
+  // organization: z.string().min(1, { message: "Please select an organization" }), // Add this
   can_register_our_email: z.boolean().default(false),
   url: z.string().url({ message: "Enter a valid URL" }),
   email_or_username: z.string().min(1, { message: "Email or username is required" }),
@@ -65,7 +65,7 @@ const editSchema = baseSchema;
 interface ScanDetail {
   id: number
   title: string
-  organization?: number // Add this if it comes from API
+  // organization?: number // Add this if it comes from API
   can_register_our_email: boolean
   url: string
   email_or_username: string
@@ -88,23 +88,25 @@ const CreateWebScanForm = ({
   const { data: session } = useSession();
   const isEdit = !!editScanId;
 
+  console.log(isEdit,editScanId);
+
   type FormValues = z.infer<typeof createSchema> | z.infer<typeof editSchema>;
 
   // Add organizations query
-  const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
-    queryKey: ['organizations'],
-    queryFn: async () => {
-      const res = await api.get('/client/organizations/');
-      return res.data;
-    },
-    staleTime: 300_000, // 5 minutes
-  });
+  // const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
+  //   queryKey: ['organizations'],
+  //   queryFn: async () => {
+  //     const res = await api.get('/client/organizations/');
+  //     return res.data;
+  //   },
+  //   staleTime: 300_000, // 5 minutes
+  // });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(isEdit ? editSchema : createSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       title: "",
-      organization: "", // Add this
+      // organization: "", // Add this
       can_register_our_email: false,
       url: "",
       email_or_username: "",
@@ -133,7 +135,7 @@ const CreateWebScanForm = ({
     if (isEdit && scanDetail) {
       form.reset({
         title: scanDetail.title || "",
-        organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
+        // organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
         can_register_our_email: !!scanDetail.can_register_our_email,
         url: scanDetail.url || "",
         email_or_username: scanDetail.email_or_username || "",
@@ -157,7 +159,7 @@ const CreateWebScanForm = ({
     }
     const formdata = new FormData();
     formdata.append("title", values.title);
-    formdata.append("organization", values.organization); // Add this
+    // formdata.append("organization", values.organization); // Add this
     formdata.append("can_register_our_email", values.can_register_our_email ? "True" : "False");
     formdata.append("url", values.url);
     formdata.append("email_or_username", values.email_or_username);
@@ -222,7 +224,7 @@ const CreateWebScanForm = ({
                 )} />
 
                 {/* Organization Select Field - Add this */}
-                <FormField name="organization" render={({ field }) => (
+                {/* <FormField name="organization" render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Select
@@ -245,7 +247,7 @@ const CreateWebScanForm = ({
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )} /> */}
 
                 <div className="relative">
                   <Input

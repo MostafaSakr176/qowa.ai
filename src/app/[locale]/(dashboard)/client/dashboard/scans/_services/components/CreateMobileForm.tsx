@@ -21,27 +21,27 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 // Add organization interface
-interface Organization {
-  id: number;
-  name: string;
-  country: string;
-  number_of_apps: number;
-  url: string;
-  business_email: string;
-  created_at: string;
-  scans_count: number;
-  team_members_count: number;
-  rank: number;
-  amount: number;
-  credit: number;
-}
+// interface Organization {
+//   id: number;
+//   name: string;
+//   country: string;
+//   number_of_apps: number;
+//   url: string;
+//   business_email: string;
+//   created_at: string;
+//   scans_count: number;
+//   team_members_count: number;
+//   rank: number;
+//   amount: number;
+//   credit: number;
+// }
 
-interface OrganizationsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Organization[];
-}
+// interface OrganizationsResponse {
+//   count: number;
+//   next: string | null;
+//   previous: string | null;
+//   results: Organization[];
+// }
 
 // Schemas (password required only on create)
 const baseSchema = z.object({
@@ -52,7 +52,7 @@ const baseSchema = z.object({
   comment: z.string().optional(),
   time_to_start: z.string().refine(val => !isNaN(Date.parse(val)), { message: "Enter a valid date" }),
   test_type: z.enum(["black_box", "white_box", "gray_box"]).default("black_box"),
-  organization: z.string().min(1, { message: "Please select an organization" }), // Add this line
+  // organization: z.string().min(1, { message: "Please select an organization" }), // Add this line
 });
 const createSchema = baseSchema.extend({
   password: z.string().min(1, { message: "Password is required" })
@@ -100,7 +100,7 @@ const CreateMobileScanForm = ({
       comment: "",
       time_to_start: "",
       test_type: "gray_box",
-      organization: "", // Add this line
+      // organization: "", // Add this line
     },
     mode: "onTouched",
   })
@@ -116,14 +116,14 @@ const CreateMobileScanForm = ({
   });
 
   // Add the organizations query after your existing queries
-  const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
-    queryKey: ['organizations'],
-    queryFn: async () => {
-      const res = await api.get('/client/organizations/');
-      return res.data;
-    },
-    staleTime: 300_000, // 5 minutes
-  });
+  // const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
+  //   queryKey: ['organizations'],
+  //   queryFn: async () => {
+  //     const res = await api.get('/client/organizations/');
+  //     return res.data;
+  //   },
+  //   staleTime: 300_000, // 5 minutes
+  // });
 
   // Prefill form when editing
   React.useEffect(() => {
@@ -136,16 +136,13 @@ const CreateMobileScanForm = ({
         comment: scanDetail.comment || "",
         time_to_start: (scanDetail.time_to_start || "").slice(0, 10),
         test_type: scanDetail.test_type as FormValues extends { test_type: infer B } ? B : never,
-        organization: "", // You might need to add this to ScanDetail interface if it comes from API
+        // organization: "", // You might need to add this to ScanDetail interface if it comes from API
       })
     }
   }, [isEdit, scanDetail, form]);
 
   // Fix 3: Update the FormData submission with better debugging
   async function onSubmit(values: FormValues) {
-    console.log("Form values:", values);
-    console.log("APK files to submit:", apkFiles);
-    console.log("IPA files to submit:", ipaFiles);
 
     if (!session?.accessToken) {
       toast.error("Not authenticated");
@@ -161,7 +158,7 @@ const CreateMobileScanForm = ({
     formdata.append("time_to_start", values.time_to_start);
     formdata.append("app_type", "mobile");
     formdata.append("test_type", values.test_type);
-    formdata.append("organization", values.organization); // Add this line
+    // formdata.append("organization", values.organization); // Add this line
 
     // Append APK files
     apkFiles.forEach((it, idx) => {
@@ -386,7 +383,7 @@ const CreateMobileScanForm = ({
                 )} />
 
                 {/* Organization select field - New addition */}
-                <FormField name="organization" render={({ field, fieldState }) => (
+                {/* <FormField name="organization" render={({ field, fieldState }) => (
                   <FormItem>
                     <FormControl>
                       <Select
@@ -407,7 +404,7 @@ const CreateMobileScanForm = ({
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )} /> */}
 
                 {/* File upload sections */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

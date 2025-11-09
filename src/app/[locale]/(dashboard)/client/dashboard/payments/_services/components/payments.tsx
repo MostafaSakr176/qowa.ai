@@ -114,7 +114,7 @@ const statusOptions = [
   { value: "rejected", label: "Rejected" },
 ];
 
-const InvoicesList: React.FC = () => {
+const PaymentsList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
@@ -248,6 +248,11 @@ const InvoicesList: React.FC = () => {
       ),
     },
     {
+      key: "id",
+      header: "Id",
+      render: (row: TableInvoice) => <span className="font-mono"># {row.id}</span>,
+    },
+    {
       key: "organizations",
       header: "Organizations",
       render: (row: TableInvoice) => (
@@ -362,4 +367,4 @@ const InvoicesList: React.FC = () => {
   );
 };
 
-export default InvoicesList;
+export default PaymentsList;

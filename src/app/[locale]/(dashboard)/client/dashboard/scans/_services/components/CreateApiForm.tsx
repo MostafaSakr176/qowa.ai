@@ -6,7 +6,7 @@ import { useForm, type Resolver } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Link, Loader2Icon, Mail, Hash, Clock, Key, FileText, Globe } from 'lucide-react'
+import { Loader2Icon, Mail, Clock, Key, FileText } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 // import { useRouter } from "@/i18n/navigation"
 import { useSession } from "next-auth/react"
@@ -20,32 +20,32 @@ import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 
 // Organization interfaces
-interface Organization {
-  id: number;
-  name: string;
-  country: string;
-  number_of_apps: number;
-  url: string;
-  business_email: string;
-  created_at: string;
-  scans_count: number;
-  team_members_count: number;
-  rank: number;
-  amount: number;
-  credit: number;
-}
+// interface Organization {
+//   id: number;
+//   name: string;
+//   country: string;
+//   number_of_apps: number;
+//   url: string;
+//   business_email: string;
+//   created_at: string;
+//   scans_count: number;
+//   team_members_count: number;
+//   rank: number;
+//   amount: number;
+//   credit: number;
+// }
 
-interface OrganizationsResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Organization[];
-}
+// interface OrganizationsResponse {
+//   count: number;
+//   next: string | null;
+//   previous: string | null;
+//   results: Organization[];
+// }
 
 // Schemas (password required only on create)
 const baseSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  organization: z.string().min(1, { message: "Please select an organization" }), // Add this
+  // organization: z.string().min(1, { message: "Please select an organization" }), // Add this
   email_or_username: z.string().min(1, { message: "Email or username is required" }),
   password: z.string().optional(),
   number_of_ips: z.string().regex(/^\d+$/, { message: "Enter a valid number" }),
@@ -62,7 +62,7 @@ const editSchema = baseSchema;
 interface ScanDetail {
   id: number
   title: string
-  organization?: number // Add this if it comes from API
+  // organization?: number // Add this if it comes from API
   how_many_endoints: number | string
   email_or_username: string
   number_of_ips: number | string
@@ -90,21 +90,21 @@ const CreateApiScanForm = ({
 
   type FormValues = z.infer<typeof createSchema> | z.infer<typeof editSchema>;
 
-  // Add organizations query
-  const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
-    queryKey: ['organizations'],
-    queryFn: async () => {
-      const res = await api.get('/client/organizations/');
-      return res.data;
-    },
-    staleTime: 300_000, // 5 minutes
-  });
+  // // Add organizations query
+  // const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
+  //   queryKey: ['organizations'],
+  //   queryFn: async () => {
+  //     const res = await api.get('/client/organizations/');
+  //     return res.data;
+  //   },
+  //   staleTime: 300_000, // 5 minutes
+  // });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(isEdit ? editSchema : createSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       title: "",
-      organization: "", // Add this
+      // organization: "", // Add this
       number_of_ips: "",
       email_or_username: "",
       password: "",
@@ -131,7 +131,7 @@ const CreateApiScanForm = ({
     if (isEdit && scanDetail) {
       form.reset({
         title: scanDetail.title || "",
-        organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
+        // organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
         email_or_username: scanDetail.email_or_username || "",
         password: "",
         number_of_ips: String(scanDetail.number_of_ips ?? ""),
@@ -151,7 +151,7 @@ const CreateApiScanForm = ({
     }
     const formdata = new FormData();
     formdata.append("title", values.title);
-    formdata.append("organization", values.organization); // Add this
+    // formdata.append("organization", values.organization); // Add this
     formdata.append("how_many_endoints", values.how_many_endoints);
     formdata.append("number_of_ips", values.number_of_ips);
     formdata.append("email_or_username", values.email_or_username);
@@ -162,7 +162,7 @@ const CreateApiScanForm = ({
     formdata.append("test_type", values.test_type);
 
     // Append JSON files
-    jsonFiles.forEach((it, idx) => {
+    jsonFiles.forEach((it) => {
       formdata.append('post_man_file', it.file);
     });
 
@@ -297,7 +297,7 @@ const CreateApiScanForm = ({
                 )} />
 
                 {/* Organization Select Field - Add this */}
-                <FormField name="organization" render={({ field }) => (
+                {/* <FormField name="organization" render={({ field }) => (
                   <FormItem>
                     <FormControl>
                       <Select
@@ -320,7 +320,7 @@ const CreateApiScanForm = ({
                     </FormControl>
                     <FormMessage />
                   </FormItem>
-                )} />
+                )} /> */}
 
                 <FormField name="how_many_endoints" render={({ field, fieldState }) => (
                   <FormItem>

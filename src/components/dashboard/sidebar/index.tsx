@@ -4,7 +4,7 @@ import { Link, usePathname } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import Image from 'next/image';
-import { HeartHandshake, Home, PanelLeftOpen, PanelRightOpen, QrCode, ReceiptText, Scan, Settings, Users } from 'lucide-react';
+import { HeartHandshake, Home, PanelLeftOpen, PanelRightOpen, QrCode, ReceiptText, Scan, Settings, ShieldUser, Users } from 'lucide-react';
 import { useLocale } from 'next-intl'
 import { signOut, useSession } from 'next-auth/react';
 
@@ -56,6 +56,16 @@ const clientNavItems = [
     href: '/client/dashboard/scans',
     label: 'Scans',
     icon: <Scan size={20} />,
+  },
+  {
+    href: '/client/dashboard/payments',
+    label: 'Payments',
+    icon: <ReceiptText size={20} />,
+  },
+    {
+    href: '/client/dashboard/ai-agent',
+    label: 'Ai agent',
+    icon: <ShieldUser size={20} />,
   },
   {
     href: '/client/dashboard/team',
