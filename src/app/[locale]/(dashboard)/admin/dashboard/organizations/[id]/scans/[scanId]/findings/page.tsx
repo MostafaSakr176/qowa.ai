@@ -1,5 +1,3 @@
-import { Button } from '@/components/ui/button'
-import { BadgeCheck, SquarePen } from 'lucide-react'
 import React from 'react'
 import ClientPage from './_services/components/ClientPage'
 
