@@ -70,7 +70,7 @@ export const HeroSection = () => {
         </Link>
 
         {/* Hero Image */}
-        <Card className="!p-0 !py-0 max-w-4xl mx-auto my-8">
+        <Card className="!p-0 !py-0 max-w-4xl mx-auto my-16">
           <Image
             src="/media/dashboard.svg"
             alt="Hero illustration"
