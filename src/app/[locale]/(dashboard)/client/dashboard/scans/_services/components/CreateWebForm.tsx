@@ -1,14 +1,13 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, type Resolver } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Loader2Icon, Mail, Hash, Clock, Key, FileText, Globe } from 'lucide-react'
+import { Loader2Icon, Mail, Clock, Key, FileText, Globe } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-// import { useRouter } from "@/i18n/navigation"
 import { useSession } from "next-auth/react"
 import { useQuery } from "@tanstack/react-query"
 import toast from "react-hot-toast"
@@ -20,39 +19,15 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 
-// Add organization interfaces at the top of the file
-// interface Organization {
-//   id: number;
-//   name: string;
-//   country: string;
-//   number_of_apps: number;
-//   url: string;
-//   business_email: string;
-//   created_at: string;
-//   scans_count: number;
-//   team_members_count: number;
-//   rank: number;
-//   amount: number;
-//   credit: number;
-// }
-
-// interface OrganizationsResponse {
-//   count: number;
-//   next: string | null;
-//   previous: string | null;
-//   results: Organization[];
-// }
-
 // Schemas (password required only on create)
 const baseSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  // organization: z.string().min(1, { message: "Please select an organization" }), // Add this
   can_register_our_email: z.boolean().default(false),
   url: z.string().url({ message: "Enter a valid URL" }),
   email_or_username: z.string().min(1, { message: "Email or username is required" }),
   password: z.string().optional(),
   are_there_2fa_or_otp: z.string(),
-  number_of_pages: z.string().regex(/^\d+$/, { message: "Enter a valid number" }),
+  excluded_endpoints: z.array(z.string()).optional(),
   comment: z.string().optional(),
   time_to_start: z.string().refine(val => !isNaN(Date.parse(val)), { message: "Enter a valid date" }),
   test_type: z.enum(["black_box", "white_box", "gray_box"]).default("black_box"),
@@ -65,12 +40,11 @@ const editSchema = baseSchema;
 interface ScanDetail {
   id: number
   title: string
-  // organization?: number // Add this if it comes from API
   can_register_our_email: boolean
   url: string
   email_or_username: string
   are_there_2fa_or_otp: boolean
-  number_of_pages: number | string
+  excluded_endpoints?: string
   comment: string | null
   time_to_start: string
   test_type: string
@@ -88,31 +62,18 @@ const CreateWebScanForm = ({
   const { data: session } = useSession();
   const isEdit = !!editScanId;
 
-  console.log(isEdit,editScanId);
-
   type FormValues = z.infer<typeof createSchema> | z.infer<typeof editSchema>;
-
-  // Add organizations query
-  // const { data: organizationsData, isLoading: organizationsLoading } = useQuery<OrganizationsResponse>({
-  //   queryKey: ['organizations'],
-  //   queryFn: async () => {
-  //     const res = await api.get('/client/organizations/');
-  //     return res.data;
-  //   },
-  //   staleTime: 300_000, // 5 minutes
-  // });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(isEdit ? editSchema : createSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
       title: "",
-      // organization: "", // Add this
       can_register_our_email: false,
       url: "",
       email_or_username: "",
       password: "",
       are_there_2fa_or_otp: "",
-      number_of_pages: "",
+      excluded_endpoints: [],
       test_type: "gray_box",
       time_to_start: "",
       comment: "",
@@ -130,18 +91,22 @@ const CreateWebScanForm = ({
     enabled: isEdit && !!editScanId
   });
 
-  // Update prefill form when editing
+  // Prefill form when editing
   React.useEffect(() => {
     if (isEdit && scanDetail) {
       form.reset({
         title: scanDetail.title || "",
-        // organization: scanDetail.organization ? String(scanDetail.organization) : "", // Add this
         can_register_our_email: !!scanDetail.can_register_our_email,
         url: scanDetail.url || "",
         email_or_username: scanDetail.email_or_username || "",
         password: "",
         are_there_2fa_or_otp: !!scanDetail.are_there_2fa_or_otp ? "True" : "False",
-        number_of_pages: String(scanDetail.number_of_pages ?? ""),
+        excluded_endpoints: scanDetail.excluded_endpoints
+          ? String(scanDetail.excluded_endpoints)
+              .split(",")
+              .map((s: string) => s.trim())
+              .filter(Boolean)
+          : [],
         test_type: scanDetail.test_type as FormValues extends { test_type: infer B } ? B : never,
         time_to_start: (scanDetail.time_to_start || "").slice(0, 10),
         comment: scanDetail.comment || "",
@@ -149,31 +114,45 @@ const CreateWebScanForm = ({
     }
   }, [isEdit, scanDetail, form]);
 
-  // Update onSubmit function
-  async function onSubmit(values: FormValues) {
-    console.log(form.formState.isValid);
+  // Excluded endpoints input state
+  const [excludedInput, setExcludedInput] = useState("");
+  const excludedEndpoints = form.watch("excluded_endpoints") || [];
 
+  const handleAddExcluded = () => {
+    const url = excludedInput.trim();
+    if (url && !excludedEndpoints.includes(url)) {
+      form.setValue("excluded_endpoints", [...excludedEndpoints, url]);
+      setExcludedInput("");
+    }
+  };
+
+  const handleRemoveExcluded = (url: string) => {
+    form.setValue(
+      "excluded_endpoints",
+      excludedEndpoints.filter((item: string) => item !== url)
+    );
+  };
+
+  async function onSubmit(values: FormValues) {
     if (!session?.accessToken) {
       toast.error("Not authenticated");
       return;
     }
     const formdata = new FormData();
     formdata.append("title", values.title);
-    // formdata.append("organization", values.organization); // Add this
     formdata.append("can_register_our_email", values.can_register_our_email ? "True" : "False");
     formdata.append("url", values.url);
     formdata.append("email_or_username", values.email_or_username);
     if (values.password) formdata.append("password", values.password);
     formdata.append("are_there_2fa_or_otp", String(values.are_there_2fa_or_otp));
-    formdata.append("number_of_pages", String(values.number_of_pages));
     formdata.append("test_type", values.test_type);
     formdata.append("time_to_start", values.time_to_start);
     formdata.append("comment", values.comment || "");
     formdata.append("app_type", "web");
-    // Remove these lines since we're using organization now
-    // formdata.append("organization", "");
-    // formdata.append("ips_type", "");
-
+    // Add excluded_endpoints as comma-separated string
+    if (values.excluded_endpoints && values.excluded_endpoints.length > 0) {
+      formdata.append("excluded_endpoints", values.excluded_endpoints.join(", "));
+    }
 
     try {
       if (isEdit && editScanId) {
@@ -195,7 +174,6 @@ const CreateWebScanForm = ({
     }
   }
 
-  // Cancel button handler that does not interact with the form state
   function handleCancel() {
     setIsModalOpen(false)
   }
@@ -211,8 +189,7 @@ const CreateWebScanForm = ({
         </div>
         <Form {...form}>
           <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="space-y-4"
-            >
+            <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <FormField name="title" render={({ field, fieldState }) => (
                   <FormItem>
@@ -222,32 +199,6 @@ const CreateWebScanForm = ({
                     <FormMessage />
                   </FormItem>
                 )} />
-
-                {/* Organization Select Field - Add this */}
-                {/* <FormField name="organization" render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Select
-                        label="Organization"
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        disabled={organizationsLoading}
-                      >
-                        <SelectTrigger className="bg-[#F8FAFB]">
-                          <SelectValue placeholder={organizationsLoading ? "Loading organizations..." : "Select an organization"} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {organizationsData?.results?.map((org) => (
-                            <SelectItem key={org.id} value={org.id.toString()}>
-                              {org.name} ({org.country})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} /> */}
 
                 <div className="relative">
                   <Input
@@ -263,8 +214,8 @@ const CreateWebScanForm = ({
                     <FormField name="can_register_our_email" render={({ field }) => (
                       <FormItem>
                         <Switch
-                          checked={field.value}  // Add checked prop
-                          onCheckedChange={field.onChange}  // Add onCheckedChange prop
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
                           className="data-[state=checked]:bg-[#8B5CF6]"
                         />
                       </FormItem>
@@ -315,14 +266,48 @@ const CreateWebScanForm = ({
                   </FormItem>
                 )} />
 
-                <FormField name="number_of_pages" render={({ field, fieldState }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Input className="bg-[#F8FAFB]" type="number" label="Pages" placeholder="5" error={fieldState.error} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
+                {/* Excluded Endpoints */}
+                <div>
+                  <label className="block text-sm font-medium mb-1">Excluded Endpoints</label>
+                  <div className="flex gap-2 mb-2">
+                    <Input
+                      className="bg-[#F8FAFB] flex-1"
+                      type="text"
+                      placeholder="Enter endpoint URL"
+                      value={excludedInput}
+                      onChange={(e) => setExcludedInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddExcluded();
+                        }
+                      }}
+                    />
+                    <Button type="button" onClick={handleAddExcluded} disabled={!excludedInput.trim()}>
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {excludedEndpoints.map((url: string) => (
+                      <span
+                        key={url}
+                        className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs"
+                      >
+                        {url}
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="ml-1 p-0"
+                          onClick={() => handleRemoveExcluded(url)}
+                          aria-label="Remove"
+                        >
+                          ×
+                        </Button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
                 <FormField name="test_type" render={({ field, fieldState }) => (
                   <FormItem>
@@ -346,7 +331,6 @@ const CreateWebScanForm = ({
                     <FormMessage />
                   </FormItem>
                 )} />
-
 
                 <FormField name="time_to_start" render={({ field, fieldState }) => (
                   <FormItem>

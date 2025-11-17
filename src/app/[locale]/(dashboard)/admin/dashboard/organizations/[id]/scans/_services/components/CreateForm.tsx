@@ -26,7 +26,8 @@ const baseSchema = z.object({
   email_or_username: z.string().optional(),
   password: z.string().optional(),
   are_there_2fa_or_otp: z.string().optional(),
-  number_of_pages: z.string().optional(),
+  // number_of_pages: z.string().optional(),
+  excluded_endpoints: z.array(z.string()).optional(),
   ips_range: z.string().optional(),
   port_number: z.string().optional(),
   comment: z.string().optional(),
@@ -64,6 +65,8 @@ const CreateScanForm = ({
   const { data: session } = useSession();
   const isEdit = !!editScanId;
 
+
+
   type FormValues = z.infer<typeof createSchema> | z.infer<typeof editSchema>;
   const form = useForm<FormValues>({
     resolver: zodResolver(isEdit ? editSchema : createSchema) as unknown as Resolver<FormValues>,
@@ -74,7 +77,7 @@ const CreateScanForm = ({
       email_or_username: "",
       password: "",
       are_there_2fa_or_otp: "False",
-      number_of_pages: "",
+      // number_of_pages: "",
       ips_range: "",
       port_number: "",
       comment: "",
@@ -98,6 +101,27 @@ const CreateScanForm = ({
     enabled: isEdit && !!editScanId
   });
 
+    // Add state for excluded_endpoints input
+  const [excludedInput, setExcludedInput] = useState("");
+  const excludedEndpoints = form.watch("excluded_endpoints") || [];
+
+  // Add handler to add endpoint
+  const handleAddExcluded = () => {
+    const url = excludedInput.trim();
+    if (url && !excludedEndpoints.includes(url)) {
+      form.setValue("excluded_endpoints", [...excludedEndpoints, url]);
+      setExcludedInput("");
+    }
+  };
+
+  // Remove endpoint handler
+  const handleRemoveExcluded = (url: string) => {
+    form.setValue(
+      "excluded_endpoints",
+      excludedEndpoints.filter((item) => item !== url)
+    );
+  };
+
   React.useEffect(() => {
     if (isEdit && scanDetail) {
       form.reset({
@@ -107,7 +131,14 @@ const CreateScanForm = ({
         email_or_username: scanDetail.email_or_username || "",
         password: "",
         are_there_2fa_or_otp: scanDetail.are_there_2fa_or_otp,
-        number_of_pages: String(scanDetail.number_of_pages ?? ""),
+        // number_of_pages: String(scanDetail.number_of_pages ?? ""),
+        // number_of_pages: String(scanDetail.number_of_pages ?? ""), // REMOVED
+        excluded_endpoints: scanDetail.excluded_endpoints
+          ? String(scanDetail.excluded_endpoints)
+            .split(",")
+            .map((s: string) => s.trim())
+            .filter(Boolean)
+          : [],
         ips_range: String(scanDetail.ips_range ?? ""),
         port_number: String(scanDetail.port_number ?? ""),
         comment: scanDetail.comment || "",
@@ -137,7 +168,10 @@ const CreateScanForm = ({
     if (values.email_or_username) formdata.append("email_or_username", values.email_or_username);
     if (values.password) formdata.append("password", values.password);
     formdata.append("are_there_2fa_or_otp", values.are_there_2fa_or_otp ? "True" : "False");
-    if (values.number_of_pages) formdata.append("number_of_pages", values.number_of_pages);
+    // if (values.number_of_pages) formdata.append("number_of_pages", values.number_of_pages);
+    if (values.excluded_endpoints && values.excluded_endpoints.length > 0) {
+      formdata.append("excluded_endpoints", values.excluded_endpoints.join(", "));
+    }
     if (values.ips_range) formdata.append("ips_range", values.ips_range);
     if (values.port_number) formdata.append("port_number", values.port_number);
     formdata.append("comment", values.comment || "");
@@ -424,14 +458,14 @@ const CreateScanForm = ({
   const appType = form.watch("app_type");
 
   return (
-      <div className='flex flex-col overflow-hidden justify-start items-center'
-      >
-        <Form {...form}>
-          <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="space-y-4 h-full overflow-y-auto" style={{
-              scrollbarWidth: 'none',
-              scrollbarColor: '#0D0D12 #fff',
-            }}>
+    <div className='flex flex-col overflow-hidden justify-start items-center'
+    >
+      <Form {...form}>
+        <form className="w-full h-full flex flex-col justify-between gap-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="space-y-4 h-full overflow-y-auto" style={{
+            scrollbarWidth: 'none',
+            scrollbarColor: '#0D0D12 #fff',
+          }}>
             <div className="grid grid-cols-1 gap-4">
               {/* App Type Select */}
               <FormField name="app_type" render={({ field }) => (
@@ -528,14 +562,47 @@ const CreateScanForm = ({
                       <FormMessage />
                     </FormItem>
                   )} />
-                  <FormField name="number_of_pages" render={({ field, fieldState }) => (
-                    <FormItem>
-                      <FormControl>
-                        <Input className="bg-[#F8FAFB]" type="number" label="Pages" placeholder="5" error={fieldState.error} {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Excluded Endpoints</label>
+                    <div className="flex gap-2 mb-2">
+                      <Input
+                        className="bg-[#F8FAFB] flex-1"
+                        type="text"
+                        placeholder="Enter endpoint URL"
+                        value={excludedInput}
+                        onChange={(e) => setExcludedInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddExcluded();
+                          }
+                        }}
+                      />
+                      <Button type="button" onClick={handleAddExcluded} disabled={!excludedInput.trim()}>
+                        Add
+                      </Button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {excludedEndpoints.map((url, idx) => (
+                        <span
+                          key={url}
+                          className="inline-flex items-center px-3 py-1 rounded-full bg-primary/10 text-primary text-xs"
+                        >
+                          {url}
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="ml-1 p-0"
+                            onClick={() => handleRemoveExcluded(url)}
+                            aria-label="Remove"
+                          >
+                            ×
+                          </Button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                   <FormField name="test_type" render={({ field }) => (
                     <FormItem>
                       <FormControl>

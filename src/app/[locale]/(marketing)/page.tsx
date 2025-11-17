@@ -31,7 +31,7 @@ export default function Home() {
       <div className="space-y-10 md:space-y-28">
         <main className="relative md:pb-18 md:mb-18">
           {/* Hero Background */}
-          <div
+          {/* <div
             className="w-full h-screen overflow-hidden absolute top-[30vh] left-0 z-2 opacity-70"
           //  style={{ transform: "translateY(30px)" }}
           >
@@ -43,7 +43,7 @@ export default function Home() {
               className="h-full w-full object-contain scale-150 md:scale-120 -translate-y-12 md:-translate-y-0"
               priority
             />
-          </div>
+          </div> */}
 
           <div
             className="w-full h-full overflow-hidden absolute top-0 left-0 right-0 z-3 opacity-70"

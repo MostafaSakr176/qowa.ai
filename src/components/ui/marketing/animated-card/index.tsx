@@ -19,7 +19,7 @@ export default function Card({ children, className = '' }: CardProps) {
   const springConfig = { damping: 25, stiffness: 700 }
   const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), springConfig)
   const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-5, 5]), springConfig)
-  const scale = useSpring(isHovered ? 1.02 : 1, springConfig)
+  const scale = useSpring(isHovered ? 1.01 : 1, springConfig)
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return
