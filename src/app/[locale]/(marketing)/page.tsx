@@ -16,7 +16,7 @@ import 'swiper/css';
 import 'swiper/css/autoplay'; // Import Swiper autoplay styles if needed
 
 const HERO_BG_SRC = "/media/images/hero/Hero-bg.svg";
-const HERO_SHEILD_BG = "/media/images/hero/sheild.svg";
+// const HERO_SHEILD_BG = "/media/images/hero/sheild.svg";
 
 
 

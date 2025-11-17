@@ -6,7 +6,7 @@ import { useForm, type Resolver } from "react-hook-form"
 import { z } from "zod"
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Loader2Icon, Mail, Clock, Key, FileText, Globe } from 'lucide-react'
+import { Loader2Icon, Mail, Clock, Key, Globe } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { useSession } from "next-auth/react"
 import { useQuery } from "@tanstack/react-query"
@@ -309,7 +309,7 @@ const CreateWebScanForm = ({
                   </div>
                 </div>
 
-                <FormField name="test_type" render={({ field, fieldState }) => (
+                <FormField name="test_type" render={({ field }) => (
                   <FormItem>
                     <Label>Test Type</Label>
                     <FormControl>
