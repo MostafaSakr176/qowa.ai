@@ -58,7 +58,7 @@ export default function AnimatedCounter({ value, duration = 2, className = "" }:
             transition={{ duration: 0.5 }}
             className={`text-4xl font-bold text-white mb-2 ${className}`}
         >
-            {count.toFixed(1)}%
+            {count.toFixed()}
         </motion.div>
     );
 }

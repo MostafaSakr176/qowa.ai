@@ -46,7 +46,7 @@ export default function Card({ children, className = '' }: CardProps) {
   return (
     <motion.div
       ref={cardRef}
-      className={`relative w-full`}
+      className={`relative w-full h-full`}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={handleMouseLeave}

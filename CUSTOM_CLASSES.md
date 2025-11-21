@@ -228,7 +228,7 @@ export default function HeroSection() {
     <section className="bg-gradient-hero section-padding">
       <div className="container-custom">
         <div className="glass animate-slide-up">
-          <h1 className="text-gradient text-4xl md:text-6xl font-bold">
+          <h1 className="text-gradient text-4xl md:text-4xl font-bold">
             Transform Your Business
           </h1>
           <p className="text-white/90 responsive-text mt-6">

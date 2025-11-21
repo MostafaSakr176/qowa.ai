@@ -58,7 +58,7 @@ export const HeroSection = () => {
         {/* CTA Button */}
         <Link
           href="/dashboard"
-          className="text-white text-[16px] font-medium flex items-center gap-3 px-8 py-3 rounded-full"
+          className="text-white text-[16px] font-medium flex items-center gap-3 px-8 py-3 rounded-full hover:rotate-x-[18deg] transition-transform duration-300"
           style={{
             background: "linear-gradient(180deg, #9440FF 0%, #6505E0 100%)",
             boxShadow: "inset 0px -14px 22.44px -12.09px #FFFFFFA3",
@@ -70,21 +70,23 @@ export const HeroSection = () => {
         </Link>
 
         {/* Hero Image */}
-        <Card className="!p-0 !py-0 max-w-4xl mx-auto my-16">
-          <Image
-            src="/media/dashboard.svg"
-            alt="Hero illustration"
-            width={600}
-            height={400}
-            className="w-full h-auto rounded-2xl shadow-2xl shadow-[#2b0e52]"
-          />
-        </Card>
+        <div className="max-w-4xl my-16">
+          <Card className="!p-0 !py-0">
+            <Image
+              src="/media/dashboard.svg"
+              alt="Hero illustration"
+              width={600}
+              height={400}
+              className="w-full h-auto rounded-2xl shadow-2xl shadow-[#2b0e52]"
+            />
+          </Card>
+        </div>
+
       </section>
 
       {/* Cards Section */}
-      <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
+      {/* <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
 
-        {/* Card 1 — Free Scan */}
         <Card>
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-around h-full">
             <div className="flex justify-center">
@@ -118,7 +120,6 @@ export const HeroSection = () => {
           </div>
         </Card>
 
-        {/* Card 2 — Deep Vulnerability Insights */}
         <Card className="lg:-translate-y-1/3">
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] w-full flex flex-col justify-between relative h-full">
             <div className="flex flex-col items-start text-start gap-2.5">
@@ -146,7 +147,6 @@ export const HeroSection = () => {
           </div>
         </Card>
 
-        {/* Card 3 — Attack Simulation */}
         <Card>
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-between h-full">
             <div className="flex justify-center">
@@ -162,7 +162,109 @@ export const HeroSection = () => {
             </div>
           </div>
         </Card>
+      </section> */}
+
+      {/* Cards Section */}
+      <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
+
+        {/* Card 1 — Real Vulnerabilities */}
+        <Card>
+          <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-around h-full">
+            <div className="flex justify-center">
+              <button
+                type="button"
+                className="text-white text-[16px] font-medium flex items-center gap-3 px-8 py-4 rounded-full"
+                style={{
+                  background: "linear-gradient(180deg, #9440FF 0%, #6505E0 100%)",
+                  boxShadow: "inset 0px -14px 22.44px -12.09px #FFFFFFA3",
+                  borderBottom: "solid 3px #6505E0",
+                }}
+              >
+                Run Free Security Scan
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fillRule="evenodd"
+                    d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold text-white mb-3">
+                Real Vulnerabilities — No Noise
+              </h3>
+              <p className="text-white/80 text-sm leading-relaxed">
+                We detect real, exploitable vulnerabilities — validated, reproducible,
+                and backed by real attack evidence. No false positives. No guesswork.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+
+        {/* Card 2 — Zero-Day Discovery */}
+        <Card className="lg:-translate-y-1/3">
+          <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] w-full flex flex-col justify-between relative h-full">
+            <div className="flex flex-col items-start text-start gap-2.5">
+              <AnimatedCounter value={1092} duration={2} />
+
+              <h3 className="text-xl font-bold text-white mb-3">
+                Zero-Day Vulnerability Discovery
+              </h3>
+
+              <p className="text-white/80 text-sm leading-relaxed mb-6">
+                Our team has discovered over <strong>1092+ zero-day vulnerabilities</strong>,
+                recognized globally for elite offensive security research and exploit development.
+              </p>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 w-full">
+                <span className="flex items-center justify-center text-white text-center px-4 text-xs md:text-sm py-2 rounded-full bg-white/10 border border-white/30 hover:bg-white/20 transition">
+                  Zero-day Research
+                </span>
+                <span className="flex items-center justify-center text-white text-center px-4 text-xs md:text-sm py-2 rounded-full bg-white/10 border border-white/30 hover:bg-white/20 transition">
+                  Advanced Exploit Development
+                </span>
+              </div>
+            </div>
+
+            {/* <div className="absolute top-6 right-2">
+      <Image src={CLOUD_IMG_SRC} alt="Cloud illustration" width={120} height={120} />
+    </div> */}
+          </div>
+        </Card>
+
+
+        {/* Card 3 — HackerOne Leaderboard */}
+        <Card>
+          <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-between h-full">
+            <div className="flex justify-center mb-4">
+              <Image
+                src={LOCK_IMG_SRC}
+                alt="Lock illustration"
+                width={120}
+                height={120}
+                className="w-[40%]"
+              />
+            </div>
+
+            <div>
+              <h3 className="text-xl font-bold text-white mb-3">
+                #1 on HackerOne US Leaderboard
+              </h3>
+              <p className="text-white/80 text-sm leading-relaxed">
+                Ranked among the top global security researchers — delivering real-world
+                attack simulations and validated exploit chains, <strong> 80× faster </strong>
+                than traditional manual pentesting.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+
       </section>
+
     </>
   );
 };

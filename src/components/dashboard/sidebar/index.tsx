@@ -110,7 +110,7 @@ const SideBar = () => {
     <TooltipProvider>
       <div
         className={`sticky inset-y-0 left-0 z-50 transition-all duration-200 flex flex-col
-              ${sidebarOpen ? 'w-64' : 'w-20'}
+              ${sidebarOpen ? 'w-56' : 'w-20'}
             `}
       >
         <div className="flex items-center justify-between p-4">

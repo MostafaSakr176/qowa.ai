@@ -1,213 +1,103 @@
 import React from 'react'
 import Card from '../ui/marketing/animated-card'
 import Image from 'next/image'
-import { Timer } from 'lucide-react'
+import { Shield, Zap, Globe, Timer } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 const ServiceSection = () => {
   return (
     <section className="max-w-7xl mx-auto flex flex-col justify-center items-center">
-      {/* Project Timeline Card */}
-            <div
-                className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
-                aria-label="Go to dashboard"
-                style={{
-                    background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
-                    backdropFilter: "blur(8px)",
-                    boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
-
-                }}
-            >
-                <Image src="/media/icons/Sparkle.svg" alt="Rocket icon" width={20} height={20} />
-
-                <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">services</span>
-
-            </div>
-      <h3 className="text-3xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
-        Cybersecurity Services
+      {/* Section Tagline */}
+      <div
+        className="text-white text-[12px] md:text-base flex items-center gap-2 px-4 py-2 rounded-full border border-[#9C4FFF33] mb-8"
+        aria-label="Go to dashboard"
+        style={{
+          background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
+          backdropFilter: "blur(8px)",
+          boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
+        }}
+      >
+        <Image src="/media/icons/Sparkle.svg" alt="Sparkle icon" width={20} height={20} />
+        <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">Our Services</span>
+      </div>
+      <h3 className="text-3xl leading-10 md:text-5xl md:leading-12 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
+        Comprehensive security at development speed
       </h3>
       <p className="text-white/70 text-lg mb-14 text-center max-w-3xl mx-auto">
-        Our platform offers top-tier AI-driven cybersecurity and threat detection to help you stay ahead of cyber threats.
+        Penetration testing built for modern development. Secure every release, every app, every endpoint—at the speed you ship.
       </p>
       <div className='w-full grid grid-cols-4 grid-rows-2 gap-4 md:gap-4'>
+        {/* Secure against AI, with AI */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           className="col-span-4 md:col-span-2 row-span-2 h-full"
         >
-          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
             <h3 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
-              <Timer />  Project Timeline
+              <Zap /> Secure against AI, with AI
             </h3>
-            {/* Timeline Chart */}
-
-            <div className="relative h-40 mt-2">
-              {/* Timeline grid lines */}
-              <div className="absolute inset-0 flex justify-between px-3">
-                {[...Array(8)].map((_, i) => (
-                  <div key={i} className="border-r border-white/10 h-full" />
-                ))}
-              </div>
-              {/* Timeline months */}
-              <div className="flex justify-between text-xs text-white/60 mb-2 px-1">
-                <span>Jan</span>
-                <span>Feb</span>
-                <span>Mar</span>
-                <span>Apr</span>
-                <span>May</span>
-                <span>Jun</span>
-                <span>Jul</span>
-                <span>Aug</span>
-              </div>
-              {/* Timeline bars */}
-              <div className="absolute left-0 top-8 w-full h-28">
-                {/* Bar 1 */}
-                <div
-                  className="absolute left-[8%] top-2 h-8 rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
-                  style={{
-                    width: '38%',
-                    background: "linear-gradient(180deg, #A566F5 0%, #9440FF 100%)"
-                  }}
-                >
-                  Jan-Feb
-                </div>
-                {/* Bar 2 */}
-                <div
-                  className="absolute left-[30%] top-12 h-8 rounded-lg flex items-center px-2 text-white text-[10px] font-medium shadow-md"
-                  style={{ width: '55%',
-                    background: "linear-gradient(180deg, #A566F5 0%, #9440FF 100%)"
-                   }}
-                >
-                  Design / Development Apps
-                </div>
-                {/* Bar 3 */}
-                <div
-                  className="absolute left-[60%] top-24 h-8 rounded-lg flex items-center px-2 text-white text-xs font-medium shadow-md"
-                  style={{ width: '30%',
-                    background: "linear-gradient(180deg, #A566F5 0%, #9440FF 100%)"
-                   }}
-                >
-                  Mar-Jun
-                </div>
+            <div className="relative h-40 mt-2 flex flex-col justify-center">
+              <p className="text-white/80 text-base mb-4">
+                Fight fire with fire—run AI-powered attacks before attackers do.
+              </p>
+              <div className="flex items-center justify-center mt-4">
+                <Image src={'/media/images/hero/about-us/icon-1.svg'} alt='icon' width={100} height={100} />
               </div>
             </div>
           </Card>
         </motion.div>
+        {/* Scale without waiting */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.6, delay: 0.15 }}
           className="col-span-4 md:col-span-1 row-span-1"
         >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
             <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
+              <Timer /> Scale without waiting
+            </h4>
+            <p className="text-white/70 text-xs leading-snug">
+              Remove bottlenecks in pentesting capacity. Validate every app, every update, in hours.
+            </p>
           </Card>
         </motion.div>
+        {/* Cover the entire attack surface */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
           className="col-span-4 md:col-span-1 row-span-1"
         >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
             <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
+              <Globe /> Cover the entire attack surface
+            </h4>
+            <p className="text-white/70 text-xs leading-snug">
+              Test every application without resource constraints or vendor capacity limits.
+            </p>
           </Card>
         </motion.div>
+        {/* Built for development velocity */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="col-span-4 md:col-span-1 row-span-1"
-        >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
-            <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
-          </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="col-span-4 md:col-span-1 row-span-1"
-        >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
-            <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
-          </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
+          transition={{ duration: 0.6, delay: 0.25 }}
           className="col-span-4 md:col-span-2 row-span-1"
         >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6 ">
             <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
-          </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="col-span-4 md:col-span-2 row-span-1"
-        >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
-            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
-          </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="col-span-4 md:col-span-2 row-span-1"
-        >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
-            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
-          </Card>
-        </motion.div>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="col-span-4 md:col-span-2 row-span-1"
-        >
-          <Card  className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B]">
-            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
-              <Image src={'/media/images/hero/service section/Access Control.svg'} alt='icon' width={30} height={30} />
-
-              File Sharing</h4>
-            <p className="text-white/70 text-xs leading-snug">Quickly and safely upload and share your project files.</p>
+              <Shield /> Built for development velocity
+            </h4>
+            <p className="text-white/70 text-xs leading-snug">
+              Security testing that keeps up with how fast you ship—comprehensive results when you need them, not weeks later.
+            </p>
           </Card>
         </motion.div>
       </div>
-    </section >
+    </section>
   )
 }
 

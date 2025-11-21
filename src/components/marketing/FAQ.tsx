@@ -54,7 +54,7 @@ const FAQsection = () => {
                                 }}
                             >
                                 <button
-                                    className="w-full flex items-center justify-between p-4 text-left focus:outline-none cursor-pointer"
+                                    className="w-full flex items-center justify-between px-4 py-3 text-left focus:outline-none cursor-pointer"
                                     onClick={() => setOpenIdx(open ? null : idx)}
                                     aria-expanded={open}
                                     aria-controls={`faq-panel-${idx}`}
@@ -130,7 +130,7 @@ const FAQsection = () => {
                                 }}
                             >
                                 <button
-                                    className="w-full flex items-center justify-between p-4 text-left focus:outline-none cursor-pointer"
+                                    className="w-full flex items-center justify-between py-3 px-4 text-left focus:outline-none cursor-pointer"
                                     onClick={() => setOpenIdx(open ? null : idx)}
                                     aria-expanded={open}
                                     aria-controls={`faq-panel-${idx}`}
@@ -210,16 +210,15 @@ const FAQ = () => {
                     style={{
                         background: "linear-gradient(270deg, #110522 0%, #381960 100%)",
                         backdropFilter: "blur(8px)",
-                        boxShadow: "1px -2px 3px 0px #9C4FFF40 inset",
-
+                        boxShadow: "1px -2px 3px 0px #9C4FFF40 inset"
                     }}
                 >
                     <Image src="/media/icons/Sparkle.svg" alt="Rocket icon" width={20} height={20} />
                     <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">FAQ</span>
                 </div>
-                <h3 className="text-3xl leading-10 md:text-6xl md:leading-20 font-bold mb-3 text-center  bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
-                    Smart Security Starts with <br /> the
-                    Right Answers
+                <h3 className="text-3xl leading-10 md:text-5xl md:leading-12 font-bold mb-3 text-center  bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
+                    Smart Security Starts with <br /> 
+                    the Right Answers
                 </h3>
                 <p className="text-white/70 text-lg mb-14 text-center max-w-3xl mx-auto">
                     Our platform offers top-tier AI-driven cybersecurity and threat detection to help you stay ahead of cyber threats.

@@ -48,6 +48,8 @@ type OrganizationApi = {
     id: number;
     name: string;
     country: string;
+    org_status: string;
+    money_saved: string;
     number_of_apps: number;
     url: string;
     business_email: string;
@@ -75,6 +77,7 @@ type OrganizationRow = {
         logo: React.ReactNode;
     };
     country: string;
+    org_status: string;
     pest_organization: number;
     teams: number;
     states: string;
@@ -84,6 +87,7 @@ type OrganizationRow = {
         time: string;
     };
     amount: string;
+    money_saved: string;
     url: string;
     credit: number;
 };
@@ -168,6 +172,7 @@ const OrganizationsList = () => {
                 logo: <Building2 size={20} />,
             },
             country: org.country,
+            org_status: org.org_status,
             pest_organization: org.rank,
             teams: org.team_members_count,
             number_of_apps: org.number_of_apps,
@@ -178,6 +183,7 @@ const OrganizationsList = () => {
             },
             url: org.url,
             amount: `$${org.amount}`,
+            money_saved: `$${org.money_saved}`,
             credit: org.credit // Example: 10% of amount as credit
         }));
     }, [data]);
@@ -335,6 +341,15 @@ const OrganizationsList = () => {
             header: "Country",
         },
         {
+            key: "org_status",
+            header: "Status",
+            render: (row: { org_status: string }) => (
+                row.org_status.split("_")
+                    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(" ")
+            ),
+        },
+        {
             key: "pest_organization",
             header: "Best Organizations"
         },
@@ -359,6 +374,10 @@ const OrganizationsList = () => {
         {
             key: "credit",
             header: "Credits"
+        },
+        {
+            key: "money_saved",
+            header: "Money Saved",
         },
         {
             key: "actions",

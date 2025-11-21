@@ -14,7 +14,7 @@ export default function TrustSection() {
         <section className='flex flex-col justify-center items-center gap-12 md:gap-8 mb-0'>
 
             <div className='px-4 md:px-0'>
-                <h3 className="text-3xl leading-10 md:text-6xl md:leading-16 font-bold mb-3 text-center  bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
+                <h3 className="text-3xl leading-10 md:text-5xl md:leading-12 font-bold mb-3 text-center  bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
                     Robust Security for  <br />
                     Complete Peace of Mind
                 </h3>
