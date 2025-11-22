@@ -15,15 +15,11 @@ import Footer from "@/components/layout/marketing/footer";
 import 'swiper/css';
 import 'swiper/css/autoplay'; // Import Swiper autoplay styles if needed
 import StartPentestingForm from "@/components/marketing/startPentestingForm";
-import Link from "next/link";
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const HERO_BG_SRC = "/media/images/hero/Hero-bg.svg";
 // const HERO_SHEILD_BG = "/media/images/hero/sheild.svg";
-
-
 
 export default function Home() {
   const [showSuccess, setShowSuccess] = useState(false);
@@ -44,7 +40,7 @@ export default function Home() {
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 text-center">Thanks for your interest!</h2>
             <p className="text-lg text-white mb-8 text-center max-w-xl">Someone from our team will be in touch shortly to confirm if your application meets the requirements.</p>
             <div className="flex gap-4">
-              <Button onClick={()=>setShowSuccess(false)} size={"lg"}>Back to homepage</Button>
+              <Button onClick={() => setShowSuccess(false)} size={"lg"}>Back to homepage</Button>
               <Button variant={"outline"} size={"lg"}>Read our blog</Button>
             </div>
           </div>
