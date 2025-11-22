@@ -192,13 +192,6 @@ const OrganizationsList = () => {
     const pageSize = data?.results?.length || 0;
     const totalCount = data?.count ?? 0;
 
-    const statesOptions = [
-        { value: "all", label: "All" },
-        { value: "open", label: "Open" },
-        { value: "closed", label: "Closed" },
-        { value: "finished", label: "Finished" },
-    ];
-
     // Filtered and sorted data
     const filteredData = useMemo(() => {
         let data = organizations;

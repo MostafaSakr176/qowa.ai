@@ -6,7 +6,6 @@ import Card from "@/components/ui/marketing/animated-card";
 import AnimatedCounter from "@/components/ui/marketing/animated-counter";
 import { ArrowRight } from "lucide-react";
 
-const CLOUD_IMG_SRC = "/media/images/hero/cloud-img.svg";
 const LOCK_IMG_SRC = "/media/images/hero/lock-img.svg";
 const TYPED_STRINGS = ["Vulnerabilities", "Weak Points"];
 

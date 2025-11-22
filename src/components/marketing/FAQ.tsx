@@ -98,7 +98,7 @@ const FAQsection = () => {
                                 <div
                                     id={`faq-panel-${idx}`}
                                     className={`overflow-hidden transition-all duration-300 px-4 ${open
-                                        ? "max-h-[500px] py-4 opacity-100"
+                                        ? "max-h-[500px] pb-4 opacity-100"
                                         : "max-h-0 py-0 opacity-0"
                                         }`}
                                     aria-hidden={!open}
@@ -174,7 +174,7 @@ const FAQsection = () => {
                                 <div
                                     id={`faq-panel-${idx}`}
                                     className={`overflow-hidden transition-all duration-300 px-4 ${open
-                                        ? "max-h-[500px] py-4 opacity-100"
+                                        ? "max-h-[500px] pb-4 opacity-100"
                                         : "max-h-0 py-0 opacity-0"
                                         }`}
                                     aria-hidden={!open}
