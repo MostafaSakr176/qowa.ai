@@ -84,8 +84,8 @@ export default function Home() {
             </main>
             {/* <Pricing /> */}
             <TrustSection />
-            <Testimonials />
-            <FAQ />
+            {/* <Testimonials /> */}
+            {/* <FAQ /> */}
             <StartPentestingForm onSuccess={() => setShowSuccess(true)} />
             <ReadyForExperience />
           </>

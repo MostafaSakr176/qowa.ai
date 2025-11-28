@@ -21,46 +21,24 @@ const ServiceSection = () => {
         <span className="bg-gradient-to-b from-[#FFFFFF] to-[#ceb0f5] bg-clip-text text-transparent">Our Services</span>
       </div>
       <h3 className="text-3xl leading-10 md:text-5xl md:leading-12 font-bold mb-3 text-center bg-[linear-gradient(180deg,_#FFFFFF_0%,_#AD6EFF_100%)] bg-clip-text text-transparent">
-        Comprehensive security at development speed
+        Autonomous Penetration Testing
       </h3>
       <p className="text-white/70 text-lg mb-14 text-center max-w-3xl mx-auto">
-        Penetration testing built for modern development. Secure every release, every app, every endpoint—at the speed you ship.
+        AI agents that run real attacks, find vulnerabilities, and auto-generate fixes to secure your apps.
       </p>
-      <div className='w-full grid grid-cols-4 grid-rows-2 gap-4 md:gap-4'>
-        {/* Secure against AI, with AI */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="col-span-4 md:col-span-2 row-span-2 h-full"
-        >
-          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
-            <h3 className="text-white text-lg font-semibold mb-4 flex items-center gap-2">
-              <Zap /> Secure against AI, with AI
-            </h3>
-            <div className="relative h-40 mt-2 flex flex-col justify-center">
-              <p className="text-white/80 text-base mb-4">
-                Fight fire with fire—run AI-powered attacks before attackers do.
-              </p>
-              <div className="flex items-center justify-center mt-4">
-                <Image src={'/media/images/hero/about-us/icon-1.svg'} alt='icon' width={100} height={100} />
-              </div>
-            </div>
-          </Card>
-        </motion.div>
+      <div className='grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-4 md:mb-6'>
         {/* Scale without waiting */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="col-span-4 md:col-span-1 row-span-1"
         >
           <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
-            <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
-              <Timer /> Scale without waiting
-            </h4>
-            <p className="text-white/70 text-xs leading-snug">
-              Remove bottlenecks in pentesting capacity. Validate every app, every update, in hours.
+            <h3 className="text-white font-semibold text-xl mb-4 flex gap-2">
+              <Timer /> Validated Findings
+            </h3>
+            <p className="text-white/70 text-base">
+              Every finding includes a PoC and exploit evidenbaseso you don&apos;t deal with false positives.
             </p>
           </Card>
         </motion.div>
@@ -69,14 +47,13 @@ const ServiceSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="col-span-4 md:col-span-1 row-span-1"
         >
           <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
-            <h4 className="text-white font-semibold text-base mb-1 flex items-center gap-2">
-              <Globe /> Cover the entire attack surface
-            </h4>
-            <p className="text-white/70 text-xs leading-snug">
-              Test every application without resource constraints or vendor capacity limits.
+            <h3 className="text-white font-semibold text-xl mb-4 flex gap-2">
+              <Globe />Complete Coverage
+            </h3>
+            <p className="text-white/70 text-base">
+              Scans APIs, web apps, networks, GitHub/GitLab cbase and CI/CD pipelines.
             </p>
           </Card>
         </motion.div>
@@ -85,15 +62,46 @@ const ServiceSection = () => {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
-          className="col-span-4 md:col-span-2 row-span-1"
         >
           <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6 ">
-            <h4 className="text-white font-semibold text-base mb-1 flex md:flex-col items-start gap-2">
-              <Shield /> Built for development velocity
-            </h4>
-            <p className="text-white/70 text-xs leading-snug">
-              Security testing that keeps up with how fast you ship—comprehensive results when you need them, not weeks later.
+            <h3 className="text-white font-semibold text-xl mb-4 flex gap-2">
+              <Shield /> Real-World Attacks
+            </h3>
+            <p className="text-white/70 text-base">
+              Launches actual exploits to validate vulnerabilbases like elite penetration testers.
             </p>
+          </Card>
+        </motion.div>
+      </div>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
+        {/* Secure against AI, with AI */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
+            <h3 className="text-white text-xl font-semibold mb-4 flex gap-2">
+              <Zap /> Auto-Fix & Reports
+            </h3>
+              <p className="text-white/80 text-base">
+                Writes detailed reports and generates production-ready fixes automatically.
+              </p>
+          </Card>
+        </motion.div>
+        {/* Secure against AI, with AI */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+        >
+          <Card className="!bg-gradient-to-br !from-[#2E0A5C] !to-[#16062B] md:!px-4 md:!py-6">
+            <h3 className="text-white text-xl font-semibold mb-4 flex gap-2">
+              <Zap />24/7 Continuous Testing
+            </h3>
+              <p className="text-white/80 text-base">
+                Never stops protecting your apps with round-the-clock monitoring.
+              </p>
           </Card>
         </motion.div>
       </div>

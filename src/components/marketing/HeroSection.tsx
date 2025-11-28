@@ -164,9 +164,8 @@ export const HeroSection = () => {
       </section> */}
 
       {/* Cards Section */}
-      <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
+      {/* <section className="grid grid-col-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-center items-center">
 
-        {/* Card 1 — Real Vulnerabilities */}
         <Card>
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-around h-full">
             <div className="flex justify-center">
@@ -203,7 +202,6 @@ export const HeroSection = () => {
         </Card>
 
 
-        {/* Card 2 — Zero-Day Discovery */}
         <Card className="lg:-translate-y-1/3">
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] w-full flex flex-col justify-between relative h-full">
             <div className="flex flex-col items-start text-start gap-2.5">
@@ -228,14 +226,11 @@ export const HeroSection = () => {
               </div>
             </div>
 
-            {/* <div className="absolute top-6 right-2">
-      <Image src={CLOUD_IMG_SRC} alt="Cloud illustration" width={120} height={120} />
-    </div> */}
+
           </div>
         </Card>
 
 
-        {/* Card 3 — HackerOne Leaderboard */}
         <Card>
           <div className="text-center min-h-[30vh] md:min-h-[25vh] lg:min-h-[35vh] flex flex-col justify-between h-full">
             <div className="flex justify-center mb-4">
@@ -262,7 +257,7 @@ export const HeroSection = () => {
         </Card>
 
 
-      </section>
+      </section> */}
 
     </>
   );
